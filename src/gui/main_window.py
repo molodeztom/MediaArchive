@@ -1,18 +1,30 @@
 """Main application window for Media Archive Manager.
 
 This module provides the main GUI window with menu bar, toolbar, and main content area.
+
+History:
+20260307  V1.0: Initial main window implementation
+20260307  V1.1: Added location management and search/filter functionality
+20260307  V1.2: Integrated SearchPanel and enhanced filter menu
 """
 
 import logging
 import tkinter as tk
 from tkinter import ttk, messagebox
 from pathlib import Path
+from datetime import date
 
 from data.database import Database
 from business.location_service import LocationService
 from business.media_service import MediaService
+from models.location import StorageLocation
+from models.enums import MediaType
 from utils.config import APP_NAME, APP_VERSION, DB_PATH, WINDOW_WIDTH, WINDOW_HEIGHT
-from gui.dialogs import AddMediaDialog, EditMediaDialog, DeleteConfirmDialog
+from gui.dialogs import (
+    AddMediaDialog, EditMediaDialog, DeleteConfirmDialog,
+    AddLocationDialog, EditLocationDialog, DeleteLocationConfirmDialog
+)
+from gui.search_panel import SearchPanel
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +81,7 @@ class MainWindow:
         # File menu
         file_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="File", menu=file_menu)
-        file_menu.add_command(label="Exit", command=self.root.quit)
+        file_menu.add_command(label="Exit", command=self.root.quit, accelerator="Ctrl+Q")
         
         # Edit menu
         edit_menu = tk.Menu(menubar, tearoff=0)
@@ -79,14 +91,48 @@ class MainWindow:
         # View menu
         view_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="View", menu=view_menu)
-        view_menu.add_command(label="Refresh", command=self._refresh_view)
+        view_menu.add_command(label="Refresh", command=self._refresh_view, accelerator="F5")
+        view_menu.add_separator()
+        view_menu.add_command(label="Show All Media", command=self._show_all_media)
+        view_menu.add_command(label="Show Expired Media", command=self._show_expired, accelerator="Ctrl+X")
         view_menu.add_separator()
         view_menu.add_command(label="Statistics", command=self._show_statistics)
+        
+        # Filter menu
+        filter_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Filter", menu=filter_menu)
+        
+        # Filter by type submenu
+        type_menu = tk.Menu(filter_menu, tearoff=0)
+        filter_menu.add_cascade(label="By Type", menu=type_menu)
+        for media_type in MediaType.get_all_values():
+            type_menu.add_command(
+                label=media_type,
+                command=lambda mt=media_type: self._filter_by_type(mt)
+            )
+        
+        # Filter by location submenu
+        self.location_menu = tk.Menu(filter_menu, tearoff=0)
+        filter_menu.add_cascade(label="By Location", menu=self.location_menu)
+        self._update_location_menu()
+        
+        filter_menu.add_separator()
+        filter_menu.add_command(label="Clear Filters", command=self._clear_all_filters)
         
         # Help menu
         help_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Help", menu=help_menu)
         help_menu.add_command(label="About", command=self._show_about)
+        
+        # Bind keyboard shortcuts
+        self.root.bind("<Control-q>", lambda e: self.root.quit())
+        self.root.bind("<F5>", lambda e: self._refresh_view())
+        self.root.bind("<Control-n>", lambda e: self._add_media())
+        self.root.bind("<Control-e>", lambda e: self._edit_media())
+        self.root.bind("<Delete>", lambda e: self._delete_media())
+        self.root.bind("<Control-l>", lambda e: self._show_locations())
+        self.root.bind("<Control-f>", lambda e: self.notebook.select(2))
+        self.root.bind("<Control-x>", lambda e: self._show_expired())
         
         logger.debug("Menu bar created")
 
@@ -161,20 +207,30 @@ class MainWindow:
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text="Locations")
         
+        # Create toolbar for location management
+        toolbar = ttk.Frame(frame)
+        toolbar.pack(side=tk.TOP, fill=tk.X, padx=2, pady=2)
+        
+        ttk.Button(toolbar, text="Add Location", command=self._add_location).pack(side=tk.LEFT, padx=2)
+        ttk.Button(toolbar, text="Edit Location", command=self._edit_location).pack(side=tk.LEFT, padx=2)
+        ttk.Button(toolbar, text="Delete Location", command=self._delete_location).pack(side=tk.LEFT, padx=2)
+        
         # Create treeview for locations
-        columns = ("ID", "Box", "Place", "Detail")
+        columns = ("ID", "Box", "Place", "Detail", "Media Count")
         self.location_tree = ttk.Treeview(frame, columns=columns, height=20)
         self.location_tree.column("#0", width=0, stretch=tk.NO)
         self.location_tree.column("ID", anchor=tk.W, width=50)
         self.location_tree.column("Box", anchor=tk.W, width=150)
         self.location_tree.column("Place", anchor=tk.W, width=150)
-        self.location_tree.column("Detail", anchor=tk.W, width=200)
+        self.location_tree.column("Detail", anchor=tk.W, width=150)
+        self.location_tree.column("Media Count", anchor=tk.W, width=100)
         
         self.location_tree.heading("#0", text="", anchor=tk.W)
         self.location_tree.heading("ID", text="ID", anchor=tk.W)
         self.location_tree.heading("Box", text="Box", anchor=tk.W)
         self.location_tree.heading("Place", text="Place", anchor=tk.W)
         self.location_tree.heading("Detail", text="Detail", anchor=tk.W)
+        self.location_tree.heading("Media Count", text="Media Count", anchor=tk.W)
         
         # Add scrollbar
         scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=self.location_tree.yview)
@@ -193,32 +249,34 @@ class MainWindow:
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text="Search")
         
-        # Search frame
-        search_frame = ttk.LabelFrame(frame, text="Search Media", padding=10)
-        search_frame.pack(fill=tk.X, padx=5, pady=5)
-        
-        ttk.Label(search_frame, text="Search by name:").pack(side=tk.LEFT, padx=5)
-        self.search_entry = ttk.Entry(search_frame, width=30)
-        self.search_entry.pack(side=tk.LEFT, padx=5)
-        ttk.Button(search_frame, text="Search", command=self._perform_search).pack(side=tk.LEFT, padx=5)
+        # Create search panel
+        self.search_panel = SearchPanel(
+            frame,
+            locations=self.location_service.get_all_locations(),
+            on_search=self._perform_search,
+            on_clear=self._clear_search
+        )
+        self.search_panel.pack(fill=tk.X)
         
         # Results frame
         results_frame = ttk.LabelFrame(frame, text="Search Results", padding=10)
         results_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
-        columns = ("ID", "Name", "Type", "Location")
+        columns = ("ID", "Name", "Type", "Location", "Expires")
         self.search_tree = ttk.Treeview(results_frame, columns=columns, height=15)
         self.search_tree.column("#0", width=0, stretch=tk.NO)
         self.search_tree.column("ID", anchor=tk.W, width=50)
         self.search_tree.column("Name", anchor=tk.W, width=200)
         self.search_tree.column("Type", anchor=tk.W, width=100)
-        self.search_tree.column("Location", anchor=tk.W, width=150)
+        self.search_tree.column("Location", anchor=tk.W, width=100)
+        self.search_tree.column("Expires", anchor=tk.W, width=100)
         
         self.search_tree.heading("#0", text="", anchor=tk.W)
         self.search_tree.heading("ID", text="ID", anchor=tk.W)
         self.search_tree.heading("Name", text="Name", anchor=tk.W)
         self.search_tree.heading("Type", text="Type", anchor=tk.W)
         self.search_tree.heading("Location", text="Location", anchor=tk.W)
+        self.search_tree.heading("Expires", text="Expires", anchor=tk.W)
         
         scrollbar = ttk.Scrollbar(results_frame, orient=tk.VERTICAL, command=self.search_tree.yview)
         self.search_tree.configure(yscroll=scrollbar.set)
@@ -272,15 +330,25 @@ class MainWindow:
             # Load locations
             locations = self.location_service.get_all_locations()
             for loc in locations:
+                # Count media in this location
+                media_count = len(self.media_service.get_media_by_location(loc.id))
                 self.location_tree.insert("", tk.END, values=(
                     loc.id,
                     loc.box,
                     loc.place,
-                    loc.detail or ""
+                    loc.detail or "",
+                    media_count
                 ))
             
             self.status_var.set(f"Loaded {len(locations)} locations")
             logger.debug(f"Refreshed locations list: {len(locations)} items")
+            
+            # Update search panel locations
+            if hasattr(self, 'search_panel'):
+                self.search_panel.update_locations(locations)
+            
+            # Update location menu
+            self._update_location_menu()
         except Exception as e:
             logger.error(f"Failed to refresh locations list: {e}")
             messagebox.showerror("Error", f"Failed to load locations: {e}")
@@ -418,6 +486,120 @@ class MainWindow:
             logger.error(f"Error deleting media: {e}")
             messagebox.showerror("Error", f"Failed to delete media: {e}")
 
+    def _add_location(self) -> None:
+        """Add new location."""
+        try:
+            # Create and show dialog
+            dialog = AddLocationDialog(self.root, on_save=self._on_location_added)
+            result = dialog.show()
+            
+            if result:
+                self.status_var.set("Location added successfully")
+                self._refresh_locations_list()
+        except Exception as e:
+            logger.error(f"Error adding location: {e}")
+            messagebox.showerror("Error", f"Failed to add location: {e}")
+
+    def _on_location_added(self, location: StorageLocation) -> None:
+        """Callback when location is added via dialog."""
+        try:
+            # Save location to database
+            created = self.location_service.create_location(
+                box=location.box,
+                place=location.place,
+                detail=location.detail,
+            )
+            logger.info(f"Location created: {created.id}")
+        except Exception as e:
+            logger.error(f"Error saving location: {e}")
+            messagebox.showerror("Error", f"Failed to save location: {e}")
+
+    def _edit_location(self) -> None:
+        """Edit selected location."""
+        try:
+            # Get selected location
+            selection = self.location_tree.selection()
+            if not selection:
+                messagebox.showwarning("Selection Error", "Please select a location to edit")
+                return
+            
+            # Get location ID from first column
+            item = selection[0]
+            values = self.location_tree.item(item, "values")
+            location_id = int(values[0])
+            
+            # Get location details
+            location = self.location_service.get_location(location_id)
+            
+            # Create and show dialog
+            dialog = EditLocationDialog(self.root, location, on_save=self._on_location_updated)
+            result = dialog.show()
+            
+            if result:
+                self.status_var.set("Location updated successfully")
+                self._refresh_locations_list()
+        except Exception as e:
+            logger.error(f"Error editing location: {e}")
+            messagebox.showerror("Error", f"Failed to edit location: {e}")
+
+    def _on_location_updated(self, location: StorageLocation) -> None:
+        """Callback when location is updated via dialog."""
+        try:
+            # Update location in database
+            updated = self.location_service.update_location(
+                location_id=location.id,
+                box=location.box,
+                place=location.place,
+                detail=location.detail,
+            )
+            logger.info(f"Location updated: {updated.id}")
+        except Exception as e:
+            logger.error(f"Error updating location: {e}")
+            messagebox.showerror("Error", f"Failed to update location: {e}")
+
+    def _delete_location(self) -> None:
+        """Delete selected location."""
+        try:
+            # Get selected location
+            selection = self.location_tree.selection()
+            if not selection:
+                messagebox.showwarning("Selection Error", "Please select a location to delete")
+                return
+            
+            # Get location ID from first column
+            item = selection[0]
+            values = self.location_tree.item(item, "values")
+            location_id = int(values[0])
+            
+            # Get location details
+            location = self.location_service.get_location(location_id)
+            
+            # Count media in this location
+            media_count = len(self.media_service.get_media_by_location(location_id))
+            
+            # Create and show confirmation dialog
+            dialog = DeleteLocationConfirmDialog(
+                self.root, location, media_count, on_confirm=self._on_location_deleted
+            )
+            result = dialog.show()
+            
+            if result:
+                self.status_var.set("Location deleted successfully")
+                self._refresh_locations_list()
+        except Exception as e:
+            logger.error(f"Error deleting location: {e}")
+            messagebox.showerror("Error", f"Failed to delete location: {e}")
+
+    def _on_location_deleted(self, location: StorageLocation) -> None:
+        """Callback when location is deleted via dialog."""
+        try:
+            # Delete location from database
+            self.location_service.delete_location(location.id)
+            logger.info(f"Location deleted: {location.id}")
+        except Exception as e:
+            logger.error(f"Error deleting location: {e}")
+            messagebox.showerror("Error", f"Failed to delete location: {e}")
+
     def _show_locations(self) -> None:
         """Show locations tab."""
         self.notebook.select(1)
@@ -425,15 +607,26 @@ class MainWindow:
     def _show_expired(self) -> None:
         """Show expired media."""
         try:
-            expired = self.media_service.get_expired_media()
-            messagebox.showinfo("Expired Media", f"Found {len(expired)} expired media items")
+            # Switch to search tab
+            self.notebook.select(2)
+            
+            # Clear and set filter to show only expired
+            self.search_panel.clear_filters()
+            self.search_panel.show_expired_var.set(True)
+            
+            # Perform search
+            self._perform_search()
+            self.status_var.set("Showing expired media")
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to get expired media: {e}")
+            logger.error(f"Error showing expired media: {e}")
+            messagebox.showerror("Error", f"Failed to show expired media: {e}")
 
     def _show_statistics(self) -> None:
         """Show media statistics."""
         try:
             stats = self.media_service.get_media_statistics()
+            locations = self.location_service.get_all_locations()
+            
             message = f"""
 Media Statistics:
 - Total media: {stats['total_media']}
@@ -447,8 +640,14 @@ By type:
             for media_type, count in stats['media_by_type'].items():
                 message += f"  {media_type}: {count}\n"
             
+            message += f"""
+Location Statistics:
+- Total locations: {len(locations)}
+"""
+            
             messagebox.showinfo("Statistics", message)
         except Exception as e:
+            logger.error(f"Error getting statistics: {e}")
             messagebox.showerror("Error", f"Failed to get statistics: {e}")
 
     def _show_preferences(self) -> None:
@@ -464,31 +663,163 @@ By type:
             "Built with Python and tkinter"
         )
 
+    def _update_location_menu(self) -> None:
+        """Update location filter menu."""
+        try:
+            # Clear existing items
+            self.location_menu.delete(0, tk.END)
+            
+            # Add "All" option
+            self.location_menu.add_command(
+                label="All",
+                command=self._clear_all_filters
+            )
+            self.location_menu.add_separator()
+            
+            # Add each location
+            locations = self.location_service.get_all_locations()
+            for loc in locations:
+                self.location_menu.add_command(
+                    label=f"{loc.id}: {loc}",
+                    command=lambda l=loc: self._filter_by_location(l.id)
+                )
+        except Exception as e:
+            logger.error(f"Failed to update location menu: {e}")
+
     def _perform_search(self) -> None:
-        """Perform search based on search entry."""
-        query = self.search_entry.get()
-        if not query:
-            messagebox.showwarning("Search", "Please enter a search query")
-            return
-        
+        """Perform search based on search criteria."""
         try:
             # Clear existing results
             for item in self.search_tree.get_children():
                 self.search_tree.delete(item)
             
-            # Search
-            results = self.media_service.search_media_by_name(query)
+            # Get search criteria from search panel
+            criteria = self.search_panel.get_search_criteria()
+            query = criteria["query"]
+            type_filter = criteria["type_filter"]
+            location_filter = criteria["location_filter"]
+            show_expired = criteria["show_expired"]
+            date_from = criteria["date_from"]
+            date_to = criteria["date_to"]
+            
+            # Start with all media or search results
+            if query:
+                results = self.media_service.search_media_by_name(query)
+            else:
+                results = self.media_service.get_all_media()
+            
+            # Apply type filter
+            if type_filter and type_filter != "All":
+                results = [m for m in results if m.media_type == type_filter]
+            
+            # Apply location filter
+            if location_filter and location_filter != "All":
+                try:
+                    location_id = int(location_filter.split(":")[0])
+                    results = [m for m in results if m.location_id == location_id]
+                except (ValueError, IndexError):
+                    pass
+            
+            # Apply date range filter
+            if date_from or date_to:
+                try:
+                    if date_from:
+                        from_date = date.fromisoformat(date_from)
+                        results = [m for m in results if m.creation_date and m.creation_date >= from_date]
+                    if date_to:
+                        to_date = date.fromisoformat(date_to)
+                        results = [m for m in results if m.creation_date and m.creation_date <= to_date]
+                except ValueError:
+                    messagebox.showwarning("Date Error", "Invalid date format (use YYYY-MM-DD)")
+                    return
+            
+            # Apply expired filter
+            if show_expired:
+                results = [m for m in results if m.valid_until_date and m.valid_until_date < date.today()]
+            
+            # Display results
             for media in results:
+                expires = media.valid_until_date.isoformat() if media.valid_until_date else "N/A"
                 self.search_tree.insert("", tk.END, values=(
                     media.id,
                     media.name,
                     media.media_type,
-                    media.location_id or "N/A"
+                    media.location_id or "N/A",
+                    expires
                 ))
             
             self.status_var.set(f"Found {len(results)} results")
+            logger.debug(f"Search completed: {len(results)} results")
         except Exception as e:
+            logger.error(f"Search failed: {e}")
             messagebox.showerror("Error", f"Search failed: {e}")
+
+    def _clear_search(self) -> None:
+        """Clear search filters and results."""
+        try:
+            # Clear results
+            for item in self.search_tree.get_children():
+                self.search_tree.delete(item)
+            
+            self.status_var.set("Search cleared")
+            logger.debug("Search cleared")
+        except Exception as e:
+            logger.error(f"Failed to clear search: {e}")
+
+    def _filter_by_type(self, media_type: str) -> None:
+        """Filter media by type."""
+        try:
+            self.notebook.select(2)  # Switch to search tab
+            self.search_panel.clear_filters()
+            self.search_panel.type_filter_var.set(media_type)
+            self._perform_search()
+            self.status_var.set(f"Filtered by type: {media_type}")
+        except Exception as e:
+            logger.error(f"Error filtering by type: {e}")
+            messagebox.showerror("Error", f"Failed to filter by type: {e}")
+
+    def _filter_by_location(self, location_id: int) -> None:
+        """Filter media by location."""
+        try:
+            self.notebook.select(2)  # Switch to search tab
+            self.search_panel.clear_filters()
+            
+            # Find location string
+            locations = self.location_service.get_all_locations()
+            for loc in locations:
+                if loc.id == location_id:
+                    self.search_panel.location_filter_var.set(f"{loc.id}: {loc}")
+                    break
+            
+            self._perform_search()
+            self.status_var.set(f"Filtered by location: {location_id}")
+        except Exception as e:
+            logger.error(f"Error filtering by location: {e}")
+            messagebox.showerror("Error", f"Failed to filter by location: {e}")
+
+    def _clear_all_filters(self) -> None:
+        """Clear all filters."""
+        try:
+            self.search_panel.clear_filters()
+            
+            # Clear results
+            for item in self.search_tree.get_children():
+                self.search_tree.delete(item)
+            
+            self.status_var.set("All filters cleared")
+            logger.debug("All filters cleared")
+        except Exception as e:
+            logger.error(f"Error clearing filters: {e}")
+
+    def _show_all_media(self) -> None:
+        """Show all media."""
+        try:
+            self.notebook.select(0)  # Switch to media tab
+            self._refresh_media_list()
+            self.status_var.set("Showing all media")
+        except Exception as e:
+            logger.error(f"Error showing all media: {e}")
+            messagebox.showerror("Error", f"Failed to show all media: {e}")
 
     def run(self) -> None:
         """Start the application."""

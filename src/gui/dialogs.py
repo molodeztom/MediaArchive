@@ -2,6 +2,10 @@
 
 This module provides dialog windows for adding, editing, and deleting media items
 with form validation and error handling.
+
+History:
+20260307  V1.0: Initial implementation with media dialogs
+20260307  V1.1: Added location management dialogs
 """
 
 import logging
@@ -19,6 +23,7 @@ from models.media import Media
 from models.location import StorageLocation
 from models.enums import MediaType
 from utils.exceptions import ValidationError, NotFoundError
+from utils.config import MAX_BOX_LENGTH, MAX_PLACE_LENGTH, MAX_DETAIL_LENGTH
 
 logger = logging.getLogger(__name__)
 
@@ -600,6 +605,361 @@ Expires: {self.media.valid_until_date or "N/A"}
         except Exception as e:
             messagebox.showerror("Error", f"Failed to delete media: {e}")
             logger.error(f"Error in DeleteConfirmDialog._confirm: {e}")
+
+    def _cancel(self) -> None:
+        """Cancel and close dialog."""
+        self.result = None
+        self.destroy()
+
+
+class AddLocationDialog(BaseDialog):
+    """Dialog for adding new storage locations.
+    
+    Provides form fields for location attributes with validation.
+    """
+
+    def __init__(
+        self,
+        parent: tk.Widget,
+        on_save: Optional[Callable[[StorageLocation], None]] = None,
+    ) -> None:
+        """Initialize add location dialog.
+        
+        Args:
+            parent: Parent window.
+            on_save: Optional callback when location is saved.
+        """
+        super().__init__(parent, "Add New Location")
+        self.on_save = on_save
+        self.result = None
+        
+        # Create form
+        self._create_form()
+        
+        logger.debug("AddLocationDialog initialized")
+
+    def _create_form(self) -> None:
+        """Create form fields."""
+        # Main frame with padding
+        main_frame = ttk.Frame(self, padding=10)
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Box field
+        ttk.Label(main_frame, text="Box *").grid(row=0, column=0, sticky=tk.W, pady=5)
+        self.box_var = tk.StringVar()
+        box_entry = ttk.Entry(main_frame, textvariable=self.box_var, width=40)
+        box_entry.grid(row=0, column=1, sticky=tk.EW, pady=5)
+        
+        # Place field
+        ttk.Label(main_frame, text="Place *").grid(row=1, column=0, sticky=tk.W, pady=5)
+        self.place_var = tk.StringVar()
+        place_entry = ttk.Entry(main_frame, textvariable=self.place_var, width=40)
+        place_entry.grid(row=1, column=1, sticky=tk.EW, pady=5)
+        
+        # Detail field
+        ttk.Label(main_frame, text="Detail").grid(row=2, column=0, sticky=tk.NW, pady=5)
+        self.detail_var = tk.StringVar()
+        detail_text = tk.Text(main_frame, height=4, width=40)
+        detail_text.grid(row=2, column=1, sticky=tk.EW, pady=5)
+        self.detail_text = detail_text
+        
+        # Configure grid weights
+        main_frame.columnconfigure(1, weight=1)
+        
+        # Buttons frame
+        button_frame = ttk.Frame(self)
+        button_frame.pack(fill=tk.X, padx=10, pady=10)
+        
+        ttk.Button(button_frame, text="Save", command=self._save).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="Cancel", command=self._cancel).pack(side=tk.LEFT, padx=5)
+        
+        # Set minimum size
+        self.geometry("400x250")
+
+    def _save(self) -> None:
+        """Save location and close dialog."""
+        try:
+            # Get values
+            box = self.box_var.get().strip()
+            place = self.place_var.get().strip()
+            detail = self.detail_text.get("1.0", tk.END).strip() or None
+            
+            # Validate required fields
+            if not box:
+                messagebox.showwarning("Validation Error", "Box name is required")
+                return
+            
+            if not place:
+                messagebox.showwarning("Validation Error", "Place is required")
+                return
+            
+            # Validate lengths
+            if len(box) > MAX_BOX_LENGTH:
+                messagebox.showerror("Validation Error", f"Box name exceeds {MAX_BOX_LENGTH} characters")
+                return
+            
+            if len(place) > MAX_PLACE_LENGTH:
+                messagebox.showerror("Validation Error", f"Place exceeds {MAX_PLACE_LENGTH} characters")
+                return
+            
+            if detail and len(detail) > MAX_DETAIL_LENGTH:
+                messagebox.showerror("Validation Error", f"Detail exceeds {MAX_DETAIL_LENGTH} characters")
+                return
+            
+            # Create location object
+            location = StorageLocation(
+                box=box,
+                place=place,
+                detail=detail,
+            )
+            
+            self.result = location
+            
+            if self.on_save:
+                self.on_save(location)
+            
+            logger.info(f"Location added: {location}")
+            self.destroy()
+            
+        except ValidationError as e:
+            messagebox.showerror("Validation Error", str(e))
+            logger.warning(f"Validation error in AddLocationDialog: {e}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to save location: {e}")
+            logger.error(f"Error in AddLocationDialog._save: {e}")
+
+    def _cancel(self) -> None:
+        """Cancel and close dialog."""
+        self.result = None
+        self.destroy()
+
+
+class EditLocationDialog(BaseDialog):
+    """Dialog for editing existing storage locations.
+    
+    Provides form fields pre-populated with current location data.
+    """
+
+    def __init__(
+        self,
+        parent: tk.Widget,
+        location: StorageLocation,
+        on_save: Optional[Callable[[StorageLocation], None]] = None,
+    ) -> None:
+        """Initialize edit location dialog.
+        
+        Args:
+            parent: Parent window.
+            location: Location object to edit.
+            on_save: Optional callback when location is saved.
+        """
+        super().__init__(parent, f"Edit Location: {location.box}")
+        self.location = location
+        self.on_save = on_save
+        self.result = None
+        
+        # Create form
+        self._create_form()
+        
+        logger.debug(f"EditLocationDialog initialized for location: {location.id}")
+
+    def _create_form(self) -> None:
+        """Create form fields with existing data."""
+        # Main frame with padding
+        main_frame = ttk.Frame(self, padding=10)
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Box field
+        ttk.Label(main_frame, text="Box *").grid(row=0, column=0, sticky=tk.W, pady=5)
+        self.box_var = tk.StringVar(value=self.location.box)
+        box_entry = ttk.Entry(main_frame, textvariable=self.box_var, width=40)
+        box_entry.grid(row=0, column=1, sticky=tk.EW, pady=5)
+        
+        # Place field
+        ttk.Label(main_frame, text="Place *").grid(row=1, column=0, sticky=tk.W, pady=5)
+        self.place_var = tk.StringVar(value=self.location.place)
+        place_entry = ttk.Entry(main_frame, textvariable=self.place_var, width=40)
+        place_entry.grid(row=1, column=1, sticky=tk.EW, pady=5)
+        
+        # Detail field
+        ttk.Label(main_frame, text="Detail").grid(row=2, column=0, sticky=tk.NW, pady=5)
+        detail_text = tk.Text(main_frame, height=4, width=40)
+        detail_text.insert("1.0", self.location.detail or "")
+        detail_text.grid(row=2, column=1, sticky=tk.EW, pady=5)
+        self.detail_text = detail_text
+        
+        # Configure grid weights
+        main_frame.columnconfigure(1, weight=1)
+        
+        # Buttons frame
+        button_frame = ttk.Frame(self)
+        button_frame.pack(fill=tk.X, padx=10, pady=10)
+        
+        ttk.Button(button_frame, text="Save", command=self._save).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="Cancel", command=self._cancel).pack(side=tk.LEFT, padx=5)
+        
+        # Set minimum size
+        self.geometry("400x250")
+
+    def _save(self) -> None:
+        """Save location changes and close dialog."""
+        try:
+            # Get values
+            box = self.box_var.get().strip()
+            place = self.place_var.get().strip()
+            detail = self.detail_text.get("1.0", tk.END).strip() or None
+            
+            # Validate required fields
+            if not box:
+                messagebox.showwarning("Validation Error", "Box name is required")
+                return
+            
+            if not place:
+                messagebox.showwarning("Validation Error", "Place is required")
+                return
+            
+            # Validate lengths
+            if len(box) > MAX_BOX_LENGTH:
+                messagebox.showerror("Validation Error", f"Box name exceeds {MAX_BOX_LENGTH} characters")
+                return
+            
+            if len(place) > MAX_PLACE_LENGTH:
+                messagebox.showerror("Validation Error", f"Place exceeds {MAX_PLACE_LENGTH} characters")
+                return
+            
+            if detail and len(detail) > MAX_DETAIL_LENGTH:
+                messagebox.showerror("Validation Error", f"Detail exceeds {MAX_DETAIL_LENGTH} characters")
+                return
+            
+            # Update location object
+            self.location.box = box
+            self.location.place = place
+            self.location.detail = detail
+            
+            self.result = self.location
+            
+            if self.on_save:
+                self.on_save(self.location)
+            
+            logger.info(f"Location updated: {self.location.id}")
+            self.destroy()
+            
+        except ValidationError as e:
+            messagebox.showerror("Validation Error", str(e))
+            logger.warning(f"Validation error in EditLocationDialog: {e}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to save location: {e}")
+            logger.error(f"Error in EditLocationDialog._save: {e}")
+
+    def _cancel(self) -> None:
+        """Cancel and close dialog."""
+        self.result = None
+        self.destroy()
+
+
+class DeleteLocationConfirmDialog(BaseDialog):
+    """Dialog for confirming location deletion.
+    
+    Shows location details and asks for confirmation before deletion.
+    """
+
+    def __init__(
+        self,
+        parent: tk.Widget,
+        location: StorageLocation,
+        media_count: int = 0,
+        on_confirm: Optional[Callable[[StorageLocation], None]] = None,
+    ) -> None:
+        """Initialize delete confirmation dialog.
+        
+        Args:
+            parent: Parent window.
+            location: Location object to delete.
+            media_count: Number of media items in this location.
+            on_confirm: Optional callback when deletion is confirmed.
+        """
+        super().__init__(parent, "Confirm Delete Location")
+        self.location = location
+        self.media_count = media_count
+        self.on_confirm = on_confirm
+        self.result = None
+        
+        # Create content
+        self._create_content()
+        
+        logger.debug(f"DeleteLocationConfirmDialog initialized for location: {location.id}")
+
+    def _create_content(self) -> None:
+        """Create dialog content."""
+        # Main frame with padding
+        main_frame = ttk.Frame(self, padding=20)
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Warning icon and message
+        warning_frame = ttk.Frame(main_frame)
+        warning_frame.pack(fill=tk.X, pady=10)
+        
+        ttk.Label(warning_frame, text="⚠", font=("TkDefaultFont", 24)).pack(side=tk.LEFT, padx=10)
+        ttk.Label(
+            warning_frame,
+            text="Are you sure you want to delete this location?",
+            font=("TkDefaultFont", 12, "bold")
+        ).pack(side=tk.LEFT, padx=10)
+        
+        # Location details
+        details_frame = ttk.LabelFrame(main_frame, text="Location Details", padding=10)
+        details_frame.pack(fill=tk.X, pady=10)
+        
+        details_text = f"""
+Box: {self.location.box}
+Place: {self.location.place}
+Detail: {self.location.detail or "N/A"}
+Media items in location: {self.media_count}
+        """.strip()
+        
+        ttk.Label(details_frame, text=details_text, justify=tk.LEFT).pack(fill=tk.X)
+        
+        # Warning message
+        if self.media_count > 0:
+            warning_label = ttk.Label(
+                main_frame,
+                text=f"Warning: This location contains {self.media_count} media item(s).\nDeleting this location will not delete the media items.",
+                foreground="red",
+                font=("TkDefaultFont", 10)
+            )
+        else:
+            warning_label = ttk.Label(
+                main_frame,
+                text="This action cannot be undone.",
+                foreground="red",
+                font=("TkDefaultFont", 10)
+            )
+        warning_label.pack(pady=10)
+        
+        # Buttons frame
+        button_frame = ttk.Frame(self)
+        button_frame.pack(fill=tk.X, padx=10, pady=10)
+        
+        ttk.Button(button_frame, text="Delete", command=self._confirm).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="Cancel", command=self._cancel).pack(side=tk.LEFT, padx=5)
+        
+        # Set size
+        self.geometry("450x300")
+
+    def _confirm(self) -> None:
+        """Confirm deletion and close dialog."""
+        try:
+            self.result = self.location
+            
+            if self.on_confirm:
+                self.on_confirm(self.location)
+            
+            logger.info(f"Location deletion confirmed: {self.location.id}")
+            self.destroy()
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to delete location: {e}")
+            logger.error(f"Error in DeleteLocationConfirmDialog._confirm: {e}")
 
     def _cancel(self) -> None:
         """Cancel and close dialog."""
