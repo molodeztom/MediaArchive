@@ -1,0 +1,44 @@
+# Media Archive Manager - Python Dependencies
+# 
+# Core application uses only Python standard library.
+# Development dependencies are optional.
+
+# ============================================================================
+# Core Dependencies (Required)
+# ============================================================================
+# None - all core functionality uses Python standard library
+
+# ============================================================================
+# Development Dependencies (Optional)
+# ============================================================================
+# Uncomment to install development tools
+
+# Testing
+# pytest>=7.0.0
+# pytest-cov>=4.0.0
+
+# Code formatting and linting
+# black>=23.0.0
+# flake8>=6.0.0
+# mypy>=1.0.0
+
+# ============================================================================
+# Notes
+# ============================================================================
+# 
+# This project intentionally minimizes external dependencies to:
+# - Reduce installation complexity
+# - Minimize security vulnerabilities
+# - Improve startup performance
+# - Simplify deployment
+#
+# All core features use Python 3.10+ standard library:
+# - sqlite3: Database
+# - tkinter: GUI
+# - csv: Import/Export
+# - logging: Application logging
+# - datetime: Date/time handling
+# - pathlib: File path handling
+# - typing: Type hints
+# - dataclasses: Data models
+# - enum: Enumerations

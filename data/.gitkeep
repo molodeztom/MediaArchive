@@ -1,0 +1,3 @@
+# This file ensures the data/ directory is tracked by git
+# The database file (media_archive.db) will be created here at runtime
+# and should be added to .gitignore
