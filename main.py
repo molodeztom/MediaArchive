@@ -5,12 +5,14 @@ This module initializes the application, sets up logging, and starts the GUI.
 
 import logging
 import sys
+import tkinter as tk
 from pathlib import Path
 
 # Add src directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from utils.config import LOG_FILE, LOG_LEVEL, APP_NAME, APP_VERSION
+from gui.main_window import MainWindow
 
 
 def setup_logging() -> None:
@@ -43,24 +45,15 @@ def main() -> None:
         logger = logging.getLogger(__name__)
         
         logger.info("Application initialized successfully")
-        logger.info("Phase 1: Project Setup - Complete")
-        logger.info("Next: Phase 2 - Database Layer Implementation")
         
-        print(f"\n{APP_NAME} v{APP_VERSION}")
-        print("=" * 50)
-        print("Phase 1: Project Setup - Complete ✓")
-        print("\nProject structure created:")
-        print("  ✓ src/models/ - Data models (Media, StorageLocation, MediaType)")
-        print("  ✓ src/utils/ - Configuration and exceptions")
-        print("  ✓ tests/ - Test suite directory")
-        print("  ✓ data/ - Database directory")
-        print("  ✓ requirements.txt - Dependencies (minimal)")
-        print("\nNext steps:")
-        print("  1. Phase 2: Implement database layer")
-        print("  2. Phase 3: Implement business logic")
-        print("  3. Phase 4: Implement GUI")
-        print("\nFor more information, see docs/TASKS.md")
-        print("=" * 50 + "\n")
+        # Create root window
+        root = tk.Tk()
+        
+        # Create main window
+        app = MainWindow(root)
+        
+        # Run application
+        app.run()
         
     except Exception as e:
         logger = logging.getLogger(__name__)
