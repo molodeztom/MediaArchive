@@ -75,6 +75,7 @@ class TestAddMediaDialog(unittest.TestCase):
         
         # Check that form variables exist
         self.assertIsNotNone(dialog.name_var)
+        self.assertIsNotNone(dialog.media_type_var)
         self.assertIsNotNone(dialog.type_var)
         self.assertIsNotNone(dialog.company_var)
         self.assertIsNotNone(dialog.license_var)
@@ -94,7 +95,7 @@ class TestAddMediaDialog(unittest.TestCase):
         """Test validation for empty name."""
         dialog = AddMediaDialog(self.root, self.locations)
         dialog.name_var.set("")
-        dialog.type_var.set("CD")
+        dialog.media_type_var.set("CD")
         
         with patch('tkinter.messagebox.showwarning'):
             dialog._save()
@@ -103,22 +104,23 @@ class TestAddMediaDialog(unittest.TestCase):
         dialog.destroy()
 
     def test_add_media_dialog_validation_empty_type(self) -> None:
-        """Test validation for empty media type."""
+        """Test that empty media type defaults to 'Unknown'."""
         dialog = AddMediaDialog(self.root, self.locations)
         dialog.name_var.set("Test Media")
-        dialog.type_var.set("")
+        dialog.media_type_var.set("")
         
-        with patch('tkinter.messagebox.showwarning'):
-            dialog._save()
+        dialog.on_save = Mock()
+        dialog._save()
         
-        self.assertIsNone(dialog.result)
+        self.assertIsNotNone(dialog.result)
+        self.assertEqual(dialog.result.media_type, "Unknown")
         dialog.destroy()
 
     def test_add_media_dialog_invalid_date_format(self) -> None:
         """Test validation for invalid date format."""
         dialog = AddMediaDialog(self.root, self.locations)
         dialog.name_var.set("Test Media")
-        dialog.type_var.set("CD")
+        dialog.media_type_var.set("CD")
         dialog.creation_date_var.set("invalid-date")
         
         with patch('tkinter.messagebox.showerror'):
@@ -131,7 +133,7 @@ class TestAddMediaDialog(unittest.TestCase):
         """Test validation for valid date format."""
         dialog = AddMediaDialog(self.root, self.locations)
         dialog.name_var.set("Test Media")
-        dialog.type_var.set("CD")
+        dialog.media_type_var.set("CD")
         dialog.creation_date_var.set("2024-01-15")
         
         # Mock the on_save callback
@@ -150,7 +152,7 @@ class TestAddMediaDialog(unittest.TestCase):
         dialog = AddMediaDialog(self.root, self.locations, on_save=callback)
         
         dialog.name_var.set("Test Media")
-        dialog.type_var.set("DVD")
+        dialog.media_type_var.set("DVD")
         
         dialog._save()
         
@@ -202,7 +204,7 @@ class TestEditMediaDialog(unittest.TestCase):
         dialog = EditMediaDialog(self.root, self.media, self.locations)
         
         self.assertEqual(dialog.name_var.get(), "Test Media")
-        self.assertEqual(dialog.type_var.get(), "CD")
+        self.assertEqual(dialog.media_type_var.get(), "CD")
         self.assertEqual(dialog.company_var.get(), "Test Company")
         self.assertEqual(dialog.license_var.get(), "ABC123")
         
@@ -219,7 +221,7 @@ class TestEditMediaDialog(unittest.TestCase):
         dialog = EditMediaDialog(self.root, self.media, self.locations)
         
         dialog.name_var.set("Updated Media")
-        dialog.type_var.set("DVD")
+        dialog.media_type_var.set("DVD")
         
         # Mock the on_save callback
         dialog.on_save = Mock()
@@ -327,7 +329,7 @@ class TestDialogIntegration(unittest.TestCase):
         # Add media
         add_dialog = AddMediaDialog(self.root, self.locations)
         add_dialog.name_var.set("Workflow Test")
-        add_dialog.type_var.set("CD")
+        add_dialog.media_type_var.set("CD")
         add_dialog.on_save = Mock()
         
         add_dialog._save()

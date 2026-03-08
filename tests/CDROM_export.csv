@@ -1,0 +1,674 @@
+"ID";"Name";"Firma";"Box";"Position";"Code";"Art";"Bemerkung";"Datum";"Verfällt am"
+1;"Bookshelf 94";"Microsoft";9;0;;;;;
+2;"CorelDraw 1";;9;0;;;;;
+3;"CorelDraw 2";;9;0;;;;;
+4;"Win ON CD";;9;0;;;;;
+5;"Eigene Dateien und Download 2004 8";;9;0;;"Archiv";;3.8.2004 00:00:00;
+6;"Charge Manager";"Conrad";9;6;;;;;
+7;"Download und eigene Dateien 03.05.10";"Backup";9;0;;"Archiv";;;
+10;"EZ Language";"IMSI";9;0;;;;;
+11;"Kartenleser";"Easy Check";7;0;;;;;
+12;"Falcon 4.0";"Microprose";3;30;;;;;
+14;"Drive Image C: (2DVD)";;9;;;"Image";;27.4.2005 00:00:00;30.4.2007 00:00:00
+15;"Game Star Archiv 2002";"Gamestar";1;25;;"Archiv";;30.12.2004 00:00:00;30.12.2007 00:00:00
+16;"Encarta 99 1";"Microsoft";9;9;;"Nachschlagewerke";;;
+17;"Encarta 99 2";"Microsoft";9;10;;"Nachschlagewerke";;;
+18;"Labels Unlimited";"Tewi";6;14;;;;;1.1.3000 00:00:00
+19;"Project 2000";"Microsoft";9;0;;;;;
+20;"Supermemo: Multilingual Kopie";;9;3;;;;;
+21;"Palm Install III";"Palm";6;19;;"Programm";;30.12.2004 00:00:00;30.12.2012 00:00:00
+22;"Microsoft Windows SP2";"Microsoft";9;0;;;"noch nicht einsortiert";;
+24;"Quick Office CD1 2004 (Steuer)";"Lexware";9;0;;;;;
+25;"Redshift Planetarium";;1;11;;"Nachschlagewerk";;;
+26;"Eigene Dateien und Download";;9;23;;"Archiv";;1.8.2004 00:00:00;
+27;"Francais Un";"Systhema";6;22;;;;;1.1.3000 00:00:00
+28;"Total Annihilation: Add On´s";;6;7;;;;30.12.2004 00:00:00;1.1.3000 00:00:00
+29;"True Type Schriften";"Will Software";7;0;;;;;
+30;"V-Rally";;9;0;;;;;
+31;"Win 98SE";"Microsoft";9;0;;;;;
+32;"Win 98 Plus";"Microsoft";9;0;;;;;
+33;"2001/10 Video CD";"Game Star";9;33;;;;;
+34;"CD-Beschriftung";"Zweckform";7;0;;;;;
+35;"2001/11 Demo CD";"Game Star";9;35;;;;;
+38;"Scanner";"Primax";7;14;;;;;
+39;"Music Test";"Testmaster";9;0;;;;;
+40;"CT Plus Rom: 2001 1-13";"ct";12;10;;"Archiv";;;
+41;"CT Plus Rom: 1997";"ct";12;1;;"Archiv";;;
+42;"CT Plus Rom: 1998";"ct";12;8;;"Archiv";;;
+43;"CT Plus Rom: 1999";"ct";12;7;;"Archiv";;;
+44;"CT Plus Rom: 1999 1-13";"ct";12;6;;"Archiv";;;
+45;"CT Plus Rom: 2000 1-13";"ct";12;5;;"Archiv";;;
+46;"CT Plus Rom: 2000 4-26";"ct";12;4;;"Archiv";;;
+48;"Spezial CD 99";"Game Star";7;2;;;;;
+51;"Visual Studio 2010 pro Engl";"Microsoft";15;65;;"Programm";;8.9.2010 00:00:00;1.1.2012 00:00:00
+52;"MoBiDic: Ungarisch Wörterbuch";;9;27;;"Nachschlagewerk";;30.12.2004 00:00:00;30.12.2006 00:00:00
+53;"PicDic: Ungarisch Bildwörterbuch";;9;26;;"Nachschlagewerk";;30.12.2004 00:00:00;30.12.2007 00:00:00
+54;"How To Survive In Russia";;9;0;;;;;
+55;"Power Route Europa";;9;0;;;;;
+56;"Power Route 2 Deutschland";;9;0;;;;;
+57;"Global Xplorer";"De Lorme";9;7;;"Nachschlagewerke";;;
+58;"Encarte Recherche";"Microsoft";7;19;;;;;
+59;"Grafik Shareware 2000 10";"PC Direkt";7;59;;;;;
+60;"Music Shareware 2000 11";"PC Direkt";7;60;;;;;
+61;"Gabriel Knight: The Beast Within 1";;0;20;;;;;
+62;"Gabriel Knight: The Beast Within 2";;0;20;;;;;
+63;"Gabriel Knight: The Beast Within 3";;0;20;;;;;
+64;"Gabriel Knight: The Beast Within 4";;0;20;;;;;
+65;"Gabriel Knight: The Beast Within 5";;0;20;;;;;
+66;"Gabriel Knight: The Beast Within 6";;0;20;;;;;
+67;"Krypto Vortrag";;6;4;;;;;1.1.3000 00:00:00
+68;"Backup alle Fotos";;9;0;;"Archiv";;21.5.2005 00:00:00;31.12.2006 00:00:00
+69;"Harddisk SMART Diagnose";"Western Digital";9;28;;"Program";;1.1.2010 00:00:00;1.1.2011 00:00:00
+70;"Drive Image AT64 C: (2DVD)";"Backup";9;0;;"Image";;27.12.2005 00:00:00;31.1.2009 00:00:00
+71;"Sanitarium: Disk 1";;3;27;;;;;
+72;"Sanitarium: Disk 2";;3;28;;;;;
+73;"Sanitarium: Disk 3";;3;29;;;;;
+74;"Wing Commander: Prophecy Disk 1";;9;0;;;;;
+75;"Wing Commander: Prophecy Disk 2";;9;0;;;;;
+76;"Wing Commander: Prophecy Disk 3";;9;0;;;;;
+77;"99/3 Video Special";"Game Star";9;21;;;;;
+78;"99/3 Bonus CD";"Game Star";9;21;;;;;
+79;"99/4 Bonus CD";"Game Star";9;22;;;;;
+80;"99/4 Video CD";"Game Star";9;22;;;;;
+81;"99/5 Video CD";"Game Star";9;23;;;;;
+82;"99/5 Bonus CD";"Game Star";7;0;;;;;
+83;"99/9 Video CD";"Game Star";9;24;;;;;
+84;"99/9Bonus CD";"Game Star";9;0;;;;;
+85;"99/10 Video CD";"Game Star";9;25;;;;;
+86;"99/10 Bonus CD";"Game Star";9;25;;;;;
+87;"99/10 Exclusiv Video";"Game Star";9;25;;;;;
+88;"99/12 Video CD";"Game Star";9;26;;;;;
+89;"99/12 Bonus CD";"Game Star";9;26;;;;;
+90;"2000/1 Video CD";"Game Star";9;0;;;;;
+91;"2000/1 Bonus CD";"Game Star";9;0;;;;;
+92;"2000/1 Video CD";"Game Star";9;0;;;;;
+93;"2000/2 Bonus CD";"Game Star";9;0;;;;;
+94;"2000/3 Video CD";"Game Star";9;0;;;;;
+95;"2000/3 Bonus CD";"Game Star";9;0;;;;;
+96;"2000/4 Video CD";"Game Star";9;0;;;;;
+97;"2000/4 Bonus CD";"Game Star";9;0;;;;;
+98;"2000/5 Video CD";"Game Star";9;0;;;;;
+99;"2000/5 Bonus CD";"Game Star";9;0;;;;;
+100;"2000/6 Video CD";"Game Star";9;0;;;;;
+101;"Visio Professional Disc 1";;9;0;"050306-00276";;;;
+102;"Visio Professional Disc 2";;9;0;"050306-00276";;;;
+103;"MP3 Deep Purple";;9;0;;;;;
+104;"MP3 Pink Floyd";;9;66;;;;;
+105;"Supermemo World Div.";;6;20;;;;30.12.2004 00:00:00;1.1.2015 00:00:00
+106;"Labels Unlimited alte Version";"Tewi";9;6;;;;;
+107;"leer";;2;27;;;;;
+108;"Fine Reader 4";;4;18;;;;;
+109;"Boot CD Rettungs CD Backup Manager";"Genie Backup Manager";15;66;;"Backup";;30.12.2008 00:00:00;1.1.2030 00:00:00
+117;"Shareware 1/12/00";"ct";9;0;;;;;
+118;"Shareware 1/14/00";"ct";9;0;;;;;
+119;"2001/9 Bonus CD";"Game Star";9;58;;;;;
+120;"2000/12 Bonus CD";"Game Star";7;60;;;;;
+121;"Age of Empires I";"Microsoft";3;1;;;;;
+122;"Age of Empires II";"Microsoft";3;2;;;;;
+123;"C&C Der Tiberiumskonflikt Disk 1";"Command & Conquer";3;3;;;;;
+124;"C&C Der Tiberiumskonflikt Disk 2";"Command & Conquer";3;4;;;;;
+125;"Dark Reign 2";;9;5;;;;;
+126;"Devil Inside";;9;6;;;;;
+127;"Diablo";;9;7;;;;;
+128;"Daikatana";;9;8;;;;;
+129;"Dogs of War";;9;9;;;;;
+130;"Dungeon Keeper 2";;3;5;;;;;
+131;"Earth 2150 Disk 1";;3;6;;;;;
+132;"Earth 2150 Disk 2";;3;7;;;;;
+133;"Flight Simulator 98";"Microsoft";3;8;;;;;
+134;"Half Life 3 in 1";;9;14;;;;;
+135;"Homeworld";;9;15;;;;;
+136;"Messiah";;9;16;;;;;
+137;"Moto Cross Madness 2";;9;17;;;;;
+138;"Moto Racer";;9;18;;;;;
+139;"Need for Speed";;9;0;;"Spiel";;30.12.2004 00:00:00;30.12.2005 00:00:00
+140;"Quake 2";;9;0;;;;;
+141;"Railroad Tycoon";;3;9;;;;;
+142;"Roller Coaster Tycoon";;3;10;;;;;
+143;"Thema Park World";;3;11;;;;;
+144;"Download Mai 2002";"Archiv";9;0;;"Archiv";;;
+145;"Schleichfahrt";;9;22;;;;;
+146;"Transport Tycoon Deluxe";;3;12;;;;;
+147;"Tycoon Collection Handbücher";;3;13;;;;;
+148;"Office 2000 Alle CDs";"Microsoft";6;12;;;;;1.1.3000 00:00:00
+149;"Rollcage";;9;0;;;;;
+150;"Sim City 3000";;3;14;;;;;
+151;"Star Craft";;4;1;;;;;
+152;"Star Craft Expansion Set";;4;2;;;;;
+153;"System Shock";;5;1;;;;;
+154;"Sudden Strike: Disk1";;9;16;;;;;
+155;"Sudden Strike: Disk 2";;9;17;;;;;
+156;"Tex Murphy Overseer: Disk1";;9;29;;;;;
+157;"Tex Murphy Overseer: Disk2";;9;30;;;;;
+158;"Tex Murphy Overseer: Disk3";;9;31;;;;;
+159;"Tex Murphy Overseer: Disk4";;9;32;;;;;
+160;"Tex Murphy Overseer: Disk5";;9;33;;;;;
+161;"Total Annihilation Disk1";;3;16;;;;;
+162;"Total Annihilation Disk2";;3;17;;;;;
+163;"Total Annihilation Battle Tactics";;3;18;;;;;
+164;"Total Annihilation Core Offensive";;3;19;;;;;
+165;"Total Annihilation Antologie";;9;38;;;;;
+166;"The Sims";;3;20;"4512-3754567-8707440-5989";;;;
+167;"The Sims: Das volle Leben";;3;21;;;;;
+168;"Tomb Raider II";;9;0;;;;;
+169;"Turok";;3;22;;;;;
+170;"Unreal";;3;23;;;;;
+171;"Unreal: Return To Napali";;3;24;;;;;
+172;"Die Völker";;9;44;;;;;
+173;"Collin Mc Rae Rally";;9;45;;;;;
+174;"Drive Image C: Sicherung";;9;0;;"Image";;7.3.2005 00:00:00;
+175;"Download Sept 01 (RW)";"Archiv";9;0;;"Archiv";;;
+176;"leer";;2;29;;"Temp";;;
+177;"Drive Image Bootdisk mit Image C:";"Archiv";9;0;;"Image";;;
+178;"2001/9 Video CD";"Game Star";9;59;;;;;
+179;"Collin Mc Rae Rally II";;3;31;;;;;
+180;"Eigene Dateien, Outlook 2001";"Archiv";9;0;;"Archiv";;;
+181;"Advance Bank HBCI Software";;7;0;;;;;
+182;"HAC Tronic";"Ciclo Sport";9;0;;;;;
+183;"Nero 5";;9;0;;;;;
+184;"IntellySync Palm";"Puma";9;2;"PUMA40717";;;;
+185;"Win 98 installierbar kein Boot";"Microsoft";9;0;;;;;
+186;"Game Star Archiv 2001";"Gamestar";1;24;;"Archiv";;;
+187;"Vogelführer";"Kosmos";1;8;;"Nachschlagewerke";;;
+188;"Lexikon des Films 99/00";;9;0;;"Nachschlagewerke";;;
+189;"Visual Studio Proff. 6.0";"Microsoft";9;0;;;;;
+190;"Fullbackup A64 2005/11";"Backup";9;0;;"Backup";;22.11.2005 00:00:00;1.12.2007 00:00:00
+191;"Mind Manager 4.0";"MindJet";15;63;;"Programm";;30.12.2004 00:00:00;30.12.2015 00:00:00
+192;"2001/10 Demo CD";"Game Star";9;34;;;;;
+193;"Die Siedler CD2";"Blue Byte";9;0;;;;;
+194;"ct software kollektion 2002/2";"ct";7;0;;"Programm";;;
+195;"Win 98";;9;0;;;;;
+196;"Quick Office 2003 CD 1-3";"Lexware";9;0;;"Programm";;30.12.2004 00:00:00;30.12.2005 00:00:00
+197;"CT Plus Rom: 2001 14-26";"ct";12;11;;"Archiv";;;
+198;"Kochen für Singles";;7;0;;;;;
+199;"Sicherung 2006/1 Eig Dat, Quicken, ACDC, Download";;40;10;;"Archiv";"DVD199_404_407_575";5.1.2006 00:00:00;1.1.2010 00:00:00
+203;"Die Siedler CD1";"Blue Byte";9;0;"1126-5920-0504-0353-3093";;;;
+204;"Grundstock des Wissens (z. Buch)";;9;6;;"Nachschlagewerke";;;
+205;"Download 2002/04";;9;0;;"Archiv";"Alles aus Downloadverzeichnis";5.4.2002 00:00:00;
+207;"2000/6 Bonus CD";"Game Star";9;0;;;;;
+208;"2000/7 Video CD";"Game Star";9;0;;;;;
+209;"2000/7 Bonus CD";"Game Star";9;0;;;;;
+210;"2000/8 Video CD";"Game Star";9;0;;;;;
+211;"2000/8 Bonus CD";"Game Star";9;0;;;;;
+212;"2000/12";"Game Star";7;46;;;;;
+213;"Fullbackup A64 06/02";"Backup";15;2;;"Backup";;8.2.2006 00:00:00;1.6.2007 00:00:00
+215;"Descent 3 Disc 1";;3;25;;;;;
+216;"Descent 3 Disc 2";;3;26;;;;;
+217;"2001/1 Video CD";"Game Star";9;3;;;;;
+218;"2001/1 Bonus CD";"Game Star";9;4;;;;;
+219;"2001/2 Video CD";"Game Star";9;5;;;;;
+220;"2001/2 Bonus CD";"Game Star";9;6;;;;;
+222;"2001/7 Video CD";"Game Star";9;17;;;;;
+223;"2001/7 Bonus CD";"Game Star";9;18;;;;;
+224;"2001/5 Video CD";"Game Star";9;19;;;;;
+225;"2001/5 Bonus CD";"Game Star";9;20;;;;;
+226;"2001/3 Special CD";"Game Star";9;21;;;;;
+227;"2001/6 Video CD";"Game Star";9;22;;;;;
+228;"2001/6 Bonus CD";"Game Star";9;23;;;;;
+229;"2001/3 Video CD";"Game Star";9;24;;;;;
+230;"2001/3 Demo CD F1 Racing";"Game Star";9;25;;;;;
+231;"2001/4 Video CD";"Game Star";9;26;;;;;
+232;"2001/4 Demo CD Gothic";"Game Star";9;27;;;;;
+233;"2001/8 Video  CD";"Game Star";9;28;;;;;
+234;"2001/8 Demo CD";"Game Star";9;29;;;;;
+237;"Fullbackup A64 06/10";"Backup";15;6;;"Backup";;26.10.2006 00:00:00;1.12.2008 00:00:00
+238;"CT Freeware 12/2001";"ct";7;0;;;;;
+239;"Unreal Tournament";"EPIC";3;36;;"Spiel";;30.12.2004 00:00:00;
+240;"Fullbackup A64 06/12";"Backup";15;7;;"Backup";;3.12.2006 00:00:00;1.1.2009 00:00:00
+241;"CT Plus Rom: 2002 1-13";"ct";12;12;;"Archiv";;;
+242;"ct Software kollektion 2002/1";"ct";9;0;;"Programm";;;
+243;"Download & Eigene Dateien 12/2002";"Backup";9;0;;"Archiv";;;
+244;"Fullbackup 2001/11";;9;0;;"Backup";;1.12.2001 00:00:00;1.1.3000 00:00:00
+245;"MSDN Library 6/2000 engl.Install";"Microsoft";7;0;;;;;
+246;"MSDN Library 6/2000 engl.Disk 2";"Microsoft";7;0;;;;;
+247;"MSDN Library 6/2000 engl.Disk 3";"Microsoft";7;0;;;;;
+248;"Supermemo: Multilingual";;15;72;;;;;
+249;"2002/12 Gamestar DVD";"Game Star";9;34;;;;;
+250;"Spanisch Wörterbuch";;6;3;;;;;1.1.3000 00:00:00
+251;"CT Plus Rom: 2002 14-26";"ct";12;13;;"Archiv";;;
+252;"Nokia 7650 Software";"Nokia";6;15;;;;;1.1.3000 00:00:00
+253;"CT Plus Rom: 2003 1-13";"ct";12;3;;"Archiv";;;
+254;"Download + Eigene Dateien 17.11.02";"Backup";9;0;;;;;
+255;"Partition Magic Pro 7.0";;5;2;;"Programm";;30.12.2004 00:00:00;
+256;"ct Software Kollektion 2006/1 Netzwerke, Office";"ct";9;;;"Programm";;;
+257;"Drive Image C: 021103";"Backup";9;0;;"Image";;;
+258;"Sicherung Eigene Dateien, Registry, Quicken";;7;61;;"Archiv";;;
+259;"Blade Runner: Disc 1-4";;7;0;;;;;
+260;"Babylon Übersetzer";;9;62;;;;;
+261;"Ciclo Tour von Peter";;9;13;;"Programm";;30.12.2004 00:00:00;30.12.2006 00:00:00
+262;"DPM Kurs";;9;64;;;;;
+263;"Nokia 6120";"Nokia";9;65;;;;;
+264;"Download 2003/12, Eigene Dateien Clousseau";;9;0;;"Archiv";;22.12.2003 00:00:00;
+265;"Laptop Copy";"softgate";7;0;;;;;
+266;"ZoneAlarm 4 Pro";"zone labs";9;0;"akktr-a8txb-u7mrb-rm57k6-v03eq0";;;;
+267;"Crosstrainer Anleitung";"crane sports";20;0;;;;;14.4.2013 00:00:00
+268;"CT Plus ROM: 2003 2 14-26";"ct";11;3;;"Archiv";;;
+269;"CT Plus ROM: 2004 1 1-13";"ct";12;2;;"Archiv";;;
+270;"Eigene Bilder Sicherung 0- 27.06.04";"Backup";7;0;;"Archiv";;10.10.2004 00:00:00;
+271;"Eigene Bilder Sicherung Juni 2004";"Backup";9;1;;"Archiv";;10.10.2004 00:00:00;
+272;"Eigene Bilder Sicherung Juli/August 2004";"Backup";9;2;;"Archiv";;10.10.2004 00:00:00;
+273;"Eigene Bilder Sicherung September 2004";"Backup";7;0;;"Archiv";;10.10.2004 00:00:00;
+274;"Eigene Dateien Thomas und Bilder";"Backup";7;0;;"Archiv";;14.12.2004 00:00:00;
+275;"Drive Image C und D nach Windows Install";"Backup";9;0;;"Image";;14.12.2004 00:00:00;
+276;"MP3 Files Alle Teil1";"Backup";7;0;;"Archiv";;15.12.2004 00:00:00;
+277;"MP3 Files Alle Teil2";"Backup";7;0;;"Archiv";;15.12.2004 00:00:00;
+278;"Drive Image C: Direkt nach Windows";"Backup";9;0;;"Image";;13.12.2004 00:00:00;
+279;"Drive Image C: Mit Video, MM, Pilot";"Backup";9;0;;"Image";;;
+280;"Drive I mage C:";"Backup";9;0;;"Image";;18.12.2004 00:00:00;
+281;"Fullbackup 2002";"Backup";9;0;;"Backup";;30.12.2004 00:00:00;
+282;"Eigene Dat, Download 2002 - 2003";"Backup";9;0;;"Archiv";;30.12.2004 00:00:00;
+283;"Abenteuer Wissen 0";"Bertelsmann";9;1;;"Nachschlagewerk";;;
+284;"Abenteuer Wissen 1";"Bertelsmann";9;2;;"Nachschlagewerk";;;
+285;"Abenteuer Wissen 2";"Bertelsmann";9;3;;"Nachschlagewerk";;;
+286;"Abenteuer Wissen 3";"Bertelsmann";9;4;;"Nachschlagewerk";;;
+287;"Abenteuer Wissen 4";"Bertelsmann";9;5;;"Nachschlagewerk";;;
+288;"English in Action: Royal Family 1";"EPA";1;9;;"Lernen";;;
+289;"English in Action: Royal Family 2";"EPA";1;10;;"Lernen";;;
+290;"D-Info 2003 Sommer";;9;20;;"Nachschlagewerk";;;
+291;"D-Info 2003 Sommer D.2";;9;21;;"Nachschlagewerk";;;
+292;"D-Info 2003 Reverz Z";;9;22;;"Nachschlagewerk";;;
+293;"Opera Fatal";;4;38;;"Spiel";;;
+295;"QuickOffice Deluxe 2005 Quicken 3.0";"Quicken";9;5;;"Programm";;;30.12.2008 00:00:00
+296;"Seageate Test Software für Festplatten";"Seagate";9;12;;"Programm";;30.12.2004 00:00:00;
+297;"Quick Office 2004 Steuer";"Quicken";9;27;;"Programm";;30.12.2004 00:00:00;
+298;"Quick Office 2002 Steuer (2001)";"Quicken";9;0;;"Programm";;30.12.2003 00:00:00;
+299;"USA Bilder 1-250 2004";;15;57;;"Archiv";;30.12.2004 00:00:00;
+300;"USA Bilder 251-447 2004";;15;55;;"Archiv";;30.12.2004 00:00:00;
+301;"USA Bilder 447-516 2004";;15;56;;"Archiv";;30.12.2004 00:00:00;
+302;"Railroad Tycoon 3 Disk 1";;3;32;;"Spiel";;30.12.2004 00:00:00;30.12.2006 00:00:00
+303;"Railroad Tycoon 3 Disk 2";;3;33;;"Spiel";;30.12.2004 00:00:00;30.12.2006 00:00:00
+304;"Commandos";"Eidos";3;34;;"Spiel";;30.12.2004 00:00:00;30.12.2005 00:00:00
+305;"Frontschweine";"Infogrames";3;35;;"Spiel";;30.12.2004 00:00:00;
+306;"Corel Draw 8 Disk 1 Programm";"Corel";9;7;;"Programm";;22.12.2004 00:00:00;30.12.2006 00:00:00
+307;"Corel Draw 8 Disk 2 Cliparts";"Corel";9;8;;"Programm";;30.12.2004 00:00:00;30.12.2007 00:00:00
+308;"Nokia 7650 Program";"Nokia";9;0;;"Programm";;30.12.2004 00:00:00;30.12.2015 00:00:00
+309;"MS Visual Studio 6.0";"Microsoft";15;11;;"Programm";;30.12.2004 00:00:00;
+310;"Nero 6 Reloaded";"Ulead";4;3;;"Programm";;30.12.2004 00:00:00;30.12.2006 00:00:00
+311;"Corel Draw Lernkurs Disk 1";"Corel";0;0;;;;30.12.2004 00:00:00;30.12.2006 00:00:00
+312;"Corel Draw Lernkurs Disk 2";"Corel";0;0;;;;30.12.2004 00:00:00;30.12.2005 00:00:00
+313;"Asus DVD 2000 V161";"Asus";9;14;;"Programm";;30.12.2004 00:00:00;30.12.2005 00:00:00
+314;"Win XP DVD";"Sybex";2;15;"BORKGPQSMPJWINS";"Programm";;30.12.2004 00:00:00;30.12.2006 00:00:00
+315;"Genius Video Englisch Part 1";"Supermemo";9;28;;"Nachschlagewerk";;30.12.2004 00:00:00;
+316;"Bewerbungen Teil 1 und 2";;6;23;;"Programm";;30.12.2004 00:00:00;1.1.2010 00:00:00
+317;"2002/7 Game Star";"Game Star";9;0;;;;;
+318;"2002/9 Game Star";"Game Star";9;0;;"Nachschlagewerk";;30.12.2004 00:00:00;30.12.2006 00:00:00
+319;"2003/6 Gamestar DVD";"Game Star";9;0;;;;30.12.2004 00:00:00;30.12.2006 00:00:00
+320;"2002/11 Gamestar DVD";"Game Star";9;0;;;;;
+321;"2003/3 Gamestar DVD";"Game Star";9;0;;;;;
+322;"2003/4 Gamestar DVD";"Game Star";9;0;;;;;
+323;"2003/10 Gamestar DVD";"Game Star";9;0;;;;;
+324;"2003/11 Gamestar DVD";"Game Star";9;0;;;;;
+325;"2002/8 Gamestar DVD";"Game Star";9;0;;;;;
+326;"2003/7 Gamestar DVD";"Game Star";9;0;;;;;
+327;"2003/5 Gamestar DVD";"Game Star";9;0;;;;;
+328;"Fotos Andre Taschkent 2005";;15;54;;"Archiv";;1.1.2005 00:00:00;
+329;"C&C Teil 3 Operation Tiberian Sun";"Command and Conquer";4;5;;;;;
+330;"Die Siedler III";"Blue Byte";0;4;;;;;
+331;"Catan Die Siedler von";;4;6;;;;;
+332;"Hidden and Dangerous Gold Edition";;5;4;;;;;
+333;"Half Life Counter Strike";;5;5;;;;;
+334;"Half Life Blue Shift";;0;0;;;;;
+335;"Deutsche Grammatik Mittelstufe f. Olga";"BZ";9;13;;;;;
+336;"Fullbackup 2004/1 - 8  (8 CDs)";"Backup";9;0;;"Backup";;30.12.2004 00:00:00;30.12.2007 00:00:00
+337;"ct Software Kollektion 2003/1 Office";"ct";9;0;;"Programm";;;
+338;"ct Software Kollektion 2003/2 Sicherheit";"ct";9;0;;"Programm";;;
+339;"ct Software Kollektion 2003/3 Internet";"ct";9;0;;"Programm";;;
+340;"ct Software Kollektion 2003/4 Videorecorder";"ct";9;0;;"Programm";;;
+341;"ct Software Kollektion 2004/1 Knoppix 3.4";"ct";9;0;;"Programm";;;
+342;"ct Software Kollektion 2004/2 Finanzen Video";"ct";9;0;;"Programm";;;
+343;"ct Software Kollektion 2004/3 Office";"ct";9;0;;"Programm";;;
+344;"ct Software Kollektion 2004/4 Server, Spield";"ct";9;0;;"Programm";;;
+345;"ct Software Kollektion 2004/5 Sicherheit";"ct";9;0;;"Programm";;;
+346;"ct Software Kollektion 2004/6 Foto, Handy";"ct";9;0;;"Programm";;;
+347;"Eigene Dateien und alle Fotos 2004/12";;7;0;;"Archiv";;14.12.2004 00:00:00;14.12.2006 00:00:00
+348;"MP3 Alle 2004/12";;7;0;;"Archiv";;15.12.2004 00:00:00;15.12.2006 00:00:00
+349;"MP 3 Player ISMP1 Tom V2.0";;6;8;;;;;1.1.2011 00:00:00
+350;"Sound Blaster AWE 64 (Athomix)";"Creative";6;1;;"Install";;30.12.2004 00:00:00;1.1.2011 00:00:00
+351;"Diamond Grafikkarte (Athomix)";"Diamond";6;2;;"Install";;30.12.2004 00:00:00;1.1.2011 00:00:00
+352;"Matrox mystique 220";"matrox";9;5;;"Install";;30.12.2004 00:00:00;
+353;"Toyota TNS 300 Leerhülle";;6;13;;;;;1.1.3000 00:00:00
+354;"Samsung CD-RW Install";"Samsung";9;11;;"Install";;30.12.2004 00:00:00;30.12.2005 00:00:00
+355;"Zweckform CD Beschriftung";"Zweckform";9;10;;;;30.12.2004 00:00:00;30.12.2005 00:00:00
+356;"Merge DPM Kurs";"Merge";9;9;;"Archiv";;30.12.2004 00:00:00;30.12.2005 00:00:00
+357;"Fine Reader 4";;5;3;;"Programm";"Kopie";30.12.2003 00:00:00;1.1.2011 00:00:00
+358;"Mastering COM Development";"Microsoft";6;18;;;;;1.1.2020 00:00:00
+359;"Testmaster Musik CD";;6;16;;;;30.12.2004 00:00:00;1.1.3000 00:00:00
+360;"System Shock russisch";;9;0;;;;;
+361;"Fullbackup A64 04/12";"Backup";9;0;;"Backup";;28.12.2004 00:00:00;30.12.2006 00:00:00
+362;"Increment. Backup A64";;9;60;;"Backup";"1-3 Woche";28.12.2004 00:00:00;30.12.2007 00:00:00
+363;"Drive Backup Rettungs CD";"Paragon";3;39;;"Programm";;30.12.2008 00:00:00;
+364;"Paragon Festplatten Manager 6.0";"Paragon";9;0;"09604-PR501-5DJ2E-23792";;;;
+365;"Windows XP Service Pack 2";"Microsoft";15;68;;;;;
+366;"Windows XP";;15;69;"BTG8H-CY3WY-37VJ4-2MH9P-HT87G";;"Zertifikat in ABIT Schachtel";;
+367;"Fritz USB 2.0 ISDN Anlage";"AVM";10;0;;;;;
+368;"LG DVD Writer (A64)";"LG";11;0;;"Install";;;
+369;"SATA Driver Diskette (A64)";"SATA";0;0;;"Install";"Treiber für Serielle Platte";;
+370;"Logitech Mousware 9.8 (A64)";"Logitech";11;0;;"Install";;;
+371;"ACDsee Bildersoftware";;9;18;"072-872-949-378-147-901";"Programm";;;
+372;"Abit Guru und VIA Treiber (A64)";"ABIT";11;0;;"Install";;;
+373;"WinTV -PVR";"Hauppauge";11;0;;"Programm";;30.12.2004 00:00:00;
+374;"WinTV-PVR V9.12.04 Internet";"Happauge";11;0;;"Programm";;30.12.2004 00:00:00;30.12.2006 00:00:00
+375;"Office XP";"Microsoft";9;0;;"Programm";;30.12.2004 00:00:00;
+376;"Fullbackup A64 06/04";"Backup";15;4;;"Backup";;12.4.2006 00:00:00;1.5.2008 00:00:00
+378;"Soundblaster Audity2 ZS (A64)";"Creative";11;0;;"Install";;30.12.2004 00:00:00;30.12.2006 00:00:00
+379;"Chipdrive Smartcard Tools Kartenleser (A64)";"SCM";11;0;;"Install";;30.12.2004 00:00:00;30.12.2006 00:00:00
+380;"XFX Graphics Geforce 6800 GT";"XFX";11;0;;"Install";;30.12.2004 00:00:00;30.12.2008 00:00:00
+381;"leer";;2;23;;"Image";;30.12.2004 00:00:00;
+382;"Drive Backup 9.0";"Paragon";3;40;"PSG-111-PRG-PL-MKG-6802";"Programm";"Serienn 09021-19129-8960F-F307D";30.12.2008 00:00:00;1.1.3000 00:00:00
+383;"leer";;2;26;;"Temp";;;
+384;"XFX The Thread Game";"XFX";9;32;;"Spiel";;;
+385;"Quick Office Deluxe 2005 Steuer 2004";"Lexware";9;37;;"Programm";;30.12.2004 00:00:00;30.12.2006 00:00:00
+386;"Commandos 3 Disk 1";"Eidos";1;14;;"Spiel";"update download www.swsymbiosis.com";30.12.2004 00:00:00;30.12.2007 00:00:00
+387;"Commandos 3 Disk 2";"Eidos";1;15;;"Spiel";;30.12.2004 00:00:00;30.12.2007 00:00:00
+388;"Commandos 3 Disk 3";"Eidos";1;16;;"Spiel";;30.12.2004 00:00:00;30.12.2007 00:00:00
+389;"The Thread XFX Disk 1";"XFX";9;36;"AD4M4K-CDSAXL-3M8BB5-7H9HML Re AUD5-LU4H-M7QQ-7A27";"Spiel";;30.12.2004 00:00:00;30.12.2007 00:00:00
+390;"The Thread XFX Disk 1";"XFX";9;37;;"Spiel";;30.12.2004 00:00:00;30.12.2007 00:00:00
+391;"Moto GP Racing";"THQ";9;26;;"Spiel";;31.12.2004 00:00:00;30.12.2007 00:00:00
+393;"The Sims 2 Disk 4";"EA";7;0;;"Spiel";;23.1.2005 00:00:00;
+396;"Drive Image C: Athomix Chipcardreader, Codestick";"Backup";9;0;;"Image";"aktuelles Image";15.2.2006 00:00:00;30.12.2007 00:00:00
+397;"Fotos Änderungen 20.10.2005 - 21.04.2006";;9;0;;"Archiv";;;
+398;"Fotos Sicherung 1 alle 0 - 14.08.05";;13;67;;"Archiv";;5.8.2006 00:00:00;
+399;"Acronis Privacy Suite (Festplatte sicher löschen)";;9;22;;"Programm";;1.1.2006 00:00:00;1.1.2008 00:00:00
+400;"Bitdefender";"Softwin";9;23;"68590A0F542161BEFA73";;;;
+401;"Windows Draw Micrografx Graphics Suite";"Micrografx";9;17;;"Programm";;3.12.2005 00:00:00;
+402;"Clip Art Micrografx Graphics Suite";"Micrografx";9;20;;;;;
+403;"Fullbackup 2001/8";;9;0;;"Backup";;1.8.2001 00:00:00;1.1.3000 00:00:00
+404;"Eigene Dateien und alle Fotos";;13;11;;"Archiv";"DVD199_404_407_575";14.12.2005 00:00:00;
+405;"Download, Eigene Dateien, Outlook";;40;50;;"Archiv";;;
+406;"Fotos Sicherung 2 alle 17.08.05 - 18.02.06";;13;68;;"Archiv";;5.8.2006 00:00:00;
+407;"Download, Eigene Dateien, Outlook Archiv";;40;70;"DVD199_404_407_575";"Archiv";"Outlook alte und neue, Palm Downloads";5.8.2006 00:00:00;1.8.2008 00:00:00
+408;"CT Bilder Thomas Oberbauch";;6;27;;"Archiv";;20.9.2005 00:00:00;1.1.2010 00:00:00
+409;"Wolfenstein";;4;39;;"Spiel";;3.12.2005 00:00:00;1.1.2009 00:00:00
+410;"PGP Keys";;1;21;;"Key";;3.12.2005 00:00:00;
+411;"VMWare, Silent Hunter III";"sonst";6;26;;"Programm";;3.12.2005 00:00:00;1.1.2007 00:00:00
+412;"Wireless LAN PC Card";;9;25;;"Treiber";"für WLAN Laptop";3.12.2005 00:00:00;1.1.2007 00:00:00
+413;"Fritz!Box Fon WLAN 7050 Install";"AVM";6;24;;"Programm";"Seriennummer etc. auf Hülle (in Box Regal 6)";3.12.2005 00:00:00;1.1.3000 00:00:00
+414;"1&1 Internet Starter CD V1.6g";"1&1";9;42;;"Programm";;3.12.2005 00:00:00;1.1.2007 00:00:00
+417;"Picture Publisher Micrografx Graphics Suite";"Micrografx";9;19;;;;;
+418;"Simply 3D Micrografx Graphics Suite";"Micrografx";9;18;;"Programm";;3.12.2005 00:00:00;
+419;"ct software kollektion 2005/3";"ct";8;29;;"Programm";;;
+421;"CT Plus ROM 2006 1-15";"ct";13;15;;"Archiv";;25.8.2006 00:00:00;1.1.2011 00:00:00
+422;"ct software kollektion 2005/2";"ct";8;32;;"Programm";;;
+423;"Fullbackup 2002/12 1/2";;9;0;;"Backup";;1.11.2002 00:00:00;1.1.3000 00:00:00
+424;"Fotos Sicherung 3 alle 06.03.06 - 30.07.06 Ende";;13;69;;"Archiv";;5.8.2006 00:00:00;
+425;"ct software kollektion 2005/6";"ct";9;35;;"Programm";;;
+426;"Fullbackup 2005 April 05";;8;5;;"Backup";;3.5.2005 00:00:00;
+427;"Fotos Taschkent 2005";;8;1;;"Archiv";;1.1.2005 00:00:00;
+428;"Thrustmaster Lenkrad Treiber";"Thrustmaster";0;38;;"Treiber";;11.2.2006 00:00:00;
+429;"Fullbackup A64 06/01";"Backup";15;1;;"Backup";;5.1.2006 00:00:00;1.12.2008 00:00:00
+430;"CT Plus ROM: 2005 1 1-13";"ct";12;9;;"Archiv";;;
+431;"CT Plus ROM: 2005 2 15-22";"ct";12;14;;"Archiv";;;
+432;"ct software kollektion 2006/4";"ct";8;0;;"Programm";;19.2.2006 00:00:00;1.1.2008 00:00:00
+433;"ct Software kollektion 2006 Visual Basic, C#, W";"Microsoft";9;0;;"Programm";;19.2.2006 00:00:00;1.1.2009 00:00:00
+434;"ct software kollektion 2005/4";"ct";9;44;;"Programm";;;
+435;"Fotos Sicherung 4 alle 01.08.06 - 12.10 USA";;13;70;;"Archiv";;12.10.2006 00:00:00;
+436;"Fullbackup A64 06/08";"Backup";15;9;;"Backup";;26.8.2006 00:00:00;1.8.2009 00:00:00
+437;"ct software kollektion 2005/7";"ct";9;47;;"Programm";;;
+438;"ct software kollektion 2005/1";"ct";8;48;;"Programm";;;
+439;"Projektmanagement mit MS Project";"Semmy Stumpp";9;28;;"Programm";;10.12.2006 00:00:00;
+440;"ct Software Kollektion 2006/3 Surf-Tools";"ct";9;;;"Programm";;;
+443;"Fullbackup A64 06/02";;15;3;;"Backup";;27.2.2006 00:00:00;
+444;"Fullbackup A64 06/05";;15;5;;"Backup";;24.5.2006 00:00:00;
+445;"leer";;2;25;;"Image";;;
+446;"StampIt Home V1.1";"Deutsche Post";9;0;"1EF112J3MWEZnxeQhNtv";"Programm";"V1.1";1.1.2004 00:00:00;
+447;"C&C Teil 2 Alarmstufe Rot";"EA";5;6;;"Spiel";;;
+448;"Sprachlehrgang Russisch 1";"Langenscheid";4;9;;"Audio";;;
+449;"Doom 3";;4;10;"701-20000-0010-000/42399";"Spiel";;1.1.2005 00:00:00;
+450;"Total Annihilation Russisch";;0;0;;"Spiel";;1.1.2005 00:00:00;
+451;"Galaxie Deutsch 6. Klasse";"Cornelsen";0;0;;"Programm";;1.1.2005 00:00:00;
+452;"Diktattrainer plus 7/8 Klasse";"Cornelsen";0;0;;"Programm";;1.1.2005 00:00:00;
+453;"Russisch ohne Mühe Teil 1";"Assimil";0;0;;"Audio";;1.1.2005 00:00:00;
+454;"Russisch ohne Mühe Teil 2";"Assimil";0;0;;"Audio";;1.1.2005 00:00:00;
+455;"Russisch ohne Mühe Teil 3";"Assimil";0;0;;"Audio";;1.1.2005 00:00:00;
+456;"Russisch ohne Mühe Teil 4";"Assimil";0;0;;"Audio";;1.1.2005 00:00:00;
+457;"Russisch Anfänger Pons";"Pons";4;8;;"Audio";;1.1.2005 00:00:00;
+458;"Musik Auto 3";;4;0;;"Audio";;1.1.2005 00:00:00;
+459;"Langenscheid Business English Intensiv 3/4";"Langenschaid";4;15;;"Audio";;1.1.2005 00:00:00;
+460;"Business English Intensiv CD 1/2";"dp";4;15;;"Audio";;1.1.2005 00:00:00;
+461;"Business English Intensiv CD /4";"dp";4;15;;"Audio";;1.1.2005 00:00:00;
+462;"Peter Gabriel live in Nürnerg";;4;17;;"Audio";;1.1.2005 00:00:00;
+463;"Myocardszintigraphie Thomas";;4;16;;"Archiv";;1.4.2006 00:00:00;
+464;"Business English Intensiv 6/7";;4;14;;"Audio";;;
+465;"Business English IntensivCD 1/2";"Langenscheidt";4;13;;"Audio";;1.1.2005 00:00:00;
+466;"Business English CD 5/6";"Langenscheidt";4;0;;"Audio";;1.1.2005 00:00:00;
+468;"Fullbackup A64 2007/01";"Backup";15;9;;"Backup";;1.1.2007 00:00:00;1.1.2010 00:00:00
+469;;;2;37;;;;;
+470;;;2;42;;;;;
+471;;;2;41;;;;;
+472;"Bilder Taschkent 2005";;15;53;;"Archiv";;1.1.2005 00:00:00;
+473;;;2;38;;;;;
+474;;;2;36;;;;;
+475;"Fullbackup A64 2007/10";"Backup";15;16;;"Backup";;27.10.2007 00:00:00;1.12.2010 00:00:00
+476;;;2;35;;;;;
+477;"MS Visual studion 2010 Deutsch";"Microsoft";9;33;;"programm";;8.8.2010 00:00:00;1.9.2013 00:00:00
+478;"Jdicom Tools";"Tiani";9;33;;"Programm";;18.7.2007 00:00:00;1.1.2009 00:00:00
+479;"Die Siedler IV";"Ubi";3;41;;"Spiel";;28.7.2007 00:00:00;1.1.2009 00:00:00
+480;"FT English 19, 20, 21";"Video";9;31;;"Video";"MPEG2";29.7.2007 00:00:00;
+483;;;0;0;;;;;
+484;"Sapphire ATI Grafikkarte Treiber";"ATI";9;43;;"Programm";;10.8.2008 00:00:00;1.1.2010 00:00:00
+485;;;0;0;;;;;
+487;;;0;0;;;;;
+488;;;2;47;;;;;
+489;;;2;49;;;;;
+490;;;2;51;;;;;
+494;;;0;0;;;;;
+497;"Backup everything DVD 2009/02 3/3";"GBM";15;45;;"Backup";;8.2.2009 00:00:00;1.1.2015 00:00:00
+498;"Backup everything DVD 2009/02 2/3";"GBM";15;46;;"Backup";;8.2.2009 00:00:00;1.1.2015 00:00:00
+499;"Backup everything DVD 2009/02 1/3";"GBM";15;47;;"Backup";;8.2.2009 00:00:00;1.1.2015 00:00:00
+500;"CDRW";;9;50;;;;;
+501;;;2;44;;;;;
+502;;;0;0;;;;;
+503;;;2;46;;;;;
+504;;;2;48;;;;;
+506;"Stampit Home V2.0";"Deutsche Post";9;29;"1FI117dA6P8mnQzgZ6JF";"Programm";;1.9.2006 00:00:00;
+507;"Seagate Tools";;9;30;;"Programm";;28.4.2006 00:00:00;
+508;"Quick Office Deluxe 2007 Quicken2007";"Lexware";9;31;;"Programm";;1.1.2006 00:00:00;
+509;"Duden Rechtschreibung";"Duden";9;32;;"Programm";;1.1.2006 00:00:00;
+510;"Code Meter Softwarre";;9;33;;"Programm";;1.1.2006 00:00:00;
+511;"GameStar 2006/10";"Gamestar";9;34;;"Archiv";;1.10.2006 00:00:00;
+512;"GameStar 2005/09";"Gamestar";9;35;;"Archiv";;1.9.2005 00:00:00;
+513;"GameStar 2006/11";"Gamestar";9;36;;"Archiv";;1.11.2006 00:00:00;
+515;"Quick Office Deluxe 2006 Quicken 2006";"Lexware";9;38;;"Programm";;1.1.2006 00:00:00;30.12.2007 00:00:00
+516;"Quick Office Deluxe 2006 Börse 2006";"Lexware";9;39;;"Programm";;1.1.2006 00:00:00;30.12.2007 00:00:00
+517;"Quick Office Deluxe 2007 Steuer 2007";"Lexware";9;40;;"Programm";;10.12.2006 00:00:00;30.12.2008 00:00:00
+518;"Quick Office Deluxe 2007 Steuer 2007 Multimedia";"Lexware";9;41;;"Programm";;10.12.2006 00:00:00;30.12.2008 00:00:00
+519;"Eigene Dateien, Download, Quicken Data, Sich2006";;1;42;;"Archiv";"entsorgt";10.12.2006 00:00:00;30.12.3000 00:00:00
+520;"Quicken, Quicksteuer 2003,4,6";"Lexware";18;3;;"Archiv";"Sicherung";1.3.2007 00:00:00;30.12.2020 00:00:00
+521;"Eigene Dateien, Download, Quicken Data,";;1;44;;"Archiv";"entsorrgt";13.5.2007 00:00:00;30.12.3000 00:00:00
+522;"Quick Office Deluxe 2008 Quicken 2008";"Lexware";9;45;"F399-KP3Q-XZQS-RM9W-4MBH-XNDJ";"Programm";;1.3.2008 00:00:00;30.12.2010 00:00:00
+523;"DICOM Kurse und Org";;1;46;;"Archiv";"ISO auf D:\CD";28.6.2007 00:00:00;30.12.2009 00:00:00
+524;"Game Star 07/04 DVD Dungeon Siege";"Gamestar";9;47;;"Archiv";;22.8.2007 00:00:00;1.7.2020 00:00:00
+525;"Palm Pilot Downloads, Intellisync";"Palm";1;48;;"Programm";"entsorgt";4.10.2007 00:00:00;1.7.2010 00:00:00
+527;"Kauderwelsch Chinesisch";;1;50;;"Audio";;11.1.2009 00:00:00;1.1.2030 00:00:00
+528;"Gamestar 2007/02 Railroad Tycoon, Splinter Cell";"Gamestar";9;51;;"Archiv";;28.7.2007 00:00:00;1.7.2010 00:00:00
+531;"DVB-T TV Tuner Savvy TV";"Toshiba";1;54;;"Programm";;11.1.2009 00:00:00;1.1.2030 00:00:00
+532;"Palm TX Desktop Software";"Palm";1;55;;"Programm";;1.2.2009 00:00:00;1.1.2030 00:00:00
+533;"Super Multi Drive Installer LG DVD Brenner";"LG";9;56;;"Program";"Nero Express etc.";1.6.2009 00:00:00;1.1.2011 00:00:00
+534;"Foto Praxis Extra n 6";"div";9;57;;"Programme";;1.6.2009 00:00:00;1.1.2012 00:00:00
+535;;;9;58;;;;;
+536;"DVD Suite";"Cyper Link";9;52;"SN:22235377 Key: MS19188111224G9M";"Programm";;1.2.2009 00:00:00;
+537;"Quick Office 2010 Deluxe";"Lexware";9;53;;"Programm";;27.11.2009 00:00:00;
+538;"Quick Office 2006 Steuer (20051)";"Quicken";9;0;;"Programm";;1.1.2007 00:00:00;
+539;;;3;38;;;;;
+540;;;3;39;;;;;
+541;;;3;40;;;;;
+542;;;3;41;;;;;
+543;;;3;42;;;;;
+544;;;3;43;;;;;
+545;;;3;44;;;;;
+546;;;3;45;;;;;
+547;;;3;46;;;;;
+548;;;3;47;;;;;
+549;;;3;48;;;;;
+550;;;3;49;;;;;
+551;;;3;50;;;;;
+552;;;3;51;;;;;
+553;;;3;52;;;;;
+554;;;3;53;;;;;
+555;;;3;54;;;;;
+556;;;3;55;;;;;
+557;;;3;56;;;;;
+558;;;3;57;;;;;
+559;;;3;58;;;;;
+560;;;3;59;;;;;
+561;"Drive Image C: AT64";"Backup";9;75;;"Image";"Mit Sage TV";27.2.2007 00:00:00;31.12.2010 00:00:00
+562;"Nokia 6210 Software";;6;28;;"Programm";;1.1.2006 00:00:00;1.1.2025 00:00:00
+563;"DICOM Kurse";;9;0;;"Archiv";;17.1.2006 00:00:00;
+564;"Drive Image C: (2DVD)";;9;0;;"Image";"Neuer IE 7";10.12.2006 00:00:00;
+565;"CT Plus ROM: 2006 1-13";"ct";12;15;;"Archiv";;3.2.2007 00:00:00;1.1.2011 00:00:00
+566;"CT Plus ROM: 2006 14-26";"ct";12;16;;"Archiv";;3.2.2007 00:00:00;1.1.2011 00:00:00
+567;"Fullbackup A64 03/2007";"Backup";9;76;;"Backup";;12.3.2007 00:00:00;1.3.2008 00:00:00
+568;"ct software kollektion 2007/4 Office Grafik";"ct";8;0;;"Programm";"pdf writer";24.3.2007 00:00:00;1.1.2008 00:00:00
+569;"Fullbackup A64 2007/05";"Backup";15;11;;"Backup";;8.5.2007 00:00:00;1.1.2010 00:00:00
+570;"Fullbackup A64 2007/06";"Backup";15;12;;"Backup";;1.7.2007 00:00:00;1.1.2010 00:00:00
+571;"Fotos Sicherung 5 2004-2005";;13;1;;"Archiv";;26.7.2007 00:00:00;
+572;"Fullbackup A64 2007/07a";"Backup";15;13;;"Backup";;28.7.2007 00:00:00;1.1.2010 00:00:00
+573;"Bluetooth Adapter für Laptop";;4;40;;"Progamm";;1.2.2009 00:00:00;1.1.2020 00:00:00
+574;"Drive Image C: (2DVD)";"Backup";13;2;;"Image";;28.7.2007 00:00:00;1.1.2009 00:00:00
+575;"Eigene Dateien, Download";;40;44;"DVD199_404_407_575";"Archiv";"Sicherung aller eigenen Dateien fürs Archiv";27.7.2007 00:00:00;30.12.3000 00:00:00
+576;"FT English 23, 25, 26";"Video";9;30;;"Video";"MPEG 2";29.7.2007 00:00:00;
+577;"CT Plus ROM: 2007 1-15";"ct";12;17;;"Archiv";;5.8.2007 00:00:00;1.1.2010 00:00:00
+578;"Fullbackup A64 2007/08";"Backup";15;14;;"Backup";;20.8.2007 00:00:00;1.1.2010 00:00:00
+579;"Fullbackup A64 2007/09";"Backup";15;15;;"Backup";;25.9.2007 00:00:00;1.9.2010 00:00:00
+580;"Fotos Bianca Rambow";;4;41;;"Archiv";"Frachtschiffreise";26.9.2007 00:00:00;
+581;"Panasonic Lumix Software";"Panasonic";4;42;;"Programm";"Silkypix, ArcSoft";28.9.2007 00:00:00;1.9.2008 00:00:00
+582;"Rescue Software USB Sandisc";"Sandisk";9;43;;"Programm";;28.9.2007 00:00:00;1.9.2009 00:00:00
+583;"Drive Image C: AT64 und 18";;15;17;;"Image";"2 DVD";28.9.2007 00:00:00;1.9.2009 00:00:00
+584;"Fullbackup A64 2007/11";"Backup";15;19;;"Backup";;19.11.2007 00:00:00;1.11.2009 00:00:00
+585;"Eigene Dateien, Download, Quicken Data,";;30;1;;"Archiv";"Sicherung aller eigenen Dateien fürs Archiv";9.12.2007 00:00:00;30.12.3000 00:00:00
+586;"Drive Image C: 1/3";"Backup";30;2;;"Image";;9.12.2007 00:00:00;1.1.2011 00:00:00
+587;"Drive Image C: 2/3";"Backup";30;3;;"Image";;9.12.2007 00:00:00;1.1.2011 00:00:00
+588;"Drive Image C: 3/3";"Backup";30;4;;"Image";;9.12.2007 00:00:00;1.1.2011 00:00:00
+589;"Fotos 2004 - 2006/3/15";"Archiv";30;5;;"Archiv";;9.12.2007 00:00:00;1.1.2030 00:00:00
+590;"Fotos 2006/3/23";"Archiv";30;6;;"Archiv";;9.12.2007 00:00:00;1.1.2030 00:00:00
+591;"Fotos 2007/7/15";"Archiv";30;7;;"Archiv";;9.12.2007 00:00:00;1.1.2030 00:00:00
+592;"Fotos 2007/11/04 - Shenzhen";"Archiv";30;8;;"Archiv";;9.12.2007 00:00:00;1.1.2030 00:00:00
+593;"Fotos Sydney 2005 - USA 2004";"Archiv";30;9;;"Archiv";;9.12.2007 00:00:00;1.1.2030 00:00:00
+594;"Fotos USA 2006- rest einz. Dateien";"Archiv";30;43;;"Archiv";;9.12.2007 00:00:00;1.1.2030 00:00:00
+596;"Fullbackup A64 2007/12";"Backup";15;20;;"Backup";;18.12.2007 00:00:00;1.12.2009 00:00:00
+597;"Eigene Dateien, Download, Quicken, SageTV";"Archiv";13;9;;"Archiv";"SAGETV V2.10.152 fürs Archiv";3.1.2008 00:00:00;30.12.3000 00:00:00
+598;"Fullbackup A64 2008/01";"Backup";15;21;;"Backup";;30.1.2008 00:00:00;1.12.2009 00:00:00
+599;"Fullbackup A64 2007/03";"Backup";15;10;;"Backup";;12.3.2007 00:00:00;1.12.2009 00:00:00
+600;"Fullbackup A64 2008/03";"Backup";15;22;;"Backup";;18.3.2008 00:00:00;1.12.2009 00:00:00
+601;"CT Plus ROM: 2007 14-26";"ct";12;19;;"Archiv";;21.3.2008 00:00:00;1.1.2011 00:00:00
+602;"Fullbackup A64 2008/04";"Backup";15;23;;"Backup";;28.4.2008 00:00:00;1.1.2011 00:00:00
+603;"Drive Image C: 2 DVDs";"Backup";9;2;;"Image";;19.5.2008 00:00:00;1.1.2014 00:00:00
+604;;;4;0;;;;;
+605;"Fullbackup A64 2008/06";"Backup";15;24;;"Backup";;2.6.2008 00:00:00;1.6.2011 00:00:00
+606;"Quick Office Deluxe 2009 Quicken2009";"Lexware";9;49;"PLDK-SPEK-GMZG-WEQJ-9REJ-YYAX";"Programm";;16.6.2008 00:00:00;1.1.2010 00:00:00
+607;"Fullbackup A64 2008/07";"Backup";15;25;;"Backup";;7.7.2008 00:00:00;1.12.2009 00:00:00
+608;"Nokia 6120 c Software";"Nokia";4;45;;"Programm";;12.7.2008 00:00:00;1.1.2010 00:00:00
+609;"GPS Bluetooth RBT 2300 Software";"RoyalTek";4;44;;"Programm";;12.7.2008 00:00:00;1.1.2011 00:00:00
+610;"Fullbackup A64 2008/07";"Backup";30;10;;"Backup";;13.1.2008 00:00:00;1.1.2010 00:00:00
+611;"Fullbackup A64 2008/08";"Backup";15;26;;"Backup";;11.8.2008 00:00:00;1.8.2010 00:00:00
+613;"Fullbackup A64 2008/09";"Backup";15;27;;"Backup";;3.9.2008 00:00:00;1.8.2010 00:00:00
+614;"Fullbackup A64 2008/10";"Backup";15;28;;"Backup";;10.10.2008 00:00:00;1.8.2010 00:00:00
+615;"Fotos New York";"Archiv";4;12;;"Archiv";"Urlaubsbilder";16.11.2008 00:00:00;
+616;"Fullbackup A64 2008/11";"Backup";15;29;;"Backup";;22.11.2008 00:00:00;1.8.2010 00:00:00
+617;"Fullbackup A64 2008/12";"Backup";15;30;;"Backup";;4.12.2008 00:00:00;1.8.2010 00:00:00
+618;"Backup Fotos DVD 1/6";"GBM";15;31;;"Backup";"Alle Fotos ab 9.11.2007";29.12.2008 00:00:00;1.1.3000 00:00:00
+619;"Backup Fotos DVD 2/6";"GBM";15;32;;"Backup";;29.12.2008 00:00:00;
+620;"Backup Fotos DVD 3/6";"GBM";15;33;;"Backup";;29.12.2008 00:00:00;
+621;"Backup Fotos DVD 4/6";"GBM";15;34;;"Backup";;29.12.2008 00:00:00;
+622;"Backup Fotos DVD 5/6";"GBM";15;35;;"Backup";;29.12.2008 00:00:00;
+623;"Backup Fotos DVD 6/6 + Inkrementelle";"GBM";15;36;;"Backup";;29.12.2008 00:00:00;
+625;"Backup wichtige eigene Dateien #1";"GBM";15;37;;"Backup";;4.1.2009 00:00:00;1.1.2012 00:00:00
+626;"Backup wichtige eigene Dateien #2";"GBM";15;38;;"Backup";;4.1.2009 00:00:00;1.1.2012 00:00:00
+627;"CT Plus ROM: 2008 1-26";"ct";12;18;;"Archiv";;10.1.2009 00:00:00;1.1.2014 00:00:00
+628;"Backup wichtige eigene Dateien #1";"GBM";15;39;;"Backup";;11.1.2009 00:00:00;1.1.2012 00:00:00
+629;"Backup wichtige eigene Dateien #2";"GBM";15;40;;"Backup";;11.1.2009 00:00:00;1.1.2012 00:00:00
+630;;;0;0;;;;;
+631;"Fotos Vietnam";"Archiv";13;71;;"Archiv";;11.1.2009 00:00:00;1.1.3000 00:00:00
+632;"Eigene Dateien, Quicken";"Archiv";13;72;;"Archiv";"Sicherung aller eigenen Dateien fürs Archiv";17.1.2009 00:00:00;30.12.3000 00:00:00
+633;"Backup eigene Dateien #1";"GBM";15;42;;"Backup";;1.2.2009 00:00:00;1.1.2020 00:00:00
+634;"Backup eigene Dateien #2";"GBM";15;42;;"Backup";;1.2.2009 00:00:00;1.1.2020 00:00:00
+635;"Backup eigene Dateien #1 200904";"GBM";15;43;;"Backup";;5.4.2009 00:00:00;1.1.2020 00:00:00
+636;"Backup eigene Dateien #2 200904";"GBM";15;44;;"Backup";;5.4.2009 00:00:00;1.1.2020 00:00:00
+637;"Backup Fotos ab 01.02.2009 + Inkrementelle";"GBM";9;51;;"Backup";;26.4.2009 00:00:00;1.1.3000 00:00:00
+638;"Backup eigene Dateien #1 200905";"GBM";50;3;;"Backup";"MDISK 714";2.5.2009 00:00:00;1.1.3000 00:00:00
+639;"Backup eigene Dateien #2 200905";"GBM";50;3;;"Backup";"und GBM Swift Restore SW MDISK 714";2.5.2009 00:00:00;1.1.3000 00:00:00
+640;"Weather Lan Gateway DNT Wetterstation";"DNT";15;48;"www.dne.de/wfdnet.html V1.0";"Programm";"Wetterstation";10.5.2009 00:00:00;1.1.2015 00:00:00
+641;"Backup everything DVD 20090510 1/2";"GBM";2;54;;"Backup";;10.5.2009 00:00:00;1.1.2015 00:00:00
+642;"Backup everything DVD 20090510 2/2";"GBM";2;55;;"Backup";;10.5.2009 00:00:00;1.1.2015 00:00:00
+643;"Backup Fotos ab 01.02.2009 + Inkrementelle 2";"GBM";50;57;;"Backup";"MDISK 714";1.5.2009 00:00:00;19.8.2016 00:00:00
+644;"Backup Fotos ab 01.02.2009 + Inkrementelle 3";"GBM";9;58;;"Backup";;1.5.2009 00:00:00;19.8.2016 00:00:00
+645;"Backup Fotos ab 01.02.2009 + Inkrementelle 4";"GBM";9;59;;"Backup";;1.5.2009 00:00:00;19.8.2016 00:00:00
+646;"Archiv Eigene Dateien";"Archiv";15;64;;"Archiv";;27.6.2009 00:00:00;1.1.2015 00:00:00
+647;"Backup Fotos ab 01.02.2009 1";"GBM";15;50;"Manuell gestartet";"Backup";;27.6.2009 00:00:00;19.8.2016 00:00:00
+648;"Backup Fotos ab 01.02.2009 2";"GBM";15;51;"Manuell gestartet";"Backup";;27.6.2009 00:00:00;19.8.2016 00:00:00
+649;"Backup eigene Dateien #1 200907";"GBM";50;3;"Manuell gestartet";"Backup";"MDISK 714";5.7.2009 00:00:00;1.1.3000 00:00:00
+650;"Backup eigene Dateien #2 200907";"GBM";50;56;"Manuell gestartet";"Backup";"MDISK 714";5.7.2009 00:00:00;1.1.3000 00:00:00
+651;"Backup Fotos ab 1.06.2009";"GBM";15;62;"Manuell gestartet als Basis für Increment";"Backup";;26.7.2009 00:00:00;1.1.3000 00:00:00
+652;"Backup eigene Dateien #1 200908";"GBM";15;52;;"Backup";;1.8.2009 00:00:00;1.1.3000 00:00:00
+653;"Backup eigene Dateien #2 200908";"GBM";15;53;;"Backup";;1.8.2009 00:00:00;1.1.3000 00:00:00
+654;"Drive Image Dell Orginalinstallation 1/6";"Paragon";13;3;;"Image";"entsorgt";27.9.2009 00:00:00;
+655;"Drive Image Dell Orginalinstallation 2";"Paragon";13;4;;"Image";"entsorgt";27.9.2009 00:00:00;
+656;"Drive Image Dell Orginalinstallation 3";"Paragon";13;5;;"Image";"entsorgt";27.9.2009 00:00:00;
+657;"Drive Image Dell Orginalinstallation 4";"Paragon";13;6;;"Image";"entsorgt";27.9.2009 00:00:00;
+658;"Drive Image Dell Orginalinstallation 5";"Paragon";13;7;;"Image";"entsorgt";27.9.2009 00:00:00;
+659;"Drive Image Dell Orginalinstallation 6/6";"Paragon";13;8;;"Image";"entsorgt";27.9.2009 00:00:00;
+660;"Bootdisk Paragon Suite 10";"Paragon";3;37;"Für Athomix7";"Image";;15.11.2009 00:00:00;
+661;"Windows 7 Bootdisk Tools Wiederherstellung";"Microsoft";1;38;"Für Athomix7";"Image";;20.11.2009 00:00:00;1.1.2015 00:00:00
+662;"Rhapsody, Secondary Copy, Paragon, Notepad++";"Verschiedene";9;40;;"Programm";;29.11.2009 00:00:00;1.1.2015 00:00:00
+663;"Office 2007";"Microsoft";15;67;;"Programm";;29.11.2009 00:00:00;1.1.2020 00:00:00
+664;"Paragon Suite 10 Rettungscd Win PE";"Paragon";2;7;"Für Athomix7";"Image";;9.12.2009 00:00:00;1.1.2015 00:00:00
+665;"Chip DVD Edition 10/2009, Div. Programe";"CHIP";8;0;;"Programm";;1.1.2010 00:00:00;1.1.2011 00:00:00
+666;"Quicken 2011 und Lizenz";"Lexware";16;0;"QABA-E7FS-QCZ4-PCJF-9WA3-YGB7";"Programm";;30.5.2010 00:00:00;1.1.2015 00:00:00
+667;"Sage TV Installer und Backup";"Backup";15;71;;"Backup";"V 2.10.152, wiz.bin usw.";6.9.2010 00:00:00;1.1.2030 00:00:00
+668;"Paragon Recovery CD Win PE";"Paragon";1;43;"PG.PSG-201-PRG-CB-10589422 Ser:";"Backup";"Serial: 5101D-720E7-AF0B4-1436D";20.11.2011 00:00:00;1.1.2015 00:00:00
+669;"Festplatten Manager 11 Professional";"Paragon";1;58;"Prod: PSG-201-PRG-CB-10589422";"Programm";"Ser:5101D-720E7-AF0B4-1436D";20.11.2011 00:00:00;31.12.2017 00:00:00
+670;"Download Sicherung Alles 1/3";"Archiv";18;0;;"Archiv";"Alle Downloads bis dahin";4.12.2011 00:00:00;31.12.2017 00:00:00
+671;"Download Sicherung Alles 2/3";"Archiv";18;0;;"Archiv";;4.12.2011 00:00:00;31.12.2017 00:00:00
+672;"Download Sicherung Alles 3/3";"Archiv";18;0;;"Archiv";;4.12.2011 00:00:00;31.12.2017 00:00:00
+673;"Windows 7 Professional CD";"Microsoft";20;14;"2WVRH-GWYT2-JVR89-9T79W-328F6";"Programm";"Athomix 7";18.12.2011 00:00:00;1.1.2030 00:00:00
+674;"Baltikum Fotos Rohdaten Disk 1";"Archiv";13;0;;"Archiv";"Unbearbeitet";26.8.2012 00:00:00;1.1.2030 00:00:00
+675;"Baltikum Fotos Rohdaten Disk 2";"Archiv";13;0;;"Archiv";"Unbearbeitet";26.8.2012 00:00:00;1.1.2030 00:00:00
+676;"Baltikum Fotos von Ekke";"Archiv";0;0;;"Archiv";"halb so groß Orginale";26.8.2012 00:00:00;1.1.2030 00:00:00
+677;"ACDsee Updates und Civilization V";"Archiv";3;38;"5NDSBP-MG2AG2-U85MK6-HKPP4G-AWS01B-ABZB23-MRJEH6";"Archiv";;31.10.2012 00:00:00;1.1.2030 00:00:00
+678;"Panasonic Lumix DMC TZ31";"Panasonic";1;13;;"Program";"entsorgt";29.3.2013 00:00:00;1.1.2035 00:00:00
+679;"Legends of War Spiel";;1;30;;"Game";"entsorgt";29.11.2014 00:00:00;1.1.2020 00:00:00
+680;"Leer";;1;39;;;;;
+681;"Leer";;1;41;;;;;
+682;"Windows 7 Sicherung Reboot Tools";;1;12;;;;20.11.2009 00:00:00;
+683;"Leer";;1;23;;;;;
+684;"Leer";;1;27;;;;;
+685;"Leer";;1;31;;;;;
+686;"Leer";;1;22;;;;;
+687;"Leer";;1;29;;;;;
+688;"Leer";;1;37;;;;;
+689;"Leer";;1;59;;;;;
+690;"Leer";;1;60;;;;;
+691;"Full Backup";"Backup";15;59;;"Backup";;3.5.2005 00:00:00;3.5.2020 00:00:00
+692;"DICOM Workshop Tools Disk";"softgate";15;60;;"Backup";;1.1.2014 00:00:00;1.1.2020 00:00:00
+693;"HL7 Standard 2007";"HL7 Deutschland";15;62;;"Dokument";;1.1.2007 00:00:00;1.1.2018 00:00:00
+694;"Quicken Jubiläumsversion";"Quicken";3;42;"LSTB-FKS4-JKQP-CZ44-LR3L-BGLN";"Programm";;;30.12.2019 00:00:00
+695;"Fotos Archiv 0-04/2004";;30;1;"M-Disc";"Archiv";;10.3.2018 00:00:00;1.1.2100 00:00:00
+696;"Fotos Archiv 04/2004 - 04.04.2011";;30;2;"M-Disc";"Archiv";;10.3.2018 00:00:00;1.1.2100 00:00:00
+697;"Fotos Archiv 04.04.2011 - 12.08.2012";;30;3;"M-Disc";"Archiv";;10.3.2018 00:00:00;1.1.2100 00:00:00
+698;"Fotos Archiv 12.08.2012 - 16.05.2013";;30;4;"M-Disc";"Archiv";;10.3.2018 00:00:00;1.1.2100 00:00:00
+699;"Fotos Archiv 01.06.2013 - 29.05.2015";;30;5;"M-Disc";"Archiv";;10.3.2018 00:00:00;1.1.2100 00:00:00
+700;"Fotos Archiv 29.08.2015 - 02.12.2016";;30;6;"M-Disc";"Archiv";;10.3.2018 00:00:00;1.1.2100 00:00:00
+701;"Fotos Archiv 01.01.2017 - 08.12.2017";;30;7;"M-Disc";"Archiv";;10.3.2018 00:00:00;1.1.2100 00:00:00
+702;"Fotos Archiv 08.07.2008 - 18.10.2009 Andre, China";;30;8;"M-Disc";"Archiv";"Andre, Bianca Rambow, Bodensee Zeppelin, Chengdu,";10.3.2018 00:00:00;1.1.2100 00:00:00
+703;"Fotos Archiv China Reise - softgate";;30;9;"M-Disc";"Archiv";"Dublin, Familie, Götebort, Jamaica, London, New Yo";10.3.2018 00:00:00;1.1.2100 00:00:00
+704;"Fotos Archiv Tashkent 2016, USA Vietnam";;30;10;"M-Disc";"Archiv";"Washington, Zürich, Vor 2004";10.3.2018 00:00:00;1.1.2100 00:00:00
+705;"Fotos Archiv USA 2017";;30;11;"M-Disc";"Archiv";;10.3.2018 00:00:00;1.1.2100 00:00:00
+706;"ArchivDateien 2017 1/2";;30;12;;"Archiv";"gbm Wiederherstellen, Sicherungssatze 1 einlegen";10.2.2018 00:00:00;1.1.2100 00:00:00
+707;"ArchivDateien 2017 2/2";;30;13;;"Archiv";;10.2.2018 00:00:00;1.1.2100 00:00:00
+708;"Archiv Dateien 2016 1/1";;30;14;"M-Disc";"Archiv";"gbm Wiederherstellen, Sicherungssatz";27.1.2019 00:00:00;1.1.2100 00:00:00
+709;"Archiv All 2016 1/4";;30;15;"M-Disc";"Archiv";"gbm mit 7-zip in Teile zerlegt";27.1.2019 00:00:00;1.1.2100 00:00:00
+710;"Archiv All 2016 2/4";;30;16;"M-Disc";"Archiv";"Dokumente, Download, usw.";27.1.2019 00:00:00;1.1.2100 00:00:00
+711;"Archiv All 2016 3/4";;30;17;"M-Disc";"Archiv";;27.1.2019 00:00:00;1.1.2100 00:00:00
+712;"Archiv All 2016 4/4";;30;18;"M-Disc";"Archiv";;27.1.2019 00:00:00;1.1.2100 00:00:00
+713;"Archiv Dateien Manuell 2017 part";;30;19;"M-Disc";"Archiv";"Siehe Dropbox archivINhalt2070618MDISC713.txt";28.1.2019 00:00:00;1.1.2100 00:00:00
+714;"Archiv EigeneDat, Download 2015,2009 CD638-650";;18;1;"M-Disc";"Archiv";"CD Roms alte sicherungen, Quicken 2003-2012";3.2.2019 00:00:00;1.1.2100 00:00:00
+715;"Fotos Archiv 8.12.2017 -31.07.18";;19;2;"M-Disc";"Archiv";"Fotos von HD5 Archiv weg kopiert";7.12.2019 00:00:00;1.1.2100 00:00:00
+716;"Fotos Archiv 31.07.18 - 12.08.18 Nokia und Palm De";;19;3;"M-Disc";"Archiv";"Fotos von HD5 Archiv weg kopiert";7.12.2019 00:00:00;1.1.2100 00:00:00
+717;"Fotos Archiv 12.08.18 -14.07.20";;19;0;"M-Disc";"Archiv";"Fotos von HD5 Archv weg kopiert";9.1.2022 00:00:00;1.1.2100 00:00:00
+718;"ECO DMS 05022022, Lager Verz, DropB Sich, Rasp";;19;0;"M-Disc";"Archiv";;5.2.2022 00:00:00;
+719;"Fotos Archiv 14.07.20 - 2019 Arc 3-5";;19;0;"M-Disc";"Archiv";"Fotos von HD5 Archiv weg kopiert";8.10.2022 00:00:00;1.1.2100 00:00:00
+720;"ArchivDaten und ArchivDateien 27.01.19 HD4";;19;0;"M-Disc";"Archiv";"Archivierte Dateien";8.10.2022 00:00:00;1.1.2100 00:00:00
+721;"ArchivDateien 27.01.19 HD4 .C004 - .C010";;19;0;"M-Disc";"Archiv";"Archivierte Dateien";8.10.2022 00:00:00;1.1.2100 00:00:00
+722;"ArchivDateien .C011-12 Archiv10 17.10.20  C000-003";;19;0;"M-Disc";"Archiv";"Archivierte Dateien";8.12.2022 00:00:00;8.10.2100 00:00:00
+723;"ECO DMS Alle Dokumente native bis 12.2022";;19;0;"M-Disc";"Archiv";"Archivierte Dateien";4.12.2023 00:00:00;8.10.2100 00:00:00
+724;"Archiv Dateien";;0;0;"M-Disc";"Archiv";"Dokumente 2025, EcoDMS 23-25";7.3.2026 00:00:00;8.10.2100 00:00:00

@@ -17,6 +17,7 @@ class MediaType(str, Enum):
     EXTERNAL_HDD = "External HDD"
     BACKUP_TAPE = "Backup Tape"
     OTHER = "Other"
+    UNKNOWN = "Unknown"
 
     @classmethod
     def get_all_values(cls) -> list[str]:

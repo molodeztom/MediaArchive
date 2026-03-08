@@ -44,6 +44,7 @@ class MediaService:
         self,
         name: str,
         media_type: str,
+        type: Optional[str] = None,
         content_description: Optional[str] = None,
         remarks: Optional[str] = None,
         creation_date: Optional[date] = None,
@@ -56,7 +57,8 @@ class MediaService:
         
         Args:
             name: Media name (required).
-            media_type: Type of media (required).
+            media_type: Type of media (optional, defaults to "Unknown").
+            type: Content category (Archive, Program, Backup, etc.).
             content_description: Description of contents.
             remarks: Additional notes.
             creation_date: When media was created.
@@ -87,6 +89,7 @@ class MediaService:
         media = Media(
             name=name,
             media_type=media_type,
+            type=type,
             content_description=content_description,
             remarks=remarks,
             creation_date=creation_date,
@@ -136,6 +139,7 @@ class MediaService:
         media_id: int,
         name: Optional[str] = None,
         media_type: Optional[str] = None,
+        type: Optional[str] = None,
         content_description: Optional[str] = None,
         remarks: Optional[str] = None,
         creation_date: Optional[date] = None,
@@ -150,6 +154,7 @@ class MediaService:
             media_id: Media ID.
             name: New name (optional).
             media_type: New type (optional).
+            type: New content category (optional).
             content_description: New description (optional).
             remarks: New remarks (optional).
             creation_date: New creation date (optional).
@@ -173,6 +178,8 @@ class MediaService:
             media.name = name
         if media_type is not None:
             media.media_type = media_type
+        if type is not None:
+            media.type = type
         if content_description is not None:
             media.content_description = content_description
         if remarks is not None:
@@ -403,11 +410,13 @@ class MediaService:
         if len(name) > MAX_NAME_LENGTH:
             raise ValidationError(f"Name exceeds {MAX_NAME_LENGTH} characters")
         
-        # Validate media type
-        if not media_type or not media_type.strip():
-            raise ValidationError("Media type is required")
-        if not MediaType.is_valid(media_type):
-            raise ValidationError(f"Invalid media type: {media_type}")
+        # Validate media type (optional, defaults to "Unknown")
+        if media_type:
+            media_type = media_type.strip()
+            if not MediaType.is_valid(media_type):
+                raise ValidationError(f"Invalid media type: {media_type}")
+        else:
+            media_type = "Unknown"
         
         # Validate content description
         if content_description and len(content_description) > MAX_DESCRIPTION_LENGTH:

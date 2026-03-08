@@ -25,7 +25,8 @@ CREATE TABLE IF NOT EXISTS media (
     remarks TEXT,
     creation_date DATE,
     valid_until_date DATE,
-    media_type TEXT NOT NULL,
+    media_type TEXT,
+    type TEXT,
     company TEXT,
     license_code TEXT,
     location_id INTEGER,
@@ -45,6 +46,7 @@ STORAGE_LOCATION_INDEXES = [
 MEDIA_INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_media_name ON media(name);",
     "CREATE INDEX IF NOT EXISTS idx_media_type ON media(media_type);",
+    "CREATE INDEX IF NOT EXISTS idx_media_content_type ON media(type);",
     "CREATE INDEX IF NOT EXISTS idx_media_location ON media(location_id);",
     "CREATE INDEX IF NOT EXISTS idx_media_valid_until ON media(valid_until_date);",
     "CREATE INDEX IF NOT EXISTS idx_media_creation_date ON media(creation_date);",

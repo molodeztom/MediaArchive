@@ -11,7 +11,8 @@ class Media:
     
     Attributes:
         name: Media name/title (required).
-        media_type: Type of media (required).
+        media_type: Type of media (optional, defaults to "Unknown").
+        type: Content category (Archive, Program, Backup, Game, etc.).
         content_description: Description of contents.
         remarks: Additional notes.
         creation_date: When media was created.
@@ -25,7 +26,8 @@ class Media:
     """
 
     name: str
-    media_type: str
+    media_type: Optional[str] = None
+    type: Optional[str] = None
     content_description: Optional[str] = None
     remarks: Optional[str] = None
     creation_date: Optional[date] = None
@@ -41,7 +43,9 @@ class Media:
         """Validate and normalize data after initialization."""
         # Trim whitespace from string fields
         self.name = self.name.strip() if self.name else ""
-        self.media_type = self.media_type.strip() if self.media_type else ""
+        self.media_type = self.media_type.strip() if self.media_type else "Unknown"
+        if self.type:
+            self.type = self.type.strip()
         if self.content_description:
             self.content_description = self.content_description.strip()
         if self.remarks:

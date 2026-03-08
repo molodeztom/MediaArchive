@@ -116,71 +116,77 @@ class AddMediaDialog(BaseDialog):
         name_entry.grid(row=0, column=1, sticky=tk.EW, pady=5)
         
         # Media Type field
-        ttk.Label(main_frame, text="Media Type *").grid(row=1, column=0, sticky=tk.W, pady=5)
-        self.type_var = tk.StringVar()
+        ttk.Label(main_frame, text="Media Type").grid(row=1, column=0, sticky=tk.W, pady=5)
+        self.media_type_var = tk.StringVar()
         type_combo = ttk.Combobox(
             main_frame,
-            textvariable=self.type_var,
+            textvariable=self.media_type_var,
             values=MediaType.get_all_values(),
             state="readonly",
             width=37
         )
         type_combo.grid(row=1, column=1, sticky=tk.EW, pady=5)
         
+        # Type (Content Category) field
+        ttk.Label(main_frame, text="Type").grid(row=2, column=0, sticky=tk.W, pady=5)
+        self.type_var = tk.StringVar()
+        type_entry = ttk.Entry(main_frame, textvariable=self.type_var, width=40)
+        type_entry.grid(row=2, column=1, sticky=tk.EW, pady=5)
+        
         # Company field
-        ttk.Label(main_frame, text="Company").grid(row=2, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Company").grid(row=3, column=0, sticky=tk.W, pady=5)
         self.company_var = tk.StringVar()
         company_entry = ttk.Entry(main_frame, textvariable=self.company_var, width=40)
-        company_entry.grid(row=2, column=1, sticky=tk.EW, pady=5)
+        company_entry.grid(row=3, column=1, sticky=tk.EW, pady=5)
         
         # License Code field
-        ttk.Label(main_frame, text="License Code").grid(row=3, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="License Code").grid(row=4, column=0, sticky=tk.W, pady=5)
         self.license_var = tk.StringVar()
         license_entry = ttk.Entry(main_frame, textvariable=self.license_var, width=40)
-        license_entry.grid(row=3, column=1, sticky=tk.EW, pady=5)
+        license_entry.grid(row=4, column=1, sticky=tk.EW, pady=5)
         
         # Creation Date field
-        ttk.Label(main_frame, text="Creation Date").grid(row=4, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Creation Date").grid(row=5, column=0, sticky=tk.W, pady=5)
         self.creation_date_var = tk.StringVar()
         creation_date_entry = ttk.Entry(
             main_frame,
             textvariable=self.creation_date_var,
             width=40
         )
-        creation_date_entry.grid(row=4, column=1, sticky=tk.EW, pady=5)
+        creation_date_entry.grid(row=5, column=1, sticky=tk.EW, pady=5)
         ttk.Label(main_frame, text="(YYYY-MM-DD)", font=("TkDefaultFont", 8)).grid(
-            row=4, column=2, sticky=tk.W, padx=5
+            row=5, column=2, sticky=tk.W, padx=5
         )
         
         # Valid Until Date field
-        ttk.Label(main_frame, text="Valid Until Date").grid(row=5, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Valid Until Date").grid(row=6, column=0, sticky=tk.W, pady=5)
         self.valid_until_var = tk.StringVar()
         valid_until_entry = ttk.Entry(
             main_frame,
             textvariable=self.valid_until_var,
             width=40
         )
-        valid_until_entry.grid(row=5, column=1, sticky=tk.EW, pady=5)
+        valid_until_entry.grid(row=6, column=1, sticky=tk.EW, pady=5)
         ttk.Label(main_frame, text="(YYYY-MM-DD)", font=("TkDefaultFont", 8)).grid(
-            row=5, column=2, sticky=tk.W, padx=5
+            row=6, column=2, sticky=tk.W, padx=5
         )
         
         # Content Description field
-        ttk.Label(main_frame, text="Content Description").grid(row=6, column=0, sticky=tk.NW, pady=5)
+        ttk.Label(main_frame, text="Content Description").grid(row=7, column=0, sticky=tk.NW, pady=5)
         self.content_var = tk.StringVar()
         content_text = tk.Text(main_frame, height=4, width=40)
-        content_text.grid(row=6, column=1, sticky=tk.EW, pady=5)
+        content_text.grid(row=7, column=1, sticky=tk.EW, pady=5)
         self.content_text = content_text
         
         # Remarks field
-        ttk.Label(main_frame, text="Remarks").grid(row=7, column=0, sticky=tk.NW, pady=5)
+        ttk.Label(main_frame, text="Remarks").grid(row=8, column=0, sticky=tk.NW, pady=5)
         self.remarks_var = tk.StringVar()
         remarks_text = tk.Text(main_frame, height=4, width=40)
-        remarks_text.grid(row=7, column=1, sticky=tk.EW, pady=5)
+        remarks_text.grid(row=8, column=1, sticky=tk.EW, pady=5)
         self.remarks_text = remarks_text
         
         # Location field
-        ttk.Label(main_frame, text="Storage Location").grid(row=8, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Storage Location").grid(row=9, column=0, sticky=tk.W, pady=5)
         self.location_var = tk.StringVar()
         location_values = [f"{loc.id}: {loc}" for loc in self.locations]
         location_combo = ttk.Combobox(
@@ -190,7 +196,7 @@ class AddMediaDialog(BaseDialog):
             state="readonly",
             width=37
         )
-        location_combo.grid(row=8, column=1, sticky=tk.EW, pady=5)
+        location_combo.grid(row=9, column=1, sticky=tk.EW, pady=5)
         
         # Configure grid weights
         main_frame.columnconfigure(1, weight=1)
@@ -210,7 +216,8 @@ class AddMediaDialog(BaseDialog):
         try:
             # Get values
             name = self.name_var.get().strip()
-            media_type = self.type_var.get().strip()
+            media_type = self.media_type_var.get().strip()
+            type_value = self.type_var.get().strip() or None
             company = self.company_var.get().strip() or None
             license_code = self.license_var.get().strip() or None
             creation_date_str = self.creation_date_var.get().strip() or None
@@ -225,8 +232,7 @@ class AddMediaDialog(BaseDialog):
                 return
             
             if not media_type:
-                messagebox.showwarning("Validation Error", "Media type is required")
-                return
+                media_type = "Unknown"
             
             # Parse dates
             creation_date = None
@@ -258,6 +264,7 @@ class AddMediaDialog(BaseDialog):
             media = Media(
                 name=name,
                 media_type=media_type,
+                type=type_value,
                 company=company,
                 license_code=license_code,
                 creation_date=creation_date,
@@ -333,31 +340,37 @@ class EditMediaDialog(BaseDialog):
         name_entry.grid(row=0, column=1, sticky=tk.EW, pady=5)
         
         # Media Type field
-        ttk.Label(main_frame, text="Media Type *").grid(row=1, column=0, sticky=tk.W, pady=5)
-        self.type_var = tk.StringVar(value=self.media.media_type)
+        ttk.Label(main_frame, text="Media Type").grid(row=1, column=0, sticky=tk.W, pady=5)
+        self.media_type_var = tk.StringVar(value=self.media.media_type)
         type_combo = ttk.Combobox(
             main_frame,
-            textvariable=self.type_var,
+            textvariable=self.media_type_var,
             values=MediaType.get_all_values(),
             state="readonly",
             width=37
         )
         type_combo.grid(row=1, column=1, sticky=tk.EW, pady=5)
         
+        # Type (Content Category) field
+        ttk.Label(main_frame, text="Type").grid(row=2, column=0, sticky=tk.W, pady=5)
+        self.type_var = tk.StringVar(value=self.media.type or "")
+        type_entry = ttk.Entry(main_frame, textvariable=self.type_var, width=40)
+        type_entry.grid(row=2, column=1, sticky=tk.EW, pady=5)
+        
         # Company field
-        ttk.Label(main_frame, text="Company").grid(row=2, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Company").grid(row=3, column=0, sticky=tk.W, pady=5)
         self.company_var = tk.StringVar(value=self.media.company or "")
         company_entry = ttk.Entry(main_frame, textvariable=self.company_var, width=40)
-        company_entry.grid(row=2, column=1, sticky=tk.EW, pady=5)
+        company_entry.grid(row=3, column=1, sticky=tk.EW, pady=5)
         
         # License Code field
-        ttk.Label(main_frame, text="License Code").grid(row=3, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="License Code").grid(row=4, column=0, sticky=tk.W, pady=5)
         self.license_var = tk.StringVar(value=self.media.license_code or "")
         license_entry = ttk.Entry(main_frame, textvariable=self.license_var, width=40)
-        license_entry.grid(row=3, column=1, sticky=tk.EW, pady=5)
+        license_entry.grid(row=4, column=1, sticky=tk.EW, pady=5)
         
         # Creation Date field
-        ttk.Label(main_frame, text="Creation Date").grid(row=4, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Creation Date").grid(row=5, column=0, sticky=tk.W, pady=5)
         creation_date_str = self.media.creation_date.isoformat() if self.media.creation_date else ""
         self.creation_date_var = tk.StringVar(value=creation_date_str)
         creation_date_entry = ttk.Entry(
@@ -365,13 +378,13 @@ class EditMediaDialog(BaseDialog):
             textvariable=self.creation_date_var,
             width=40
         )
-        creation_date_entry.grid(row=4, column=1, sticky=tk.EW, pady=5)
+        creation_date_entry.grid(row=5, column=1, sticky=tk.EW, pady=5)
         ttk.Label(main_frame, text="(YYYY-MM-DD)", font=("TkDefaultFont", 8)).grid(
-            row=4, column=2, sticky=tk.W, padx=5
+            row=5, column=2, sticky=tk.W, padx=5
         )
         
         # Valid Until Date field
-        ttk.Label(main_frame, text="Valid Until Date").grid(row=5, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Valid Until Date").grid(row=6, column=0, sticky=tk.W, pady=5)
         valid_until_str = self.media.valid_until_date.isoformat() if self.media.valid_until_date else ""
         self.valid_until_var = tk.StringVar(value=valid_until_str)
         valid_until_entry = ttk.Entry(
@@ -379,27 +392,27 @@ class EditMediaDialog(BaseDialog):
             textvariable=self.valid_until_var,
             width=40
         )
-        valid_until_entry.grid(row=5, column=1, sticky=tk.EW, pady=5)
+        valid_until_entry.grid(row=6, column=1, sticky=tk.EW, pady=5)
         ttk.Label(main_frame, text="(YYYY-MM-DD)", font=("TkDefaultFont", 8)).grid(
-            row=5, column=2, sticky=tk.W, padx=5
+            row=6, column=2, sticky=tk.W, padx=5
         )
         
         # Content Description field
-        ttk.Label(main_frame, text="Content Description").grid(row=6, column=0, sticky=tk.NW, pady=5)
+        ttk.Label(main_frame, text="Content Description").grid(row=7, column=0, sticky=tk.NW, pady=5)
         content_text = tk.Text(main_frame, height=4, width=40)
         content_text.insert("1.0", self.media.content_description or "")
-        content_text.grid(row=6, column=1, sticky=tk.EW, pady=5)
+        content_text.grid(row=7, column=1, sticky=tk.EW, pady=5)
         self.content_text = content_text
         
         # Remarks field
-        ttk.Label(main_frame, text="Remarks").grid(row=7, column=0, sticky=tk.NW, pady=5)
+        ttk.Label(main_frame, text="Remarks").grid(row=8, column=0, sticky=tk.NW, pady=5)
         remarks_text = tk.Text(main_frame, height=4, width=40)
         remarks_text.insert("1.0", self.media.remarks or "")
-        remarks_text.grid(row=7, column=1, sticky=tk.EW, pady=5)
+        remarks_text.grid(row=8, column=1, sticky=tk.EW, pady=5)
         self.remarks_text = remarks_text
         
         # Location field
-        ttk.Label(main_frame, text="Storage Location").grid(row=8, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Storage Location").grid(row=9, column=0, sticky=tk.W, pady=5)
         self.location_var = tk.StringVar()
         location_values = [f"{loc.id}: {loc}" for loc in self.locations]
         if self.media.location_id:
@@ -414,7 +427,7 @@ class EditMediaDialog(BaseDialog):
             state="readonly",
             width=37
         )
-        location_combo.grid(row=8, column=1, sticky=tk.EW, pady=5)
+        location_combo.grid(row=9, column=1, sticky=tk.EW, pady=5)
         
         # Configure grid weights
         main_frame.columnconfigure(1, weight=1)
@@ -434,7 +447,8 @@ class EditMediaDialog(BaseDialog):
         try:
             # Get values
             name = self.name_var.get().strip()
-            media_type = self.type_var.get().strip()
+            media_type = self.media_type_var.get().strip()
+            type_value = self.type_var.get().strip() or None
             company = self.company_var.get().strip() or None
             license_code = self.license_var.get().strip() or None
             creation_date_str = self.creation_date_var.get().strip() or None
@@ -449,8 +463,7 @@ class EditMediaDialog(BaseDialog):
                 return
             
             if not media_type:
-                messagebox.showwarning("Validation Error", "Media type is required")
-                return
+                media_type = "Unknown"
             
             # Parse dates
             creation_date = None
@@ -481,6 +494,7 @@ class EditMediaDialog(BaseDialog):
             # Update media object
             self.media.name = name
             self.media.media_type = media_type
+            self.media.type = type_value
             self.media.company = company
             self.media.license_code = license_code
             self.media.creation_date = creation_date

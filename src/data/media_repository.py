@@ -46,10 +46,10 @@ class MediaRepository:
                 """
                 INSERT INTO media (
                     name, content_description, remarks, creation_date,
-                    valid_until_date, media_type, company, license_code,
+                    valid_until_date, media_type, type, company, license_code,
                     location_id
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     media.name,
@@ -58,6 +58,7 @@ class MediaRepository:
                     media.creation_date,
                     media.valid_until_date,
                     media.media_type,
+                    media.type,
                     media.company,
                     media.license_code,
                     media.location_id,
@@ -144,7 +145,7 @@ class MediaRepository:
                 UPDATE media
                 SET name = ?, content_description = ?, remarks = ?,
                     creation_date = ?, valid_until_date = ?, media_type = ?,
-                    company = ?, license_code = ?, location_id = ?
+                    type = ?, company = ?, license_code = ?, location_id = ?
                 WHERE id = ?
                 """,
                 (
@@ -154,6 +155,7 @@ class MediaRepository:
                     media.creation_date,
                     media.valid_until_date,
                     media.media_type,
+                    media.type,
                     media.company,
                     media.license_code,
                     media.location_id,
@@ -390,6 +392,7 @@ class MediaRepository:
             id=row["id"],
             name=row["name"],
             media_type=row["media_type"],
+            type=row["type"],
             content_description=row["content_description"],
             remarks=row["remarks"],
             creation_date=date.fromisoformat(row["creation_date"]) if row["creation_date"] else None,

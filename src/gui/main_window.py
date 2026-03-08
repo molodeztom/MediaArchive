@@ -6,6 +6,7 @@ History:
 20260307  V1.0: Initial main window implementation
 20260307  V1.1: Added location management and search/filter functionality
 20260307  V1.2: Integrated SearchPanel and enhanced filter menu
+20260307  V1.3: Added import/export and backup functionality
 """
 
 import logging
@@ -13,6 +14,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from pathlib import Path
 from datetime import date
+import shutil
 
 from data.database import Database
 from business.location_service import LocationService
@@ -25,6 +27,8 @@ from gui.dialogs import (
     AddLocationDialog, EditLocationDialog, DeleteLocationConfirmDialog
 )
 from gui.search_panel import SearchPanel
+from gui.import_dialog import ImportDialog
+from gui.export_dialog import ExportDialog
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +85,11 @@ class MainWindow:
         # File menu
         file_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="File", menu=file_menu)
+        file_menu.add_command(label="Import", command=self._import_data, accelerator="Ctrl+I")
+        file_menu.add_command(label="Export", command=self._export_data, accelerator="Ctrl+E")
+        file_menu.add_separator()
+        file_menu.add_command(label="Backup Database", command=self._backup_database)
+        file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.root.quit, accelerator="Ctrl+Q")
         
         # Edit menu
@@ -133,6 +142,8 @@ class MainWindow:
         self.root.bind("<Control-l>", lambda e: self._show_locations())
         self.root.bind("<Control-f>", lambda e: self.notebook.select(2))
         self.root.bind("<Control-x>", lambda e: self._show_expired())
+        self.root.bind("<Control-i>", lambda e: self._import_data())
+        self.root.bind("<Control-e>", lambda e: self._export_data())
         
         logger.debug("Menu bar created")
 
@@ -383,6 +394,7 @@ class MainWindow:
             created = self.media_service.create_media(
                 name=media.name,
                 media_type=media.media_type,
+                type=media.type,
                 content_description=media.content_description,
                 remarks=media.remarks,
                 creation_date=media.creation_date,
@@ -435,6 +447,7 @@ class MainWindow:
                 media_id=media.id,
                 name=media.name,
                 media_type=media.media_type,
+                type=media.type,
                 content_description=media.content_description,
                 remarks=media.remarks,
                 creation_date=media.creation_date,
@@ -820,6 +833,137 @@ Location Statistics:
         except Exception as e:
             logger.error(f"Error showing all media: {e}")
             messagebox.showerror("Error", f"Failed to show all media: {e}")
+
+    def _import_data(self) -> None:
+        """Import data from CSV file."""
+        try:
+            # Get existing locations for Access format mapping
+            locations = self.location_service.get_all_locations()
+            
+            dialog = ImportDialog(
+                self.root,
+                on_import=self._on_import_completed,
+                locations=locations
+            )
+            result = dialog.show()
+            
+            if result:
+                imported_data, import_type = result
+                self._process_import(imported_data, import_type)
+        except Exception as e:
+            logger.error(f"Error importing data: {e}")
+            messagebox.showerror("Error", f"Failed to import data: {e}")
+
+    def _process_import(self, imported_data: list, import_type: str) -> None:
+        """Process imported data."""
+        try:
+            if import_type == "media":
+                count = 0
+                for media in imported_data:
+                    try:
+                        self.media_service.create_media(
+                            name=media.name,
+                            media_type=media.media_type,
+                            type=media.type,
+                            content_description=media.content_description,
+                            remarks=media.remarks,
+                            creation_date=media.creation_date,
+                            valid_until_date=media.valid_until_date,
+                            company=media.company,
+                            license_code=media.license_code,
+                            location_id=media.location_id,
+                        )
+                        count += 1
+                    except Exception as e:
+                        logger.warning(f"Failed to import media: {e}")
+                
+                messagebox.showinfo("Import Complete", f"Successfully imported {count} media items")
+                self._refresh_media_list()
+                self.status_var.set(f"Imported {count} media items")
+            
+            else:  # locations
+                count = 0
+                for location in imported_data:
+                    try:
+                        self.location_service.create_location(
+                            box=location.box,
+                            place=location.place,
+                            detail=location.detail,
+                        )
+                        count += 1
+                    except Exception as e:
+                        logger.warning(f"Failed to import location: {e}")
+                
+                messagebox.showinfo("Import Complete", f"Successfully imported {count} locations")
+                self._refresh_locations_list()
+                self.status_var.set(f"Imported {count} locations")
+            
+            logger.info(f"Import completed: {count} {import_type} items")
+            
+        except Exception as e:
+            logger.error(f"Error processing import: {e}")
+            messagebox.showerror("Error", f"Failed to process import: {e}")
+
+    def _on_import_completed(self, imported_data: list, import_type: str) -> None:
+        """Callback when import is completed."""
+        pass
+
+    def _export_data(self) -> None:
+        """Export data to CSV file."""
+        try:
+            media_list = self.media_service.get_all_media()
+            location_list = self.location_service.get_all_locations()
+            
+            dialog = ExportDialog(
+                self.root,
+                media_list,
+                location_list,
+                on_export=self._on_export_completed
+            )
+            result = dialog.show()
+            
+            if result:
+                file_path, export_type, options = result
+                self.status_var.set(f"Exported {options['count']} {export_type} items")
+        except Exception as e:
+            logger.error(f"Error exporting data: {e}")
+            messagebox.showerror("Error", f"Failed to export data: {e}")
+
+    def _on_export_completed(self, file_path: str, export_type: str, options: dict) -> None:
+        """Callback when export is completed."""
+        pass
+
+    def _backup_database(self) -> None:
+        """Backup database file."""
+        try:
+            from tkinter import filedialog
+            from datetime import datetime
+            
+            # Ask user for backup location
+            backup_dir = filedialog.askdirectory(title="Select backup location")
+            if not backup_dir:
+                return
+            
+            # Create backup filename with timestamp
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            backup_filename = f"media_archive_backup_{timestamp}.db"
+            backup_path = Path(backup_dir) / backup_filename
+            
+            # Copy database file
+            db_path = Path(DB_PATH)
+            if db_path.exists():
+                shutil.copy2(db_path, backup_path)
+                messagebox.showinfo(
+                    "Backup Successful",
+                    f"Database backed up to:\n{backup_path}"
+                )
+                self.status_var.set(f"Database backed up to {backup_path}")
+                logger.info(f"Database backed up to {backup_path}")
+            else:
+                messagebox.showerror("Backup Error", "Database file not found")
+        except Exception as e:
+            logger.error(f"Error backing up database: {e}")
+            messagebox.showerror("Error", f"Failed to backup database: {e}")
 
     def run(self) -> None:
         """Start the application."""
