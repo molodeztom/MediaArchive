@@ -19,6 +19,8 @@ History:
 20260309  V1.13: Updated search to use separate box and place filters
 20260309  V1.14: Removed Filter > By Location menu item
 20260309  V1.15: Search results show Number, Name, Type, Box, Position, Place
+20260309  V1.16: Added column sorting to media tab with visual indicators
+20260309  V1.17: Added column sorting to locations tab with visual indicators
 """
 
 import logging
@@ -29,6 +31,7 @@ from datetime import date
 import shutil
 
 from data.database import Database
+from data.preferences_repository import PreferencesRepository
 from business.location_service import LocationService
 from business.media_service import MediaService
 from models.location import StorageLocation
@@ -66,8 +69,15 @@ class MainWindow:
         self.status_var = tk.StringVar()
         self.status_var.set("Initializing...")
         
-        # Initialize database and services
+        # Initialize database and services first (needed for preferences)
         self._init_database()
+        
+        # Load sorting preferences from database
+        self.media_sort_column = self.preferences_repo.get_preference("media_sort_column", "Number")
+        self.media_sort_reverse = self.preferences_repo.get_preference("media_sort_reverse", "False") == "True"
+        
+        self.location_sort_column = self.preferences_repo.get_preference("location_sort_column", "Box")
+        self.location_sort_reverse = self.preferences_repo.get_preference("location_sort_reverse", "False") == "True"
         
         # Build UI
         self._create_menu_bar()
@@ -84,6 +94,7 @@ class MainWindow:
             self.db.init_schema()
             self.location_service = LocationService(self.db)
             self.media_service = MediaService(self.db)
+            self.preferences_repo = PreferencesRepository(self.db)
             logger.info("Database initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize database: {e}")
@@ -213,16 +224,16 @@ class MainWindow:
         self.media_tree.column("Expires", anchor=tk.W, width=100)
         
         self.media_tree.heading("#0", text="", anchor=tk.W)
-        self.media_tree.heading("Number", text="Number", anchor=tk.W)
-        self.media_tree.heading("Name", text="Name", anchor=tk.W)
-        self.media_tree.heading("Type", text="Type", anchor=tk.W)
-        self.media_tree.heading("Category", text="Category", anchor=tk.W)
-        self.media_tree.heading("Box", text="Box", anchor=tk.W)
-        self.media_tree.heading("Position", text="Position", anchor=tk.W)
-        self.media_tree.heading("Company", text="Company", anchor=tk.W)
-        self.media_tree.heading("License", text="License", anchor=tk.W)
-        self.media_tree.heading("Created", text="Created", anchor=tk.W)
-        self.media_tree.heading("Expires", text="Expires", anchor=tk.W)
+        self.media_tree.heading("Number", text="Number", anchor=tk.W, command=lambda: self._sort_media_by_column("Number"))
+        self.media_tree.heading("Name", text="Name", anchor=tk.W, command=lambda: self._sort_media_by_column("Name"))
+        self.media_tree.heading("Type", text="Type", anchor=tk.W, command=lambda: self._sort_media_by_column("Type"))
+        self.media_tree.heading("Category", text="Category", anchor=tk.W, command=lambda: self._sort_media_by_column("Category"))
+        self.media_tree.heading("Box", text="Box", anchor=tk.W, command=lambda: self._sort_media_by_column("Box"))
+        self.media_tree.heading("Position", text="Position", anchor=tk.W, command=lambda: self._sort_media_by_column("Position"))
+        self.media_tree.heading("Company", text="Company", anchor=tk.W, command=lambda: self._sort_media_by_column("Company"))
+        self.media_tree.heading("License", text="License", anchor=tk.W, command=lambda: self._sort_media_by_column("License"))
+        self.media_tree.heading("Created", text="Created", anchor=tk.W, command=lambda: self._sort_media_by_column("Created"))
+        self.media_tree.heading("Expires", text="Expires", anchor=tk.W, command=lambda: self._sort_media_by_column("Expires"))
         
         # Add scrollbar
         scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=self.media_tree.yview)
@@ -236,6 +247,9 @@ class MainWindow:
         
         # Load media
         self._refresh_media_list()
+        
+        # Update header indicators to show current sort state
+        self._update_media_header_indicators()
         
         logger.debug("Media tab created")
 
@@ -262,10 +276,10 @@ class MainWindow:
         self.location_tree.column("Media Count", anchor=tk.W, width=100)
         
         self.location_tree.heading("#0", text="", anchor=tk.W)
-        self.location_tree.heading("Box", text="Box", anchor=tk.W)
-        self.location_tree.heading("Place", text="Place", anchor=tk.W)
-        self.location_tree.heading("Detail", text="Detail", anchor=tk.W)
-        self.location_tree.heading("Media Count", text="Media Count", anchor=tk.W)
+        self.location_tree.heading("Box", text="Box", anchor=tk.W, command=lambda: self._sort_locations_by_column("Box"))
+        self.location_tree.heading("Place", text="Place", anchor=tk.W, command=lambda: self._sort_locations_by_column("Place"))
+        self.location_tree.heading("Detail", text="Detail", anchor=tk.W, command=lambda: self._sort_locations_by_column("Detail"))
+        self.location_tree.heading("Media Count", text="Media Count", anchor=tk.W, command=lambda: self._sort_locations_by_column("Media Count"))
         
         # Add scrollbar
         scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=self.location_tree.yview)
@@ -276,6 +290,9 @@ class MainWindow:
         
         # Load locations
         self._refresh_locations_list()
+        
+        # Update header indicators to show current sort state
+        self._update_locations_header_indicators()
         
         logger.debug("Locations tab created")
 
@@ -342,16 +359,8 @@ class MainWindow:
             # Load media
             media_list = self.media_service.get_all_media()
             
-            # Sort media by number (numeric first, then alphabetic)
-            def sort_key(media):
-                if media.number:
-                    try:
-                        return (0, int(media.number))  # Numeric numbers first
-                    except ValueError:
-                        return (1, media.number)  # Non-numeric alphabetically
-                return (2, "")  # No number last
-            
-            media_list.sort(key=sort_key)
+            # Sort media by current sort column and direction
+            media_list = self._sort_media_list(media_list, self.media_sort_column, self.media_sort_reverse)
             
             # Create location lookup for display
             locations = self.location_service.get_all_locations()
@@ -392,6 +401,175 @@ class MainWindow:
             logger.error(f"Failed to refresh media list: {e}")
             messagebox.showerror("Error", f"Failed to load media: {e}")
 
+    def _update_media_header_indicators(self) -> None:
+        """Update media table header indicators to show current sort state."""
+        try:
+            for col in self.media_tree["columns"]:
+                if col == self.media_sort_column:
+                    indicator = " ▼" if self.media_sort_reverse else " ▲"
+                    self.media_tree.heading(col, text=col + indicator)
+                else:
+                    self.media_tree.heading(col, text=col)
+        except Exception as e:
+            logger.error(f"Error updating media header indicators: {e}")
+
+    def _update_locations_header_indicators(self) -> None:
+        """Update locations table header indicators to show current sort state."""
+        try:
+            for col in self.location_tree["columns"]:
+                if col == self.location_sort_column:
+                    indicator = " ▼" if self.location_sort_reverse else " ▲"
+                    self.location_tree.heading(col, text=col + indicator)
+                else:
+                    self.location_tree.heading(col, text=col)
+        except Exception as e:
+            logger.error(f"Error updating locations header indicators: {e}")
+
+    def _sort_media_list(self, media_list: list, column: str, reverse: bool) -> list:
+        """Sort media list by specified column.
+        
+        Args:
+            media_list: List of media to sort.
+            column: Column name to sort by.
+            reverse: If True, sort in descending order.
+        
+        Returns:
+            Sorted media list.
+        """
+        def get_sort_key(media):
+            if column == "Number":
+                if media.number:
+                    try:
+                        return (0, int(media.number))
+                    except ValueError:
+                        return (1, media.number)
+                return (2, "")
+            elif column == "Name":
+                return media.name.lower() if media.name else ""
+            elif column == "Type":
+                return media.media_type.lower() if media.media_type else ""
+            elif column == "Category":
+                return media.category.lower() if media.category else ""
+            elif column == "Box":
+                # Get box from location
+                if media.location_id:
+                    locations = self.location_service.get_all_locations()
+                    location_map = {loc.id: loc for loc in locations}
+                    if media.location_id in location_map:
+                        box = location_map[media.location_id].box
+                        try:
+                            return (0, int(box))
+                        except ValueError:
+                            return (1, box.lower())
+                return (2, "")
+            elif column == "Position":
+                return media.position.lower() if media.position else ""
+            elif column == "Company":
+                return media.company.lower() if media.company else ""
+            elif column == "License":
+                return media.license_code.lower() if media.license_code else ""
+            elif column == "Created":
+                return media.creation_date if media.creation_date else date.min
+            elif column == "Expires":
+                return media.valid_until_date if media.valid_until_date else date.min
+            else:
+                return ""
+        
+        return sorted(media_list, key=get_sort_key, reverse=reverse)
+
+    def _sort_media_by_column(self, column: str) -> None:
+        """Sort media by clicked column header.
+        
+        Args:
+            column: Column name to sort by.
+        """
+        try:
+            # Toggle direction if same column, otherwise start ascending
+            if self.media_sort_column == column:
+                self.media_sort_reverse = not self.media_sort_reverse
+            else:
+                self.media_sort_column = column
+                self.media_sort_reverse = False
+            
+            # Save preferences to database
+            self.preferences_repo.set_preference("media_sort_column", self.media_sort_column)
+            self.preferences_repo.set_preference("media_sort_reverse", str(self.media_sort_reverse))
+            
+            # Refresh with new sort
+            self._refresh_media_list()
+            
+            # Update header indicators
+            self._update_media_header_indicators()
+            
+            logger.debug(f"Sorted media by {column} ({'descending' if self.media_sort_reverse else 'ascending'})")
+        except Exception as e:
+            logger.error(f"Error sorting media: {e}")
+
+    def _sort_locations_list(self, locations: list, column: str, reverse: bool) -> list:
+        """Sort locations list by specified column.
+        
+        Args:
+            locations: List of locations to sort.
+            column: Column name to sort by.
+            reverse: If True, sort in descending order.
+        
+        Returns:
+            Sorted locations list with media counts.
+        """
+        def get_sort_key(item):
+            loc, media_count = item
+            if column == "Box":
+                try:
+                    return (0, int(loc.box))
+                except ValueError:
+                    return (1, loc.box.lower())
+            elif column == "Place":
+                return loc.place.lower() if loc.place else ""
+            elif column == "Detail":
+                return loc.detail.lower() if loc.detail else ""
+            elif column == "Media Count":
+                return media_count
+            else:
+                return ""
+        
+        # Create list of (location, media_count) tuples
+        location_items = []
+        for loc in locations:
+            media_count = len(self.media_service.get_media_by_location(loc.id))
+            location_items.append((loc, media_count))
+        
+        # Sort and return just the locations
+        sorted_items = sorted(location_items, key=get_sort_key, reverse=reverse)
+        return [(loc, count) for loc, count in sorted_items]
+
+    def _sort_locations_by_column(self, column: str) -> None:
+        """Sort locations by clicked column header.
+        
+        Args:
+            column: Column name to sort by.
+        """
+        try:
+            # Toggle direction if same column, otherwise start ascending
+            if self.location_sort_column == column:
+                self.location_sort_reverse = not self.location_sort_reverse
+            else:
+                self.location_sort_column = column
+                self.location_sort_reverse = False
+            
+            # Save preferences to database
+            self.preferences_repo.set_preference("location_sort_column", self.location_sort_column)
+            self.preferences_repo.set_preference("location_sort_reverse", str(self.location_sort_reverse))
+            
+            # Refresh with new sort
+            self._refresh_locations_list()
+            
+            # Update header indicators
+            self._update_locations_header_indicators()
+            
+            logger.debug(f"Sorted locations by {column} ({'descending' if self.location_sort_reverse else 'ascending'})")
+        except Exception as e:
+            logger.error(f"Error sorting locations: {e}")
+
     def _refresh_locations_list(self) -> None:
         """Refresh locations list in locations tab."""
         try:
@@ -401,9 +579,11 @@ class MainWindow:
             
             # Load locations
             locations = self.location_service.get_all_locations()
-            for loc in locations:
-                # Count media in this location
-                media_count = len(self.media_service.get_media_by_location(loc.id))
+            
+            # Sort locations by current sort column and direction
+            sorted_locations_with_counts = self._sort_locations_list(locations, self.location_sort_column, self.location_sort_reverse)
+            
+            for loc, media_count in sorted_locations_with_counts:
                 # Store location ID in iid, not in values
                 self.location_tree.insert("", tk.END, iid=str(loc.id), values=(
                     loc.box,

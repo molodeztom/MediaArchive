@@ -76,6 +76,27 @@ BEGIN
 END;
 """
 
+# SQL schema for user_preferences table
+USER_PREFERENCES_TABLE = """
+CREATE TABLE IF NOT EXISTS user_preferences (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    key TEXT NOT NULL UNIQUE,
+    value TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+"""
+
+# Trigger to update updated_at timestamp for user_preferences
+USER_PREFERENCES_TIMESTAMP_TRIGGER = """
+CREATE TRIGGER IF NOT EXISTS update_user_preferences_timestamp
+AFTER UPDATE ON user_preferences
+FOR EACH ROW
+BEGIN
+    UPDATE user_preferences SET updated_at = CURRENT_TIMESTAMP WHERE id = OLD.id;
+END;
+"""
+
 
 def get_schema_sql() -> list[str]:
     """Get all SQL statements needed to initialize the database.
@@ -86,8 +107,10 @@ def get_schema_sql() -> list[str]:
     return [
         STORAGE_LOCATION_TABLE,
         MEDIA_TABLE,
+        USER_PREFERENCES_TABLE,
         *STORAGE_LOCATION_INDEXES,
         *MEDIA_INDEXES,
         STORAGE_LOCATION_TIMESTAMP_TRIGGER,
         MEDIA_TIMESTAMP_TRIGGER,
+        USER_PREFERENCES_TIMESTAMP_TRIGGER,
     ]
