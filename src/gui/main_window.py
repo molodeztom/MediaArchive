@@ -11,6 +11,7 @@ History:
 20260309  V1.5: Added location assignment after import and manual assignment tool
 20260309  V1.6: Fixed position display in media tab to show place from DB
 20260309  V1.7: Hide internal ID column, display media number as first column
+20260309  V1.8: Added Category column to media tab between Type and Box
 """
 
 import logging
@@ -195,12 +196,13 @@ class MainWindow:
         self.notebook.add(frame, text="Media")
         
         # Create treeview for media list
-        columns = ("Number", "Name", "Type", "Box", "Position", "Company", "License", "Created", "Expires")
+        columns = ("Number", "Name", "Type", "Category", "Box", "Position", "Company", "License", "Created", "Expires")
         self.media_tree = ttk.Treeview(frame, columns=columns, height=20)
         self.media_tree.column("#0", width=0, stretch=tk.NO)
         self.media_tree.column("Number", anchor=tk.W, width=80)
         self.media_tree.column("Name", anchor=tk.W, width=150)
         self.media_tree.column("Type", anchor=tk.W, width=80)
+        self.media_tree.column("Category", anchor=tk.W, width=80)
         self.media_tree.column("Box", anchor=tk.W, width=60)
         self.media_tree.column("Position", anchor=tk.W, width=80)
         self.media_tree.column("Company", anchor=tk.W, width=100)
@@ -212,6 +214,7 @@ class MainWindow:
         self.media_tree.heading("Number", text="Number", anchor=tk.W)
         self.media_tree.heading("Name", text="Name", anchor=tk.W)
         self.media_tree.heading("Type", text="Type", anchor=tk.W)
+        self.media_tree.heading("Category", text="Category", anchor=tk.W)
         self.media_tree.heading("Box", text="Box", anchor=tk.W)
         self.media_tree.heading("Position", text="Position", anchor=tk.W)
         self.media_tree.heading("Company", text="Company", anchor=tk.W)
@@ -348,6 +351,7 @@ class MainWindow:
                 license_code = media.license_code if media.license_code else "N/A"
                 position = media.position if media.position else "N/A"
                 number = media.number if media.number else "N/A"
+                category = media.category if media.category else "N/A"
                 
                 # Get box from location table
                 if media.location_id and media.location_id in location_map:
@@ -360,6 +364,7 @@ class MainWindow:
                     number,
                     media.name,
                     media.media_type,
+                    category,
                     box,
                     position,
                     company,
