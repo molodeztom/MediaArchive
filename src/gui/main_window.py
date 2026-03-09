@@ -21,6 +21,7 @@ History:
 20260309  V1.15: Search results show Number, Name, Type, Box, Position, Place
 20260309  V1.16: Added column sorting to media tab with visual indicators
 20260309  V1.17: Added column sorting to locations tab with visual indicators
+20260309  V1.18: Added StatisticsDialog and AboutDialog for Phase 7
 """
 
 import logging
@@ -45,6 +46,8 @@ from gui.dialogs import (
 from gui.search_panel import SearchPanel
 from gui.import_dialog import ImportDialog
 from gui.export_dialog import ExportDialog
+from gui.statistics_dialog import StatisticsDialog
+from gui.about_dialog import AboutDialog
 
 logger = logging.getLogger(__name__)
 
@@ -155,6 +158,8 @@ class MainWindow:
         # Help menu
         help_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Help", menu=help_menu)
+        help_menu.add_command(label="User Guide", command=self._show_user_guide, accelerator="F1")
+        help_menu.add_separator()
         help_menu.add_command(label="About", command=self._show_about)
         
         # Bind keyboard shortcuts
@@ -168,6 +173,7 @@ class MainWindow:
         self.root.bind("<Control-x>", lambda e: self._show_expired())
         self.root.bind("<Control-i>", lambda e: self._import_data())
         self.root.bind("<Control-e>", lambda e: self._export_data())
+        self.root.bind("<F1>", lambda e: self._show_user_guide())
         
         logger.debug("Menu bar created")
 
@@ -176,13 +182,28 @@ class MainWindow:
         toolbar = ttk.Frame(self.root)
         toolbar.pack(side=tk.TOP, fill=tk.X, padx=2, pady=2)
         
-        # Buttons
-        ttk.Button(toolbar, text="Add Media", command=self._add_media).pack(side=tk.LEFT, padx=2)
-        ttk.Button(toolbar, text="Edit Media", command=self._edit_media).pack(side=tk.LEFT, padx=2)
-        ttk.Button(toolbar, text="Delete Media", command=self._delete_media).pack(side=tk.LEFT, padx=2)
+        # Buttons with tooltips
+        add_btn = ttk.Button(toolbar, text="Add Media", command=self._add_media)
+        add_btn.pack(side=tk.LEFT, padx=2)
+        self._create_tooltip(add_btn, "Add new media item (Ctrl+N)")
+        
+        edit_btn = ttk.Button(toolbar, text="Edit Media", command=self._edit_media)
+        edit_btn.pack(side=tk.LEFT, padx=2)
+        self._create_tooltip(edit_btn, "Edit selected media (Ctrl+E)")
+        
+        delete_btn = ttk.Button(toolbar, text="Delete Media", command=self._delete_media)
+        delete_btn.pack(side=tk.LEFT, padx=2)
+        self._create_tooltip(delete_btn, "Delete selected media (Delete)")
+        
         ttk.Separator(toolbar, orient=tk.VERTICAL).pack(side=tk.LEFT, fill=tk.Y, padx=5)
-        ttk.Button(toolbar, text="Locations", command=self._show_locations).pack(side=tk.LEFT, padx=2)
-        ttk.Button(toolbar, text="Expired", command=self._show_expired).pack(side=tk.LEFT, padx=2)
+        
+        loc_btn = ttk.Button(toolbar, text="Locations", command=self._show_locations)
+        loc_btn.pack(side=tk.LEFT, padx=2)
+        self._create_tooltip(loc_btn, "Manage storage locations (Ctrl+L)")
+        
+        exp_btn = ttk.Button(toolbar, text="Expired", command=self._show_expired)
+        exp_btn.pack(side=tk.LEFT, padx=2)
+        self._create_tooltip(exp_btn, "Show expired media (Ctrl+X)")
         
         logger.debug("Toolbar created")
 
@@ -348,6 +369,29 @@ class MainWindow:
         status_bar.pack(side=tk.BOTTOM, fill=tk.X)
         
         logger.debug("Status bar created")
+
+    def _create_tooltip(self, widget: tk.Widget, text: str) -> None:
+        """Create a tooltip for a widget.
+        
+        Args:
+            widget: Widget to attach tooltip to.
+            text: Tooltip text.
+        """
+        def on_enter(event):
+            tooltip = tk.Toplevel()
+            tooltip.wm_overrideredirect(True)
+            tooltip.wm_geometry(f"+{event.x_root+10}+{event.y_root+10}")
+            label = ttk.Label(tooltip, text=text, background="lightyellow", relief=tk.SOLID, borderwidth=1)
+            label.pack()
+            widget.tooltip = tooltip
+        
+        def on_leave(event):
+            if hasattr(widget, 'tooltip'):
+                widget.tooltip.destroy()
+                del widget.tooltip
+        
+        widget.bind("<Enter>", on_enter)
+        widget.bind("<Leave>", on_leave)
 
     def _refresh_media_list(self) -> None:
         """Refresh media list in media tab."""
@@ -883,25 +927,10 @@ class MainWindow:
             stats = self.media_service.get_media_statistics()
             locations = self.location_service.get_all_locations()
             
-            message = f"""
-Media Statistics:
-- Total media: {stats['total_media']}
-- Expired: {stats['expired_media']}
-- Expiring soon: {stats['expiring_soon']}
-- With location: {stats['media_with_location']}
-- Without location: {stats['media_without_location']}
-
-By type:
-"""
-            for media_type, count in stats['media_by_type'].items():
-                message += f"  {media_type}: {count}\n"
+            dialog = StatisticsDialog(self.root, stats, len(locations))
+            dialog.show()
             
-            message += f"""
-Location Statistics:
-- Total locations: {len(locations)}
-"""
-            
-            messagebox.showinfo("Statistics", message)
+            self.status_var.set("Statistics dialog closed")
         except Exception as e:
             logger.error(f"Error getting statistics: {e}")
             messagebox.showerror("Error", f"Failed to get statistics: {e}")
@@ -912,12 +941,55 @@ Location Statistics:
 
     def _show_about(self) -> None:
         """Show about dialog."""
-        messagebox.showinfo(
-            "About",
-            f"{APP_NAME} v{APP_VERSION}\n\n"
-            "Local desktop application for managing physical media inventory.\n\n"
-            "Built with Python and tkinter"
-        )
+        dialog = AboutDialog(self.root)
+        dialog.show()
+        self.status_var.set("About dialog closed")
+
+    def _show_user_guide(self) -> None:
+        """Show user guide information."""
+        try:
+            guide_text = """
+MEDIA ARCHIVE MANAGER - USER GUIDE
+
+MAIN FEATURES:
+• Manage media inventory with detailed information
+• Organize media by storage locations
+• Track expiration dates and status
+• Search and filter media by various criteria
+• Import/Export data from CSV files
+• View comprehensive statistics
+
+TABS:
+1. Media Tab: View and manage all media items
+2. Locations Tab: Manage storage locations
+3. Search Tab: Search and filter media
+
+KEYBOARD SHORTCUTS:
+• Ctrl+N: Add new media
+• Ctrl+E: Edit selected media
+• Delete: Delete selected media
+• Ctrl+L: Show locations
+• Ctrl+F: Show search tab
+• Ctrl+X: Show expired media
+• Ctrl+I: Import data
+• Ctrl+E: Export data
+• F5: Refresh view
+• F1: Show this help
+• Ctrl+Q: Exit application
+
+GETTING STARTED:
+1. Create storage locations (Locations tab)
+2. Add media items (Media tab)
+3. Assign locations to media
+4. Use search to find media
+5. Export data for backup
+
+For more information, see the documentation.
+"""
+            messagebox.showinfo("User Guide", guide_text)
+        except Exception as e:
+            logger.error(f"Error showing user guide: {e}")
+            messagebox.showerror("Error", f"Failed to show user guide: {e}")
 
     def _perform_search(self) -> None:
         """Perform search based on search criteria."""

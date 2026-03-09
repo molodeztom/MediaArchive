@@ -6,8 +6,12 @@ SQLite connection lifecycle and schema initialization.
 
 import logging
 import sqlite3
+import sys
 from pathlib import Path
 from typing import Optional
+
+# Add src directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from data.schema import get_schema_sql
 from data.migrations import DatabaseMigration

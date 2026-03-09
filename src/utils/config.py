@@ -91,7 +91,7 @@ LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 APP_NAME = "Media Archive Manager"
 
 # Application version
-APP_VERSION = "0.1.0"
+APP_VERSION = "1.0.0"
 
 # Application description
 APP_DESCRIPTION = "Local desktop application for managing physical media inventory"

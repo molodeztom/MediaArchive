@@ -64,36 +64,39 @@ class TestAddMediaDialog(unittest.TestCase):
 
     def test_add_media_dialog_initialization(self) -> None:
         """Test AddMediaDialog initialization."""
-        dialog = AddMediaDialog(self.root, self.locations)
+        categories = ["Archive", "Backup"]
+        dialog = AddMediaDialog(self.root, self.locations, categories)
         self.assertEqual(dialog.title(), "Add New Media")
         self.assertIsNone(dialog.result)
         dialog.destroy()
 
     def test_add_media_dialog_form_fields_exist(self) -> None:
         """Test that all form fields are created."""
-        dialog = AddMediaDialog(self.root, self.locations)
+        categories = ["Archive", "Backup"]
+        dialog = AddMediaDialog(self.root, self.locations, categories)
         
         # Check that form variables exist
         self.assertIsNotNone(dialog.name_var)
         self.assertIsNotNone(dialog.media_type_var)
-        self.assertIsNotNone(dialog.type_var)
         self.assertIsNotNone(dialog.company_var)
         self.assertIsNotNone(dialog.license_var)
         self.assertIsNotNone(dialog.creation_date_var)
         self.assertIsNotNone(dialog.valid_until_var)
-        self.assertIsNotNone(dialog.location_var)
+        self.assertIsNotNone(dialog.box_var)
         
         dialog.destroy()
 
     def test_add_media_dialog_cancel(self) -> None:
         """Test cancelling AddMediaDialog."""
-        dialog = AddMediaDialog(self.root, self.locations)
+        categories = ["Archive", "Backup"]
+        dialog = AddMediaDialog(self.root, self.locations, categories)
         dialog._cancel()
         self.assertIsNone(dialog.result)
 
     def test_add_media_dialog_validation_empty_name(self) -> None:
         """Test validation for empty name."""
-        dialog = AddMediaDialog(self.root, self.locations)
+        categories = ["Archive", "Backup"]
+        dialog = AddMediaDialog(self.root, self.locations, categories)
         dialog.name_var.set("")
         dialog.media_type_var.set("CD")
         
@@ -105,7 +108,8 @@ class TestAddMediaDialog(unittest.TestCase):
 
     def test_add_media_dialog_validation_empty_type(self) -> None:
         """Test that empty media type defaults to 'Unknown'."""
-        dialog = AddMediaDialog(self.root, self.locations)
+        categories = ["Archive", "Backup"]
+        dialog = AddMediaDialog(self.root, self.locations, categories)
         dialog.name_var.set("Test Media")
         dialog.media_type_var.set("")
         
@@ -118,7 +122,8 @@ class TestAddMediaDialog(unittest.TestCase):
 
     def test_add_media_dialog_invalid_date_format(self) -> None:
         """Test validation for invalid date format."""
-        dialog = AddMediaDialog(self.root, self.locations)
+        categories = ["Archive", "Backup"]
+        dialog = AddMediaDialog(self.root, self.locations, categories)
         dialog.name_var.set("Test Media")
         dialog.media_type_var.set("CD")
         dialog.creation_date_var.set("invalid-date")
@@ -131,7 +136,8 @@ class TestAddMediaDialog(unittest.TestCase):
 
     def test_add_media_dialog_valid_date_format(self) -> None:
         """Test validation for valid date format."""
-        dialog = AddMediaDialog(self.root, self.locations)
+        categories = ["Archive", "Backup"]
+        dialog = AddMediaDialog(self.root, self.locations, categories)
         dialog.name_var.set("Test Media")
         dialog.media_type_var.set("CD")
         dialog.creation_date_var.set("2024-01-15")
@@ -148,8 +154,9 @@ class TestAddMediaDialog(unittest.TestCase):
 
     def test_add_media_dialog_with_callback(self) -> None:
         """Test AddMediaDialog with callback."""
+        categories = ["Archive", "Backup"]
         callback = Mock()
-        dialog = AddMediaDialog(self.root, self.locations, on_save=callback)
+        dialog = AddMediaDialog(self.root, self.locations, categories, on_save=callback)
         
         dialog.name_var.set("Test Media")
         dialog.media_type_var.set("DVD")
@@ -194,14 +201,16 @@ class TestEditMediaDialog(unittest.TestCase):
 
     def test_edit_media_dialog_initialization(self) -> None:
         """Test EditMediaDialog initialization."""
-        dialog = EditMediaDialog(self.root, self.media, self.locations)
+        categories = ["Archive", "Backup"]
+        dialog = EditMediaDialog(self.root, self.media, self.locations, categories)
         self.assertIn("Edit Media", dialog.title())
         self.assertIsNone(dialog.result)
         dialog.destroy()
 
     def test_edit_media_dialog_pre_populated_fields(self) -> None:
         """Test that form fields are pre-populated."""
-        dialog = EditMediaDialog(self.root, self.media, self.locations)
+        categories = ["Archive", "Backup"]
+        dialog = EditMediaDialog(self.root, self.media, self.locations, categories)
         
         self.assertEqual(dialog.name_var.get(), "Test Media")
         self.assertEqual(dialog.media_type_var.get(), "CD")
@@ -212,13 +221,15 @@ class TestEditMediaDialog(unittest.TestCase):
 
     def test_edit_media_dialog_cancel(self) -> None:
         """Test cancelling EditMediaDialog."""
-        dialog = EditMediaDialog(self.root, self.media, self.locations)
+        categories = ["Archive", "Backup"]
+        dialog = EditMediaDialog(self.root, self.media, self.locations, categories)
         dialog._cancel()
         self.assertIsNone(dialog.result)
 
     def test_edit_media_dialog_save_changes(self) -> None:
         """Test saving changes in EditMediaDialog."""
-        dialog = EditMediaDialog(self.root, self.media, self.locations)
+        categories = ["Archive", "Backup"]
+        dialog = EditMediaDialog(self.root, self.media, self.locations, categories)
         
         dialog.name_var.set("Updated Media")
         dialog.media_type_var.set("DVD")
@@ -234,7 +245,8 @@ class TestEditMediaDialog(unittest.TestCase):
 
     def test_edit_media_dialog_validation_empty_name(self) -> None:
         """Test validation for empty name."""
-        dialog = EditMediaDialog(self.root, self.media, self.locations)
+        categories = ["Archive", "Backup"]
+        dialog = EditMediaDialog(self.root, self.media, self.locations, categories)
         dialog.name_var.set("")
         
         with patch('tkinter.messagebox.showwarning'):
@@ -326,8 +338,9 @@ class TestDialogIntegration(unittest.TestCase):
 
     def test_add_edit_delete_workflow(self) -> None:
         """Test complete add-edit-delete workflow."""
+        categories = ["Archive", "Backup"]
         # Add media
-        add_dialog = AddMediaDialog(self.root, self.locations)
+        add_dialog = AddMediaDialog(self.root, self.locations, categories)
         add_dialog.name_var.set("Workflow Test")
         add_dialog.media_type_var.set("CD")
         add_dialog.on_save = Mock()
@@ -340,7 +353,7 @@ class TestDialogIntegration(unittest.TestCase):
         
         # Edit media
         added_media.id = 1
-        edit_dialog = EditMediaDialog(self.root, added_media, self.locations)
+        edit_dialog = EditMediaDialog(self.root, added_media, self.locations, categories)
         edit_dialog.name_var.set("Updated Workflow Test")
         edit_dialog.on_save = Mock()
         
