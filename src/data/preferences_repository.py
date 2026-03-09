@@ -5,6 +5,7 @@ This module provides data access operations for user preferences stored in the d
 History:
 20260309  V1.0: Initial preferences repository implementation
 20260309  V1.1: Added column visibility preferences support
+20260309  V1.2: Phase 9E - Added logging preferences support
 """
 
 import logging
@@ -191,3 +192,65 @@ class PreferencesRepository:
         except Exception as e:
             logger.error(f"Error setting all column visibility: {e}")
             raise
+
+    def set_logging_enabled(self, enabled: bool) -> None:
+        """Set logging enabled preference.
+        
+        Args:
+            enabled: Whether logging should be enabled.
+        """
+        try:
+            value = "True" if enabled else "False"
+            self.set_preference("logging_enabled", value)
+            logger.debug(f"Set logging enabled: {enabled}")
+        except Exception as e:
+            logger.error(f"Error setting logging enabled: {e}")
+            raise
+
+    def get_logging_enabled(self, default: bool = True) -> bool:
+        """Get logging enabled preference.
+        
+        Args:
+            default: Default value if preference not found.
+        
+        Returns:
+            Whether logging should be enabled.
+        """
+        try:
+            value = self.get_preference("logging_enabled", str(default))
+            return value == "True"
+        except Exception as e:
+            logger.error(f"Error getting logging enabled: {e}")
+            return default
+
+    def set_logging_level(self, level: str) -> None:
+        """Set logging level preference.
+        
+        Args:
+            level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
+        """
+        try:
+            valid_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+            if level not in valid_levels:
+                raise ValueError(f"Invalid logging level: {level}")
+            self.set_preference("logging_level", level)
+            logger.debug(f"Set logging level: {level}")
+        except Exception as e:
+            logger.error(f"Error setting logging level: {e}")
+            raise
+
+    def get_logging_level(self, default: str = "INFO") -> str:
+        """Get logging level preference.
+        
+        Args:
+            default: Default value if preference not found.
+        
+        Returns:
+            Logging level.
+        """
+        try:
+            value = self.get_preference("logging_level", default)
+            return value
+        except Exception as e:
+            logger.error(f"Error getting logging level: {e}")
+            return default

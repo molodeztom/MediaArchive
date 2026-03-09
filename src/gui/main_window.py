@@ -37,6 +37,7 @@ History:
 20260309  V1.31: Phase 9D - Made Edit/Delete buttons context-aware for batch operations
 20260309  V1.32: Phase 9D - Status bar always shows selection count on any selection change
 20260309  V1.33: Phase 9D - Status bar shows: items | deleted | selected
+20260309  V1.34: Enhanced date picker with auto-save and year/month selector
 """
 
 import logging
@@ -61,6 +62,7 @@ from gui.dialogs import (
 )
 from gui.batch_edit_dialog import BatchEditDialog
 from gui.column_preferences_dialog import ColumnPreferencesDialog
+from gui.preferences_dialog import PreferencesDialog
 from gui.search_panel import SearchPanel
 from gui.import_dialog import ImportDialog
 from gui.export_dialog import ExportDialog
@@ -107,6 +109,9 @@ class MainWindow:
         # Initialize soft delete flag
         self.show_deleted = False
         
+        # Initialize logging with persistent preferences
+        self._init_logging()
+        
         # Build UI
         self._create_menu_bar()
         self._create_toolbar()
@@ -128,6 +133,37 @@ class MainWindow:
             logger.error(f"Failed to initialize database: {e}")
             messagebox.showerror("Database Error", f"Failed to initialize database: {e}")
             raise
+
+    def _init_logging(self) -> None:
+        """Initialize logging with persistent preferences."""
+        try:
+            from gui.logging_config import set_preferences_repo, set_logging_enabled, set_logging_level
+            import logging as log_module
+            
+            # Set preferences repo for persistent storage
+            set_preferences_repo(self.preferences_repo)
+            
+            # Load logging preferences from database
+            logging_enabled = self.preferences_repo.get_logging_enabled(default=True)
+            log_level_str = self.preferences_repo.get_logging_level(default="INFO")
+            
+            # Convert log level string to logging module constant
+            log_level_map = {
+                "DEBUG": log_module.DEBUG,
+                "INFO": log_module.INFO,
+                "WARNING": log_module.WARNING,
+                "ERROR": log_module.ERROR,
+                "CRITICAL": log_module.CRITICAL,
+            }
+            log_level = log_level_map.get(log_level_str, log_module.INFO)
+            
+            # Apply settings
+            set_logging_enabled(logging_enabled)
+            set_logging_level(log_level)
+            
+            logger.info(f"Logging initialized: enabled={logging_enabled}, level={log_level_str}")
+        except Exception as e:
+            logger.error(f"Error initializing logging: {e}")
 
     def _create_menu_bar(self) -> None:
         """Create menu bar with File, Edit, View, and Help menus."""
@@ -1070,7 +1106,48 @@ class MainWindow:
 
     def _show_preferences(self) -> None:
         """Show preferences dialog."""
-        messagebox.showinfo("Preferences", "Preferences dialog coming soon")
+        try:
+            dialog = PreferencesDialog(
+                self.root,
+                preferences_repo=self.preferences_repo,
+                on_save=self._on_preferences_saved
+            )
+            result = dialog.show()
+            
+            if result:
+                self.status_var.set("Preferences updated")
+                logger.debug("Preferences dialog closed")
+        except Exception as e:
+            logger.error(f"Error showing preferences: {e}")
+            messagebox.showerror("Error", f"Failed to show preferences: {e}")
+    
+    def _on_preferences_saved(self, preferences: dict) -> None:
+        """Callback when preferences are saved."""
+        try:
+            from gui.logging_config import set_logging_enabled, set_logging_level
+            import logging as log_module
+            
+            # Apply logging preferences
+            logging_enabled = preferences.get("logging_enabled", True)
+            log_level_str = preferences.get("log_level", "INFO")
+            
+            # Convert log level string to logging module constant
+            log_level_map = {
+                "DEBUG": log_module.DEBUG,
+                "INFO": log_module.INFO,
+                "WARNING": log_module.WARNING,
+                "ERROR": log_module.ERROR,
+                "CRITICAL": log_module.CRITICAL,
+            }
+            log_level = log_level_map.get(log_level_str, log_module.INFO)
+            
+            # Apply settings
+            set_logging_enabled(logging_enabled)
+            set_logging_level(log_level)
+            
+            logger.info(f"Preferences applied: logging_enabled={logging_enabled}, log_level={log_level_str}")
+        except Exception as e:
+            logger.error(f"Error applying preferences: {e}")
 
     def _show_about(self) -> None:
         """Show about dialog."""

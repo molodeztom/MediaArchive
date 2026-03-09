@@ -17,6 +17,7 @@ History:
 20260309  V1.10: Added include_deleted parameter to search_media_by_name
 20260309  V1.11: Phase 9A complete - auto-numbering and date format support
 20260309  V1.12: Phase 9D - Added batch_update_media method for multi-select operations
+20260309  V1.13: Phase 9E - Added auto-set creation date support
 """
 
 import logging
@@ -70,6 +71,7 @@ class MediaService:
         license_code: Optional[str] = None,
         location_id: Optional[int] = None,
         position: Optional[str] = None,
+        auto_set_creation_date: bool = True,
     ) -> Media:
         """Create a new media item with validation.
         
@@ -86,6 +88,7 @@ class MediaService:
             license_code: Optional license key or activation code.
             location_id: Storage location ID.
             position: Position within storage location.
+            auto_set_creation_date: If True and creation_date is None, set to today.
         
         Returns:
             Created Media with id set.
@@ -93,6 +96,11 @@ class MediaService:
         Raises:
             ValidationError: If validation fails.
         """
+        # Auto-set creation date to today if not provided
+        if auto_set_creation_date and creation_date is None:
+            creation_date = date.today()
+            logger.debug(f"Auto-set creation date to today: {creation_date}")
+        
         # Validate inputs
         self._validate_media_input(
             name,

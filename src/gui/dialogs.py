@@ -19,6 +19,8 @@ History:
 20260309  V1.12: Updated DeleteConfirmDialog to explain soft delete behavior
 20260309  V1.13: Phase 9A complete - auto-numbering and date format support
 20260309  V1.14: Phase 9C - Added ColumnPreferencesDialog for column visibility
+20260309  V1.15: Phase 9E - Added date picker buttons to date fields
+20260309  V1.16: Enhanced date picker with auto-save and year/month selector
 """
 
 import logging
@@ -38,6 +40,7 @@ from models.enums import MediaType
 from utils.exceptions import ValidationError, NotFoundError
 from utils.config import MAX_BOX_LENGTH, MAX_PLACE_LENGTH, MAX_DETAIL_LENGTH
 from utils.date_utils import format_date, parse_date
+from gui.date_picker_dialog import DatePickerDialog
 
 logger = logging.getLogger(__name__)
 
@@ -206,12 +209,20 @@ class AddMediaDialog(BaseDialog):
         # Creation Date field
         ttk.Label(main_frame, text="Creation Date").grid(row=8, column=0, sticky=tk.W, pady=5)
         self.creation_date_var = tk.StringVar()
+        creation_date_frame = ttk.Frame(main_frame)
+        creation_date_frame.grid(row=8, column=1, sticky=tk.EW, pady=5)
         creation_date_entry = ttk.Entry(
-            main_frame,
+            creation_date_frame,
             textvariable=self.creation_date_var,
-            width=40
+            width=30
         )
-        creation_date_entry.grid(row=8, column=1, sticky=tk.EW, pady=5)
+        creation_date_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        ttk.Button(
+            creation_date_frame,
+            text="📅",
+            width=3,
+            command=self._pick_creation_date
+        ).pack(side=tk.LEFT, padx=2)
         ttk.Label(main_frame, text="(DD.MM.YYYY)", font=("TkDefaultFont", 8)).grid(
             row=8, column=2, sticky=tk.W, padx=5
         )
@@ -219,12 +230,20 @@ class AddMediaDialog(BaseDialog):
         # Valid Until Date field
         ttk.Label(main_frame, text="Valid Until Date").grid(row=9, column=0, sticky=tk.W, pady=5)
         self.valid_until_var = tk.StringVar()
+        valid_until_frame = ttk.Frame(main_frame)
+        valid_until_frame.grid(row=9, column=1, sticky=tk.EW, pady=5)
         valid_until_entry = ttk.Entry(
-            main_frame,
+            valid_until_frame,
             textvariable=self.valid_until_var,
-            width=40
+            width=30
         )
-        valid_until_entry.grid(row=9, column=1, sticky=tk.EW, pady=5)
+        valid_until_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        ttk.Button(
+            valid_until_frame,
+            text="📅",
+            width=3,
+            command=self._pick_valid_until_date
+        ).pack(side=tk.LEFT, padx=2)
         ttk.Label(main_frame, text="(DD.MM.YYYY)", font=("TkDefaultFont", 8)).grid(
             row=9, column=2, sticky=tk.W, padx=5
         )
@@ -338,6 +357,46 @@ class AddMediaDialog(BaseDialog):
         except Exception as e:
             messagebox.showerror("Error", f"Failed to save media: {e}")
             logger.error(f"Error in AddMediaDialog._save: {e}")
+
+    def _pick_creation_date(self) -> None:
+        """Open date picker for creation date."""
+        try:
+            current_date_str = self.creation_date_var.get().strip()
+            initial_date = None
+            if current_date_str:
+                try:
+                    initial_date = parse_date(current_date_str)
+                except ValueError:
+                    initial_date = None
+            
+            picker = DatePickerDialog(self, "Select Creation Date", initial_date)
+            selected_date = picker.show()
+            if selected_date:
+                self.creation_date_var.set(format_date(selected_date))
+                logger.debug(f"Creation date selected: {selected_date}")
+        except Exception as e:
+            logger.error(f"Error in date picker: {e}")
+            messagebox.showerror("Error", f"Failed to open date picker: {e}")
+
+    def _pick_valid_until_date(self) -> None:
+        """Open date picker for valid until date."""
+        try:
+            current_date_str = self.valid_until_var.get().strip()
+            initial_date = None
+            if current_date_str:
+                try:
+                    initial_date = parse_date(current_date_str)
+                except ValueError:
+                    initial_date = None
+            
+            picker = DatePickerDialog(self, "Select Valid Until Date", initial_date)
+            selected_date = picker.show()
+            if selected_date:
+                self.valid_until_var.set(format_date(selected_date))
+                logger.debug(f"Valid until date selected: {selected_date}")
+        except Exception as e:
+            logger.error(f"Error in date picker: {e}")
+            messagebox.showerror("Error", f"Failed to open date picker: {e}")
 
     def _cancel(self) -> None:
         """Cancel and close dialog."""
@@ -473,12 +532,20 @@ class EditMediaDialog(BaseDialog):
         ttk.Label(main_frame, text="Creation Date").grid(row=9, column=0, sticky=tk.W, pady=5)
         creation_date_str = format_date(self.media.creation_date) if self.media.creation_date else ""
         self.creation_date_var = tk.StringVar(value=creation_date_str)
+        creation_date_frame = ttk.Frame(main_frame)
+        creation_date_frame.grid(row=9, column=1, sticky=tk.EW, pady=5)
         creation_date_entry = ttk.Entry(
-            main_frame,
+            creation_date_frame,
             textvariable=self.creation_date_var,
-            width=40
+            width=30
         )
-        creation_date_entry.grid(row=9, column=1, sticky=tk.EW, pady=5)
+        creation_date_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        ttk.Button(
+            creation_date_frame,
+            text="📅",
+            width=3,
+            command=self._pick_creation_date
+        ).pack(side=tk.LEFT, padx=2)
         ttk.Label(main_frame, text="(DD.MM.YYYY)", font=("TkDefaultFont", 8)).grid(
             row=9, column=2, sticky=tk.W, padx=5
         )
@@ -487,12 +554,20 @@ class EditMediaDialog(BaseDialog):
         ttk.Label(main_frame, text="Valid Until Date").grid(row=10, column=0, sticky=tk.W, pady=5)
         valid_until_str = format_date(self.media.valid_until_date) if self.media.valid_until_date else ""
         self.valid_until_var = tk.StringVar(value=valid_until_str)
+        valid_until_frame = ttk.Frame(main_frame)
+        valid_until_frame.grid(row=10, column=1, sticky=tk.EW, pady=5)
         valid_until_entry = ttk.Entry(
-            main_frame,
+            valid_until_frame,
             textvariable=self.valid_until_var,
-            width=40
+            width=30
         )
-        valid_until_entry.grid(row=10, column=1, sticky=tk.EW, pady=5)
+        valid_until_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        ttk.Button(
+            valid_until_frame,
+            text="📅",
+            width=3,
+            command=self._pick_valid_until_date
+        ).pack(side=tk.LEFT, padx=2)
         ttk.Label(main_frame, text="(DD.MM.YYYY)", font=("TkDefaultFont", 8)).grid(
             row=10, column=2, sticky=tk.W, padx=5
         )
@@ -537,6 +612,46 @@ class EditMediaDialog(BaseDialog):
             self.place_display_var.set("")
         except Exception as e:
             logger.error(f"Error updating place display: {e}")
+
+    def _pick_creation_date(self) -> None:
+        """Open date picker for creation date."""
+        try:
+            current_date_str = self.creation_date_var.get().strip()
+            initial_date = None
+            if current_date_str:
+                try:
+                    initial_date = parse_date(current_date_str)
+                except ValueError:
+                    initial_date = None
+            
+            picker = DatePickerDialog(self, "Select Creation Date", initial_date)
+            selected_date = picker.show()
+            if selected_date:
+                self.creation_date_var.set(format_date(selected_date))
+                logger.debug(f"Creation date selected: {selected_date}")
+        except Exception as e:
+            logger.error(f"Error in date picker: {e}")
+            messagebox.showerror("Error", f"Failed to open date picker: {e}")
+
+    def _pick_valid_until_date(self) -> None:
+        """Open date picker for valid until date."""
+        try:
+            current_date_str = self.valid_until_var.get().strip()
+            initial_date = None
+            if current_date_str:
+                try:
+                    initial_date = parse_date(current_date_str)
+                except ValueError:
+                    initial_date = None
+            
+            picker = DatePickerDialog(self, "Select Valid Until Date", initial_date)
+            selected_date = picker.show()
+            if selected_date:
+                self.valid_until_var.set(format_date(selected_date))
+                logger.debug(f"Valid until date selected: {selected_date}")
+        except Exception as e:
+            logger.error(f"Error in date picker: {e}")
+            messagebox.showerror("Error", f"Failed to open date picker: {e}")
 
     def _save(self) -> None:
         """Save media changes and close dialog."""

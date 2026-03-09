@@ -6,16 +6,19 @@ History:
 20260307  V1.0: Initial search panel implementation
 20260309  V1.1: Split location filter into separate Box and Place filters
 20260309  V1.2: Added double-click navigation support and tooltip functionality
+20260309  V1.3: Added date picker buttons for From and To date range fields
 """
 
 import logging
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from typing import Optional, Callable, List
 from datetime import date
 
 from models.enums import MediaType
 from models.location import StorageLocation
+from gui.date_picker_dialog import DatePickerDialog
+from utils.date_utils import format_date, parse_date
 
 logger = logging.getLogger(__name__)
 
@@ -111,16 +114,32 @@ class SearchPanel(ttk.Frame):
         
         ttk.Label(main_frame, text="From:").grid(row=3, column=1, sticky=tk.E, padx=5, pady=5)
         self.date_from_var = tk.StringVar()
-        date_from_entry = ttk.Entry(main_frame, textvariable=self.date_from_var, width=12)
-        date_from_entry.grid(row=3, column=2, sticky=tk.W, padx=5, pady=5)
+        date_from_frame = ttk.Frame(main_frame)
+        date_from_frame.grid(row=3, column=2, sticky=tk.W, padx=5, pady=5)
+        date_from_entry = ttk.Entry(date_from_frame, textvariable=self.date_from_var, width=10)
+        date_from_entry.pack(side=tk.LEFT, padx=2)
+        ttk.Button(
+            date_from_frame,
+            text="📅",
+            width=3,
+            command=self._pick_date_from
+        ).pack(side=tk.LEFT, padx=2)
         ttk.Label(main_frame, text="(YYYY-MM-DD)", font=("TkDefaultFont", 8)).grid(
             row=3, column=3, sticky=tk.W, padx=2, pady=5
         )
         
         ttk.Label(main_frame, text="To:").grid(row=4, column=1, sticky=tk.E, padx=5, pady=5)
         self.date_to_var = tk.StringVar()
-        date_to_entry = ttk.Entry(main_frame, textvariable=self.date_to_var, width=12)
-        date_to_entry.grid(row=4, column=2, sticky=tk.W, padx=5, pady=5)
+        date_to_frame = ttk.Frame(main_frame)
+        date_to_frame.grid(row=4, column=2, sticky=tk.W, padx=5, pady=5)
+        date_to_entry = ttk.Entry(date_to_frame, textvariable=self.date_to_var, width=10)
+        date_to_entry.pack(side=tk.LEFT, padx=2)
+        ttk.Button(
+            date_to_frame,
+            text="📅",
+            width=3,
+            command=self._pick_date_to
+        ).pack(side=tk.LEFT, padx=2)
         ttk.Label(main_frame, text="(YYYY-MM-DD)", font=("TkDefaultFont", 8)).grid(
             row=4, column=3, sticky=tk.W, padx=2, pady=5
         )
@@ -192,6 +211,46 @@ class SearchPanel(ttk.Frame):
         if self.on_double_click:
             self.on_double_click(media_id)
             logger.debug(f"Double-click navigation triggered for media_id: {media_id}")
+
+    def _pick_date_from(self) -> None:
+        """Open date picker for From date."""
+        try:
+            current_date_str = self.date_from_var.get().strip()
+            initial_date = None
+            if current_date_str:
+                try:
+                    initial_date = date.fromisoformat(current_date_str)
+                except ValueError:
+                    initial_date = None
+            
+            picker = DatePickerDialog(self.master, "Select From Date", initial_date)
+            selected_date = picker.show()
+            if selected_date:
+                self.date_from_var.set(selected_date.isoformat())
+                logger.debug(f"From date selected: {selected_date}")
+        except Exception as e:
+            logger.error(f"Error in date picker: {e}")
+            messagebox.showerror("Error", f"Failed to open date picker: {e}")
+
+    def _pick_date_to(self) -> None:
+        """Open date picker for To date."""
+        try:
+            current_date_str = self.date_to_var.get().strip()
+            initial_date = None
+            if current_date_str:
+                try:
+                    initial_date = date.fromisoformat(current_date_str)
+                except ValueError:
+                    initial_date = None
+            
+            picker = DatePickerDialog(self.master, "Select To Date", initial_date)
+            selected_date = picker.show()
+            if selected_date:
+                self.date_to_var.set(selected_date.isoformat())
+                logger.debug(f"To date selected: {selected_date}")
+        except Exception as e:
+            logger.error(f"Error in date picker: {e}")
+            messagebox.showerror("Error", f"Failed to open date picker: {e}")
 
     def _on_clear(self) -> None:
         """Handle clear button click."""

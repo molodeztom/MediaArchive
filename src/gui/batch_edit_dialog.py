@@ -4,6 +4,7 @@ This module provides a dialog for batch editing multiple media items.
 
 History:
 20260309  V1.0: Initial batch edit dialog implementation
+20260309  V1.1: Added date picker button for Valid Until Date field
 """
 
 import logging
@@ -15,6 +16,7 @@ from datetime import date
 from models.media import Media
 from models.enums import MediaType
 from utils.date_utils import format_date, parse_date
+from gui.date_picker_dialog import DatePickerDialog
 
 logger = logging.getLogger(__name__)
 
@@ -123,12 +125,20 @@ class BatchEditDialog(BaseDialog):
         # Valid Until Date field
         ttk.Label(main_frame, text="Valid Until Date").grid(row=3, column=0, sticky=tk.W, pady=5)
         self.valid_until_var = tk.StringVar()
+        valid_until_frame = ttk.Frame(main_frame)
+        valid_until_frame.grid(row=3, column=1, sticky=tk.EW, pady=5)
         valid_until_entry = ttk.Entry(
-            main_frame,
+            valid_until_frame,
             textvariable=self.valid_until_var,
-            width=40
+            width=30
         )
-        valid_until_entry.grid(row=3, column=1, sticky=tk.EW, pady=5)
+        valid_until_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        ttk.Button(
+            valid_until_frame,
+            text="📅",
+            width=3,
+            command=self._pick_valid_until_date
+        ).pack(side=tk.LEFT, padx=2)
         ttk.Label(main_frame, text="(DD.MM.YYYY)", font=("TkDefaultFont", 8)).grid(
             row=3, column=2, sticky=tk.W, padx=5
         )
@@ -188,6 +198,26 @@ class BatchEditDialog(BaseDialog):
         except Exception as e:
             messagebox.showerror("Error", f"Failed to apply batch edit: {e}")
             logger.error(f"Error in BatchEditDialog._save: {e}")
+
+    def _pick_valid_until_date(self) -> None:
+        """Open date picker for valid until date."""
+        try:
+            current_date_str = self.valid_until_var.get().strip()
+            initial_date = None
+            if current_date_str:
+                try:
+                    initial_date = parse_date(current_date_str)
+                except ValueError:
+                    initial_date = None
+            
+            picker = DatePickerDialog(self, "Select Valid Until Date", initial_date)
+            selected_date = picker.show()
+            if selected_date:
+                self.valid_until_var.set(format_date(selected_date))
+                logger.debug(f"Valid until date selected: {selected_date}")
+        except Exception as e:
+            logger.error(f"Error in date picker: {e}")
+            messagebox.showerror("Error", f"Failed to open date picker: {e}")
 
     def _cancel(self) -> None:
         """Cancel and close dialog."""
