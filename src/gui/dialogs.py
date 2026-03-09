@@ -16,6 +16,7 @@ History:
 20260309  V1.9: Changed Category field to editable combobox with existing values
 20260309  V1.10: Added auto-numbering and DD.MM.YYYY date format support
 20260309  V1.11: Updated date parsing to use parse_date() for DD.MM.YYYY format
+20260309  V1.12: Updated DeleteConfirmDialog to explain soft delete behavior
 """
 
 import logging
@@ -657,41 +658,34 @@ class DeleteConfirmDialog(BaseDialog):
         main_frame = ttk.Frame(self, padding=20)
         main_frame.pack(fill=tk.BOTH, expand=True)
         
-        # Warning icon and message
-        warning_frame = ttk.Frame(main_frame)
-        warning_frame.pack(fill=tk.X, pady=10)
+        # Info message about soft delete
+        info_frame = ttk.Frame(main_frame)
+        info_frame.pack(fill=tk.X, pady=(0, 15))
         
-        ttk.Label(warning_frame, text="⚠", font=("TkDefaultFont", 24)).pack(side=tk.LEFT, padx=10)
-        ttk.Label(
-            warning_frame,
-            text="Are you sure you want to delete this media?",
-            font=("TkDefaultFont", 12, "bold")
-        ).pack(side=tk.LEFT, padx=10)
+        info_label = ttk.Label(
+            info_frame,
+            text="ℹ️ Soft Delete: The item will be hidden but can be restored later.",
+            foreground="blue",
+            font=("Arial", 9, "italic")
+        )
+        info_label.pack(anchor=tk.W)
         
         # Media details
         details_frame = ttk.LabelFrame(main_frame, text="Media Details", padding=10)
-        details_frame.pack(fill=tk.X, pady=10)
+        details_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
         
-        details_text = f"""
-Name: {self.media.name}
-Type: {self.media.media_type}
-Company: {self.media.company or "N/A"}
-License Code: {self.media.license_code or "N/A"}
-Location: {self.media.location_id or "N/A"}
-Created: {self.media.creation_date or "N/A"}
-Expires: {self.media.valid_until_date or "N/A"}
-        """.strip()
-        
-        ttk.Label(details_frame, text=details_text, justify=tk.LEFT).pack(fill=tk.X)
+        ttk.Label(details_frame, text=f"Name: {self.media.name}", font=("Arial", 10, "bold")).pack(anchor=tk.W, pady=2)
+        ttk.Label(details_frame, text=f"Type: {self.media.media_type}").pack(anchor=tk.W, pady=2)
+        if self.media.number:
+            ttk.Label(details_frame, text=f"Number: {self.media.number}").pack(anchor=tk.W, pady=2)
         
         # Warning message
         warning_label = ttk.Label(
             main_frame,
-            text="This action cannot be undone.",
-            foreground="red",
-            font=("TkDefaultFont", 10)
+            text="Delete this media item?\n\nYou can restore it later from 'Show Deleted' view.",
+            justify=tk.LEFT
         )
-        warning_label.pack(pady=10)
+        warning_label.pack(pady=(0, 15))
         
         # Buttons frame
         button_frame = ttk.Frame(self)

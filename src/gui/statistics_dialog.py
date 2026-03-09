@@ -5,6 +5,7 @@ the media archive including counts by type, location, and expiration status.
 
 History:
 20260309  V1.0: Initial statistics dialog implementation
+20260309  V1.1: Added deleted media count to overview statistics
 """
 
 import logging
@@ -115,6 +116,7 @@ class StatisticsDialog:
         # Media statistics
         self._add_stat_section(scrollable_frame, "Media Statistics")
         self._add_stat_row(scrollable_frame, "Total Media:", str(self.stats["total_media"]))
+        self._add_stat_row(scrollable_frame, "Deleted Media:", str(self.stats.get("deleted_media", 0)))
         self._add_stat_row(scrollable_frame, "Expired Media:", str(self.stats["expired_media"]))
         self._add_stat_row(scrollable_frame, "Expiring Soon (30 days):", str(self.stats["expiring_soon"]))
         

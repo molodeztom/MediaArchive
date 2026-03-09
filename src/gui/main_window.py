@@ -24,6 +24,9 @@ History:
 20260309  V1.18: Added StatisticsDialog and AboutDialog for Phase 7
 20260309  V1.19: Updated date display to DD.MM.YYYY format using format_date()
 20260309  V1.20: Added soft delete support - toggle button and visual indicators
+20260309  V1.21: Added context menu with restore/permanent delete for deleted items
+20260309  V1.22: Updated search to respect deleted filter - exclude deleted items by default
+20260309  V1.23: Search dialog now respects show_deleted flag for search results
 """
 
 import logging
@@ -277,6 +280,9 @@ class MainWindow:
         
         # Bind double-click to jump to location
         self.media_tree.bind("<Double-1>", self._on_media_double_click)
+        
+        # Bind right-click to show context menu
+        self.media_tree.bind("<Button-3>", self._on_media_right_click)
         
         # Load media
         self._refresh_media_list()
@@ -1032,10 +1038,15 @@ For more information, see the documentation.
             date_to = criteria["date_to"]
             
             # Start with all media or search results
+            # Include deleted items if show_deleted is enabled
             if query:
-                results = self.media_service.search_media_by_name(query)
+                results = self.media_service.search_media_by_name(query, include_deleted=self.show_deleted)
             else:
-                results = self.media_service.get_all_media()
+                results = self.media_service.get_all_media(include_deleted=self.show_deleted)
+            
+            # Filter out deleted items if not showing deleted
+            if not self.show_deleted:
+                results = [m for m in results if not m.is_deleted]
             
             # Apply type filter
             if type_filter and type_filter != "All":
@@ -1440,6 +1451,136 @@ For more information, see the documentation.
         except Exception as e:
             logger.error(f"Error toggling deleted items: {e}")
             messagebox.showerror("Error", f"Failed to toggle deleted items: {e}")
+
+    def _on_media_right_click(self, event) -> None:
+        """Handle right-click on media item to show context menu."""
+        try:
+            # Select item under cursor
+            item = self.media_tree.identify_row(event.y)
+            if not item:
+                return
+            
+            self.media_tree.selection_set(item)
+            
+            # Get media details
+            media_id = int(item)
+            media = self.media_service.get_media(media_id)
+            
+            # Create context menu
+            menu = tk.Menu(self.root, tearoff=0)
+            
+            if media.is_deleted:
+                # Options for deleted items
+                menu.add_command(label="Restore", command=self._restore_media)
+                menu.add_separator()
+                menu.add_command(label="Permanent Delete", command=self._permanent_delete_media)
+            else:
+                # Options for normal items
+                menu.add_command(label="Edit", command=self._edit_media)
+                menu.add_command(label="Delete", command=self._delete_media)
+                menu.add_separator()
+                if media.location_id:
+                    menu.add_command(label="View Location", command=lambda: self._jump_to_location(media.location_id))
+            
+            # Show menu at cursor position
+            menu.post(event.x_root, event.y_root)
+            
+        except Exception as e:
+            logger.error(f"Error showing context menu: {e}")
+
+    def _jump_to_location(self, location_id: int) -> None:
+        """Jump to location tab and select location."""
+        try:
+            self.notebook.select(1)  # Switch to locations tab
+            location_iid = str(location_id)
+            if location_iid in self.location_tree.get_children():
+                self.location_tree.selection_set(location_iid)
+                self.location_tree.see(location_iid)
+                self.status_var.set(f"Jumped to location {location_id}")
+                logger.debug(f"Jumped to location {location_id}")
+        except Exception as e:
+            logger.error(f"Error jumping to location: {e}")
+
+    def _restore_media(self) -> None:
+        """Restore a soft-deleted media item."""
+        try:
+            # Get selected media
+            selection = self.media_tree.selection()
+            if not selection:
+                messagebox.showwarning("Selection Error", "Please select a media item to restore")
+                return
+            
+            # Get media ID from treeview item ID
+            item = selection[0]
+            media_id = int(item)
+            
+            # Get media details
+            media = self.media_service.get_media(media_id)
+            
+            # Confirm restore
+            result = messagebox.askyesno(
+                "Restore Media",
+                f"Restore media item?\n\n"
+                f"Name: {media.name}\n"
+                f"Type: {media.media_type}\n\n"
+                f"This will make the item visible again."
+            )
+            
+            if result:
+                self.media_service.restore_media(media_id)
+                self.status_var.set(f"Restored media: {media.name}")
+                self._refresh_media_list()
+                logger.info(f"Restored media: {media_id}")
+        except Exception as e:
+            logger.error(f"Error restoring media: {e}")
+            messagebox.showerror("Error", f"Failed to restore media: {e}")
+
+    def _permanent_delete_media(self) -> None:
+        """Permanently delete a media item from database."""
+        try:
+            # Get selected media
+            selection = self.media_tree.selection()
+            if not selection:
+                messagebox.showwarning("Selection Error", "Please select a media item to delete")
+                return
+            
+            # Get media ID from treeview item ID
+            item = selection[0]
+            media_id = int(item)
+            
+            # Get media details
+            media = self.media_service.get_media(media_id)
+            
+            # Show strong warning
+            result = messagebox.askyesno(
+                "⚠️ PERMANENT DELETE",
+                f"PERMANENTLY delete media item?\n\n"
+                f"Name: {media.name}\n"
+                f"Type: {media.media_type}\n\n"
+                f"⚠️ WARNING: This action CANNOT be undone!\n"
+                f"The item will be permanently removed from the database.\n\n"
+                f"Are you absolutely sure?",
+                icon="warning"
+            )
+            
+            if result:
+                # Second confirmation
+                result2 = messagebox.askyesno(
+                    "⚠️ FINAL CONFIRMATION",
+                    f"This is your last chance!\n\n"
+                    f"Permanently delete '{media.name}'?\n\n"
+                    f"This action is IRREVERSIBLE!",
+                    icon="warning"
+                )
+                
+                if result2:
+                    self.media_service.delete_media_permanent(media_id)
+                    self.status_var.set(f"Permanently deleted media: {media.name}")
+                    self._refresh_media_list()
+                    logger.info(f"Permanently deleted media: {media_id}")
+        except Exception as e:
+            logger.error(f"Error permanently deleting media: {e}")
+            messagebox.showerror("Error", f"Failed to permanently delete media: {e}")
 
     def close(self) -> None:
         """Close the application."""

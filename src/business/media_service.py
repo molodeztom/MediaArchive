@@ -13,6 +13,8 @@ History:
 20260309  V1.6: Added get_unique_categories method for category dropdown
 20260309  V1.7: Added get_next_number method for auto-numbering
 20260309  V1.8: Added soft delete support (delete_media_soft, restore_media, delete_media_permanent)
+20260309  V1.9: Updated get_media_statistics to exclude deleted items and add deleted count
+20260309  V1.10: Added include_deleted parameter to search_media_by_name
 """
 
 import logging
@@ -310,11 +312,12 @@ class MediaService:
         self._repo.permanent_delete(media_id)
         logger.info(f"Permanently deleted media: {media_id}")
 
-    def search_media_by_name(self, name: str) -> list[Media]:
+    def search_media_by_name(self, name: str, include_deleted: bool = False) -> list[Media]:
         """Search media by name.
         
         Args:
             name: Name to search for.
+            include_deleted: If True, include soft-deleted items. Default False.
         
         Returns:
             List of matching Media objects.
@@ -325,7 +328,7 @@ class MediaService:
         if not name or not name.strip():
             raise ValidationError("Search query cannot be empty")
         
-        results = self._repo.search_by_name(name.strip())
+        results = self._repo.search_by_name(name.strip(), include_deleted=include_deleted)
         logger.debug(f"Search found {len(results)} media for name: {name}")
         return results
 
@@ -437,19 +440,25 @@ class MediaService:
         """Get statistics about media collection.
         
         Returns:
-            Dictionary with statistics.
+            Dictionary with statistics (excludes deleted items by default).
         """
-        all_media = self._repo.get_all()
-        expired = self._repo.get_expired_media()
-        expiring_soon = self._repo.get_expiring_soon(30)
+        # Get active media (not deleted)
+        all_media = self._repo.get_all(include_deleted=False)
         
-        # Count by type
+        # Get deleted media separately
+        deleted_media = self._repo.get_deleted_media()
+        
+        expired = self._repo.get_expired_media(include_deleted=False)
+        expiring_soon = self._repo.get_expiring_soon(30, include_deleted=False)
+        
+        # Count by type (active only)
         by_type = {}
         for media in all_media:
             by_type[media.media_type] = by_type.get(media.media_type, 0) + 1
         
         stats = {
             "total_media": len(all_media),
+            "deleted_media": len(deleted_media),
             "expired_media": len(expired),
             "expiring_soon": len(expiring_soon),
             "media_by_type": by_type,
