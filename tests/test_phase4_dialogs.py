@@ -140,7 +140,7 @@ class TestAddMediaDialog(unittest.TestCase):
         dialog = AddMediaDialog(self.root, self.locations, categories)
         dialog.name_var.set("Test Media")
         dialog.media_type_var.set("CD")
-        dialog.creation_date_var.set("2024-01-15")
+        dialog.creation_date_var.set("15.01.2024")
         
         # Mock the on_save callback
         dialog.on_save = Mock()
@@ -233,6 +233,9 @@ class TestEditMediaDialog(unittest.TestCase):
         
         dialog.name_var.set("Updated Media")
         dialog.media_type_var.set("DVD")
+        # Update date fields to DD.MM.YYYY format
+        dialog.creation_date_var.set("01.01.2024")
+        dialog.valid_until_var.set("01.01.2025")
         
         # Mock the on_save callback
         dialog.on_save = Mock()

@@ -14,6 +14,8 @@ History:
 20260309  V1.7: Pre-populate box dropdown in EditMediaDialog from location table via location_id
 20260309  V1.8: Added read-only Place field to EditMediaDialog that updates with Box selection
 20260309  V1.9: Changed Category field to editable combobox with existing values
+20260309  V1.10: Added auto-numbering and DD.MM.YYYY date format support
+20260309  V1.11: Updated date parsing to use parse_date() for DD.MM.YYYY format
 """
 
 import logging
@@ -32,6 +34,7 @@ from models.location import StorageLocation
 from models.enums import MediaType
 from utils.exceptions import ValidationError, NotFoundError
 from utils.config import MAX_BOX_LENGTH, MAX_PLACE_LENGTH, MAX_DETAIL_LENGTH
+from utils.date_utils import format_date, parse_date
 
 logger = logging.getLogger(__name__)
 
@@ -94,6 +97,7 @@ class AddMediaDialog(BaseDialog):
         locations: list[StorageLocation],
         categories: list[str],
         on_save: Optional[Callable[[Media], None]] = None,
+        media_service = None,
     ) -> None:
         """Initialize add media dialog.
         
@@ -102,11 +106,13 @@ class AddMediaDialog(BaseDialog):
             locations: List of available storage locations.
             categories: List of existing categories for dropdown.
             on_save: Optional callback when media is saved.
+            media_service: Optional MediaService for auto-numbering.
         """
         super().__init__(parent, "Add New Media")
         self.locations = locations
         self.categories = categories
         self.on_save = on_save
+        self.media_service = media_service
         self.result = None
         
         # Create form
@@ -126,9 +132,17 @@ class AddMediaDialog(BaseDialog):
         name_entry = ttk.Entry(main_frame, textvariable=self.name_var, width=40)
         name_entry.grid(row=0, column=1, sticky=tk.EW, pady=5)
         
-        # Number field
+        # Number field (auto-populated if media_service provided)
         ttk.Label(main_frame, text="Number").grid(row=1, column=0, sticky=tk.W, pady=5)
         self.number_var = tk.StringVar()
+        # Auto-populate next number if media_service is available
+        if self.media_service:
+            try:
+                next_num = self.media_service.get_next_number()
+                self.number_var.set(next_num)
+                logger.debug(f"Auto-populated number: {next_num}")
+            except Exception as e:
+                logger.warning(f"Failed to auto-populate number: {e}")
         number_entry = ttk.Entry(main_frame, textvariable=self.number_var, width=40)
         number_entry.grid(row=1, column=1, sticky=tk.EW, pady=5)
         
@@ -195,7 +209,7 @@ class AddMediaDialog(BaseDialog):
             width=40
         )
         creation_date_entry.grid(row=8, column=1, sticky=tk.EW, pady=5)
-        ttk.Label(main_frame, text="(YYYY-MM-DD)", font=("TkDefaultFont", 8)).grid(
+        ttk.Label(main_frame, text="(DD.MM.YYYY)", font=("TkDefaultFont", 8)).grid(
             row=8, column=2, sticky=tk.W, padx=5
         )
         
@@ -208,7 +222,7 @@ class AddMediaDialog(BaseDialog):
             width=40
         )
         valid_until_entry.grid(row=9, column=1, sticky=tk.EW, pady=5)
-        ttk.Label(main_frame, text="(YYYY-MM-DD)", font=("TkDefaultFont", 8)).grid(
+        ttk.Label(main_frame, text="(DD.MM.YYYY)", font=("TkDefaultFont", 8)).grid(
             row=9, column=2, sticky=tk.W, padx=5
         )
         
@@ -268,17 +282,17 @@ class AddMediaDialog(BaseDialog):
             creation_date = None
             if creation_date_str:
                 try:
-                    creation_date = date.fromisoformat(creation_date_str)
-                except ValueError:
-                    messagebox.showerror("Date Error", "Invalid creation date format (use YYYY-MM-DD)")
+                    creation_date = parse_date(creation_date_str)
+                except ValueError as e:
+                    messagebox.showerror("Date Error", str(e))
                     return
             
             valid_until_date = None
             if valid_until_str:
                 try:
-                    valid_until_date = date.fromisoformat(valid_until_str)
-                except ValueError:
-                    messagebox.showerror("Date Error", "Invalid valid until date format (use YYYY-MM-DD)")
+                    valid_until_date = parse_date(valid_until_str)
+                except ValueError as e:
+                    messagebox.showerror("Date Error", str(e))
                     return
             
             # Determine location_id from box selection
@@ -454,7 +468,7 @@ class EditMediaDialog(BaseDialog):
         
         # Creation Date field
         ttk.Label(main_frame, text="Creation Date").grid(row=9, column=0, sticky=tk.W, pady=5)
-        creation_date_str = self.media.creation_date.isoformat() if self.media.creation_date else ""
+        creation_date_str = format_date(self.media.creation_date) if self.media.creation_date else ""
         self.creation_date_var = tk.StringVar(value=creation_date_str)
         creation_date_entry = ttk.Entry(
             main_frame,
@@ -462,13 +476,13 @@ class EditMediaDialog(BaseDialog):
             width=40
         )
         creation_date_entry.grid(row=9, column=1, sticky=tk.EW, pady=5)
-        ttk.Label(main_frame, text="(YYYY-MM-DD)", font=("TkDefaultFont", 8)).grid(
+        ttk.Label(main_frame, text="(DD.MM.YYYY)", font=("TkDefaultFont", 8)).grid(
             row=9, column=2, sticky=tk.W, padx=5
         )
         
         # Valid Until Date field
         ttk.Label(main_frame, text="Valid Until Date").grid(row=10, column=0, sticky=tk.W, pady=5)
-        valid_until_str = self.media.valid_until_date.isoformat() if self.media.valid_until_date else ""
+        valid_until_str = format_date(self.media.valid_until_date) if self.media.valid_until_date else ""
         self.valid_until_var = tk.StringVar(value=valid_until_str)
         valid_until_entry = ttk.Entry(
             main_frame,
@@ -476,7 +490,7 @@ class EditMediaDialog(BaseDialog):
             width=40
         )
         valid_until_entry.grid(row=10, column=1, sticky=tk.EW, pady=5)
-        ttk.Label(main_frame, text="(YYYY-MM-DD)", font=("TkDefaultFont", 8)).grid(
+        ttk.Label(main_frame, text="(DD.MM.YYYY)", font=("TkDefaultFont", 8)).grid(
             row=10, column=2, sticky=tk.W, padx=5
         )
         
@@ -550,17 +564,17 @@ class EditMediaDialog(BaseDialog):
             creation_date = None
             if creation_date_str:
                 try:
-                    creation_date = date.fromisoformat(creation_date_str)
-                except ValueError:
-                    messagebox.showerror("Date Error", "Invalid creation date format (use YYYY-MM-DD)")
+                    creation_date = parse_date(creation_date_str)
+                except ValueError as e:
+                    messagebox.showerror("Date Error", str(e))
                     return
             
             valid_until_date = None
             if valid_until_str:
                 try:
-                    valid_until_date = date.fromisoformat(valid_until_str)
-                except ValueError:
-                    messagebox.showerror("Date Error", "Invalid valid until date format (use YYYY-MM-DD)")
+                    valid_until_date = parse_date(valid_until_str)
+                except ValueError as e:
+                    messagebox.showerror("Date Error", str(e))
                     return
             
             # Determine location_id from box selection

@@ -2,6 +2,10 @@
 
 This module provides utilities for applying schema migrations to the database.
 Migrations are applied automatically on application startup.
+
+History:
+20260309  V1.0: Initial migrations
+20260309  V1.1: Added migration for is_deleted column (soft delete support)
 """
 
 import logging
@@ -33,6 +37,9 @@ class DatabaseMigration:
         
         # Migration 4: Rename place column to position in media table
         DatabaseMigration._rename_place_to_position(cursor, conn)
+        
+        # Migration 5: Add is_deleted column for soft delete support
+        DatabaseMigration._add_is_deleted_column(cursor, conn)
     
     @staticmethod
     def _add_number_column(cursor, conn) -> None:
@@ -278,4 +285,34 @@ class DatabaseMigration:
                 logger.info("Successfully renamed place column to position")
         except Exception as e:
             logger.error(f"Error renaming place column to position: {e}")
+            raise
+    
+    @staticmethod
+    def _add_is_deleted_column(cursor, conn) -> None:
+        """Add is_deleted column to media table for soft delete support.
+        
+        Args:
+            cursor: Database cursor.
+            conn: Database connection.
+        """
+        try:
+            # Check if media table exists first
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='media'")
+            if not cursor.fetchone():
+                # Table doesn't exist yet, skip migration
+                logger.debug("Media table doesn't exist yet, skipping is_deleted column migration")
+                return
+            
+            # Check if is_deleted column exists
+            cursor.execute("PRAGMA table_info(media)")
+            columns = [row[1] for row in cursor.fetchall()]
+            
+            if "is_deleted" not in columns:
+                logger.info("Migrating schema: Adding is_deleted column to media table")
+                cursor.execute("ALTER TABLE media ADD COLUMN is_deleted INTEGER DEFAULT 0")
+                cursor.execute("CREATE INDEX IF NOT EXISTS idx_media_is_deleted ON media(is_deleted)")
+                conn.commit()
+                logger.info("Successfully added is_deleted column to media table")
+        except Exception as e:
+            logger.error(f"Error adding is_deleted column: {e}")
             raise

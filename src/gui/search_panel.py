@@ -5,6 +5,7 @@ This module provides a reusable search panel widget with multiple filter options
 History:
 20260307  V1.0: Initial search panel implementation
 20260309  V1.1: Split location filter into separate Box and Place filters
+20260309  V1.2: Added double-click navigation support and tooltip functionality
 """
 
 import logging
@@ -32,6 +33,7 @@ class SearchPanel(ttk.Frame):
         locations: Optional[List[StorageLocation]] = None,
         on_search: Optional[Callable[[], None]] = None,
         on_clear: Optional[Callable[[], None]] = None,
+        on_double_click: Optional[Callable[[int], None]] = None,
     ) -> None:
         """Initialize search panel.
         
@@ -40,11 +42,13 @@ class SearchPanel(ttk.Frame):
             locations: List of available storage locations.
             on_search: Optional callback when search button is clicked.
             on_clear: Optional callback when clear button is clicked.
+            on_double_click: Optional callback when search result is double-clicked (receives media_id).
         """
         super().__init__(parent)
         self.locations = locations or []
         self.on_search = on_search
         self.on_clear = on_clear
+        self.on_double_click = on_double_click
         
         # Create UI
         self._create_widgets()
@@ -178,6 +182,16 @@ class SearchPanel(ttk.Frame):
         """Handle search button click."""
         if self.on_search:
             self.on_search()
+    
+    def on_result_double_click(self, media_id: int) -> None:
+        """Handle double-click on search result.
+        
+        Args:
+            media_id: ID of the media item that was double-clicked.
+        """
+        if self.on_double_click:
+            self.on_double_click(media_id)
+            logger.debug(f"Double-click navigation triggered for media_id: {media_id}")
 
     def _on_clear(self) -> None:
         """Handle clear button click."""

@@ -11,6 +11,8 @@ History:
 20260309  V1.4: Fixed location assignment to correctly resolve box references
 20260309  V1.5: Added position parameter to update_media method
 20260309  V1.6: Added get_unique_categories method for category dropdown
+20260309  V1.7: Added get_next_number method for auto-numbering
+20260309  V1.8: Added soft delete support (delete_media_soft, restore_media, delete_media_permanent)
 """
 
 import logging
@@ -140,14 +142,27 @@ class MediaService:
             logger.warning(f"Media not found: {media_id}")
             raise
 
-    def get_all_media(self) -> list[Media]:
+    def get_all_media(self, include_deleted: bool = False) -> list[Media]:
         """Get all media items.
+        
+        Args:
+            include_deleted: If True, include soft-deleted items. Default False.
         
         Returns:
             List of Media objects.
         """
-        media_list = self._repo.get_all()
-        logger.debug(f"Retrieved {len(media_list)} media items")
+        media_list = self._repo.get_all(include_deleted=include_deleted)
+        logger.debug(f"Retrieved {len(media_list)} media items (include_deleted={include_deleted})")
+        return media_list
+    
+    def get_deleted_media(self) -> list[Media]:
+        """Get all soft-deleted media items.
+        
+        Returns:
+            List of deleted Media objects.
+        """
+        media_list = self._repo.get_deleted_media()
+        logger.debug(f"Retrieved {len(media_list)} deleted media items")
         return media_list
 
     def update_media(
@@ -237,7 +252,7 @@ class MediaService:
         return updated
 
     def delete_media(self, media_id: int) -> None:
-        """Delete a media item.
+        """Delete a media item (soft delete - marks as deleted).
         
         Args:
             media_id: Media ID.
@@ -248,9 +263,52 @@ class MediaService:
         # Check if media exists
         self._repo.get_by_id(media_id)
         
-        # Delete media
+        # Soft delete media
         self._repo.delete(media_id)
-        logger.info(f"Deleted media: {media_id}")
+        logger.info(f"Soft deleted media: {media_id}")
+    
+    def delete_media_soft(self, media_id: int) -> None:
+        """Soft delete a media item (mark as deleted).
+        
+        Args:
+            media_id: Media ID.
+        
+        Raises:
+            NotFoundError: If media not found.
+        """
+        self.delete_media(media_id)
+    
+    def restore_media(self, media_id: int) -> None:
+        """Restore a soft-deleted media item.
+        
+        Args:
+            media_id: Media ID.
+        
+        Raises:
+            NotFoundError: If media not found.
+        """
+        # Check if media exists
+        self._repo.get_by_id(media_id)
+        
+        # Restore media
+        self._repo.restore(media_id)
+        logger.info(f"Restored media: {media_id}")
+    
+    def delete_media_permanent(self, media_id: int) -> None:
+        """Permanently delete a media item from database.
+        
+        Args:
+            media_id: Media ID.
+        
+        Raises:
+            NotFoundError: If media not found.
+        """
+        # Check if media exists
+        self._repo.get_by_id(media_id)
+        
+        # Permanently delete media
+        self._repo.permanent_delete(media_id)
+        logger.info(f"Permanently deleted media: {media_id}")
 
     def search_media_by_name(self, name: str) -> list[Media]:
         """Search media by name.
@@ -411,6 +469,51 @@ class MediaService:
         categories = self._repo.get_unique_categories()
         logger.debug(f"Retrieved {len(categories)} unique categories")
         return categories
+
+    def get_next_number(self) -> str:
+        """Get the next available media number for auto-numbering.
+        
+        Queries the database for the highest numeric number and returns
+        the next sequential number. Handles edge cases like empty database
+        and non-numeric numbers.
+        
+        Returns:
+            Next available number as string (e.g., "1", "2", "100").
+            Returns "1" if database is empty or no numeric numbers exist.
+        """
+        try:
+            all_media = self._repo.get_all()
+            
+            if not all_media:
+                logger.debug("Database is empty, returning next number: 1")
+                return "1"
+            
+            # Extract numeric numbers from all media
+            numeric_numbers = []
+            for media in all_media:
+                if media.number:
+                    try:
+                        num = int(media.number)
+                        numeric_numbers.append(num)
+                    except ValueError:
+                        # Skip non-numeric numbers
+                        logger.debug(f"Skipping non-numeric number: {media.number}")
+                        continue
+            
+            if not numeric_numbers:
+                logger.debug("No numeric numbers found, returning next number: 1")
+                return "1"
+            
+            # Get the highest number and increment
+            max_number = max(numeric_numbers)
+            next_number = max_number + 1
+            logger.debug(f"Next available number: {next_number}")
+            return str(next_number)
+            
+        except Exception as e:
+            logger.error(f"Error getting next number: {e}")
+            # Return "1" as fallback
+            return "1"
 
     @staticmethod
     def _validate_media_input(

@@ -22,6 +22,7 @@ History:
 20260309  V1.16: Added column sorting to media tab with visual indicators
 20260309  V1.17: Added column sorting to locations tab with visual indicators
 20260309  V1.18: Added StatisticsDialog and AboutDialog for Phase 7
+20260309  V1.19: Updated date display to DD.MM.YYYY format using format_date()
 """
 
 import logging
@@ -38,6 +39,7 @@ from business.media_service import MediaService
 from models.location import StorageLocation
 from models.enums import MediaType
 from utils.config import APP_NAME, APP_VERSION, DB_PATH, WINDOW_WIDTH, WINDOW_HEIGHT
+from utils.date_utils import format_date
 from gui.dialogs import (
     AddMediaDialog, EditMediaDialog, DeleteConfirmDialog,
     AddLocationDialog, EditLocationDialog, DeleteLocationConfirmDialog,
@@ -411,8 +413,8 @@ class MainWindow:
             location_map = {loc.id: loc for loc in locations}
             
             for media in media_list:
-                created = media.creation_date.isoformat() if media.creation_date else "N/A"
-                expires = media.valid_until_date.isoformat() if media.valid_until_date else "N/A"
+                created = format_date(media.creation_date) if media.creation_date else "N/A"
+                expires = format_date(media.valid_until_date) if media.valid_until_date else "N/A"
                 company = media.company if media.company else "N/A"
                 license_code = media.license_code if media.license_code else "N/A"
                 position = media.position if media.position else "N/A"

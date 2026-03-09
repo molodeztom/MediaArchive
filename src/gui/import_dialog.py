@@ -9,6 +9,7 @@ History:
 20260308  V1.3: Fixed dialog layout for button visibility
 20260308  V1.4: Added Access CSV format support with mapper integration
 20260308  V1.5: Set Access format as default, semicolon as default delimiter, resizable dialog, 15-row preview
+20260309  V1.6: Updated date parsing to use parse_date() for DD.MM.YYYY format
 """
 
 import logging
@@ -24,6 +25,7 @@ from models.location import StorageLocation
 from models.enums import MediaType
 from utils.exceptions import ValidationError
 from utils.encoding_detector import EncodingDetector
+from utils.date_utils import parse_date
 from business.access_csv_mapper import AccessCSVMapper, AccessLocationMapper
 
 logger = logging.getLogger(__name__)
@@ -386,7 +388,7 @@ class ImportDialog(tk.Toplevel):
                 creation_date = None
                 if creation_date_str:
                     try:
-                        creation_date = date.fromisoformat(creation_date_str)
+                        creation_date = parse_date(creation_date_str)
                     except ValueError:
                         errors.append(f"Row {i}: Invalid creation date: {creation_date_str}")
                         continue
@@ -394,7 +396,7 @@ class ImportDialog(tk.Toplevel):
                 valid_until_date = None
                 if valid_until_str:
                     try:
-                        valid_until_date = date.fromisoformat(valid_until_str)
+                        valid_until_date = parse_date(valid_until_str)
                     except ValueError:
                         errors.append(f"Row {i}: Invalid valid until date: {valid_until_str}")
                         continue

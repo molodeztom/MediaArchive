@@ -1,4 +1,9 @@
-"""Media model for Media Archive Manager."""
+"""Media model for Media Archive Manager.
+
+History:
+20260309  V1.0: Initial media model
+20260309  V1.1: Added is_deleted field for soft delete support
+"""
 
 from dataclasses import dataclass
 from datetime import date
@@ -23,6 +28,7 @@ class Media:
         location_id: Reference to storage location.
         box: Storage box identifier (from Access import, for location matching).
         position: Position/place within storage location (from Access import).
+        is_deleted: Soft delete flag (True if marked as deleted).
         id: Unique identifier (None for new records).
         created_at: ISO 8601 timestamp when record was created.
         updated_at: ISO 8601 timestamp when record was last updated.
@@ -41,6 +47,7 @@ class Media:
     location_id: Optional[int] = None
     box: Optional[str] = None
     position: Optional[str] = None
+    is_deleted: bool = False
     id: Optional[int] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None

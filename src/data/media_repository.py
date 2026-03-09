@@ -1,6 +1,10 @@
 """Repository for Media data access.
 
 This module provides CRUD operations for media items.
+
+History:
+20260309  V1.0: Initial media repository
+20260309  V1.1: Added soft delete support (soft_delete, restore, permanent_delete)
 """
 
 import logging
@@ -107,8 +111,11 @@ class MediaRepository:
             logger.error(f"Failed to get media: {e}")
             raise
 
-    def get_all(self) -> list[Media]:
+    def get_all(self, include_deleted: bool = False) -> list[Media]:
         """Get all media items.
+        
+        Args:
+            include_deleted: If True, include soft-deleted items. Default False.
         
         Returns:
             List of Media objects.
@@ -117,13 +124,37 @@ class MediaRepository:
             DatabaseError: If query fails.
         """
         try:
-            cursor = self._db.execute(
-                "SELECT * FROM media ORDER BY name"
-            )
+            if include_deleted:
+                cursor = self._db.execute(
+                    "SELECT * FROM media ORDER BY name"
+                )
+            else:
+                cursor = self._db.execute(
+                    "SELECT * FROM media WHERE is_deleted = 0 ORDER BY name"
+                )
             rows = cursor.fetchall()
             return [self._row_to_media(row) for row in rows]
         except DatabaseError as e:
             logger.error(f"Failed to get all media: {e}")
+            raise
+    
+    def get_deleted_media(self) -> list[Media]:
+        """Get all soft-deleted media items.
+        
+        Returns:
+            List of deleted Media objects.
+        
+        Raises:
+            DatabaseError: If query fails.
+        """
+        try:
+            cursor = self._db.execute(
+                "SELECT * FROM media WHERE is_deleted = 1 ORDER BY name"
+            )
+            rows = cursor.fetchall()
+            return [self._row_to_media(row) for row in rows]
+        except DatabaseError as e:
+            logger.error(f"Failed to get deleted media: {e}")
             raise
 
     def update(self, media: Media) -> Media:
@@ -182,7 +213,69 @@ class MediaRepository:
             raise
 
     def delete(self, media_id: int) -> None:
-        """Delete a media item.
+        """Delete a media item (soft delete - marks as deleted).
+        
+        Args:
+            media_id: Media ID.
+        
+        Raises:
+            NotFoundError: If media not found.
+            DatabaseError: If delete fails.
+        """
+        try:
+            cursor = self._db.execute(
+                "UPDATE media SET is_deleted = 1 WHERE id = ?",
+                (media_id,),
+            )
+            self._db.commit()
+            
+            if cursor.rowcount == 0:
+                raise NotFoundError(f"Media {media_id} not found")
+            
+            logger.info(f"Soft deleted media: {media_id}")
+        except DatabaseError as e:
+            logger.error(f"Failed to delete media: {e}")
+            raise
+    
+    def soft_delete(self, media_id: int) -> None:
+        """Mark a media item as deleted (soft delete).
+        
+        Args:
+            media_id: Media ID.
+        
+        Raises:
+            NotFoundError: If media not found.
+            DatabaseError: If delete fails.
+        """
+        self.delete(media_id)
+    
+    def restore(self, media_id: int) -> None:
+        """Restore a soft-deleted media item.
+        
+        Args:
+            media_id: Media ID.
+        
+        Raises:
+            NotFoundError: If media not found.
+            DatabaseError: If restore fails.
+        """
+        try:
+            cursor = self._db.execute(
+                "UPDATE media SET is_deleted = 0 WHERE id = ?",
+                (media_id,),
+            )
+            self._db.commit()
+            
+            if cursor.rowcount == 0:
+                raise NotFoundError(f"Media {media_id} not found")
+            
+            logger.info(f"Restored media: {media_id}")
+        except DatabaseError as e:
+            logger.error(f"Failed to restore media: {e}")
+            raise
+    
+    def permanent_delete(self, media_id: int) -> None:
+        """Permanently delete a media item from database.
         
         Args:
             media_id: Media ID.
@@ -201,16 +294,17 @@ class MediaRepository:
             if cursor.rowcount == 0:
                 raise NotFoundError(f"Media {media_id} not found")
             
-            logger.info(f"Deleted media: {media_id}")
+            logger.info(f"Permanently deleted media: {media_id}")
         except DatabaseError as e:
-            logger.error(f"Failed to delete media: {e}")
+            logger.error(f"Failed to permanently delete media: {e}")
             raise
 
-    def search_by_name(self, name: str) -> list[Media]:
+    def search_by_name(self, name: str, include_deleted: bool = False) -> list[Media]:
         """Search media by name.
         
         Args:
             name: Name to search for (case-insensitive).
+            include_deleted: If True, include soft-deleted items. Default False.
         
         Returns:
             List of matching Media objects.
@@ -219,21 +313,28 @@ class MediaRepository:
             DatabaseError: If query fails.
         """
         try:
-            cursor = self._db.execute(
-                "SELECT * FROM media WHERE name LIKE ? ORDER BY name",
-                (f"%{name}%",),
-            )
+            if include_deleted:
+                cursor = self._db.execute(
+                    "SELECT * FROM media WHERE name LIKE ? ORDER BY name",
+                    (f"%{name}%",),
+                )
+            else:
+                cursor = self._db.execute(
+                    "SELECT * FROM media WHERE name LIKE ? AND is_deleted = 0 ORDER BY name",
+                    (f"%{name}%",),
+                )
             rows = cursor.fetchall()
             return [self._row_to_media(row) for row in rows]
         except DatabaseError as e:
             logger.error(f"Failed to search media by name: {e}")
             raise
 
-    def search_by_content(self, content: str) -> list[Media]:
+    def search_by_content(self, content: str, include_deleted: bool = False) -> list[Media]:
         """Search media by content description.
         
         Args:
             content: Content to search for (case-insensitive).
+            include_deleted: If True, include soft-deleted items. Default False.
         
         Returns:
             List of matching Media objects.
@@ -242,25 +343,36 @@ class MediaRepository:
             DatabaseError: If query fails.
         """
         try:
-            cursor = self._db.execute(
-                """
-                SELECT * FROM media
-                WHERE content_description LIKE ? OR remarks LIKE ?
-                ORDER BY name
-                """,
-                (f"%{content}%", f"%{content}%"),
-            )
+            if include_deleted:
+                cursor = self._db.execute(
+                    """
+                    SELECT * FROM media
+                    WHERE content_description LIKE ? OR remarks LIKE ?
+                    ORDER BY name
+                    """,
+                    (f"%{content}%", f"%{content}%"),
+                )
+            else:
+                cursor = self._db.execute(
+                    """
+                    SELECT * FROM media
+                    WHERE (content_description LIKE ? OR remarks LIKE ?) AND is_deleted = 0
+                    ORDER BY name
+                    """,
+                    (f"%{content}%", f"%{content}%"),
+                )
             rows = cursor.fetchall()
             return [self._row_to_media(row) for row in rows]
         except DatabaseError as e:
             logger.error(f"Failed to search media by content: {e}")
             raise
 
-    def search_by_type(self, media_type: str) -> list[Media]:
+    def search_by_type(self, media_type: str, include_deleted: bool = False) -> list[Media]:
         """Search media by type.
         
         Args:
             media_type: Media type to search for.
+            include_deleted: If True, include soft-deleted items. Default False.
         
         Returns:
             List of matching Media objects.
@@ -269,21 +381,28 @@ class MediaRepository:
             DatabaseError: If query fails.
         """
         try:
-            cursor = self._db.execute(
-                "SELECT * FROM media WHERE media_type = ? ORDER BY name",
-                (media_type,),
-            )
+            if include_deleted:
+                cursor = self._db.execute(
+                    "SELECT * FROM media WHERE media_type = ? ORDER BY name",
+                    (media_type,),
+                )
+            else:
+                cursor = self._db.execute(
+                    "SELECT * FROM media WHERE media_type = ? AND is_deleted = 0 ORDER BY name",
+                    (media_type,),
+                )
             rows = cursor.fetchall()
             return [self._row_to_media(row) for row in rows]
         except DatabaseError as e:
             logger.error(f"Failed to search media by type: {e}")
             raise
 
-    def search_by_location(self, location_id: int) -> list[Media]:
+    def search_by_location(self, location_id: int, include_deleted: bool = False) -> list[Media]:
         """Search media by storage location.
         
         Args:
             location_id: Storage location ID.
+            include_deleted: If True, include soft-deleted items. Default False.
         
         Returns:
             List of matching Media objects.
@@ -292,10 +411,16 @@ class MediaRepository:
             DatabaseError: If query fails.
         """
         try:
-            cursor = self._db.execute(
-                "SELECT * FROM media WHERE location_id = ? ORDER BY name",
-                (location_id,),
-            )
+            if include_deleted:
+                cursor = self._db.execute(
+                    "SELECT * FROM media WHERE location_id = ? ORDER BY name",
+                    (location_id,),
+                )
+            else:
+                cursor = self._db.execute(
+                    "SELECT * FROM media WHERE location_id = ? AND is_deleted = 0 ORDER BY name",
+                    (location_id,),
+                )
             rows = cursor.fetchall()
             return [self._row_to_media(row) for row in rows]
         except DatabaseError as e:
@@ -334,8 +459,11 @@ class MediaRepository:
             logger.error(f"Failed to search media by creation date: {e}")
             raise
 
-    def get_expired_media(self) -> list[Media]:
+    def get_expired_media(self, include_deleted: bool = False) -> list[Media]:
         """Get all expired media.
+        
+        Args:
+            include_deleted: If True, include soft-deleted items. Default False.
         
         Returns:
             List of expired Media objects.
@@ -344,25 +472,37 @@ class MediaRepository:
             DatabaseError: If query fails.
         """
         try:
-            cursor = self._db.execute(
-                """
-                SELECT * FROM media
-                WHERE valid_until_date IS NOT NULL
-                AND valid_until_date < DATE('now')
-                ORDER BY valid_until_date DESC
-                """
-            )
+            if include_deleted:
+                cursor = self._db.execute(
+                    """
+                    SELECT * FROM media
+                    WHERE valid_until_date IS NOT NULL
+                    AND valid_until_date < DATE('now')
+                    ORDER BY valid_until_date DESC
+                    """
+                )
+            else:
+                cursor = self._db.execute(
+                    """
+                    SELECT * FROM media
+                    WHERE valid_until_date IS NOT NULL
+                    AND valid_until_date < DATE('now')
+                    AND is_deleted = 0
+                    ORDER BY valid_until_date DESC
+                    """
+                )
             rows = cursor.fetchall()
             return [self._row_to_media(row) for row in rows]
         except DatabaseError as e:
             logger.error(f"Failed to get expired media: {e}")
             raise
 
-    def get_expiring_soon(self, days: int = 30) -> list[Media]:
+    def get_expiring_soon(self, days: int = 30, include_deleted: bool = False) -> list[Media]:
         """Get media expiring within specified days.
         
         Args:
             days: Number of days to look ahead (default 30).
+            include_deleted: If True, include soft-deleted items. Default False.
         
         Returns:
             List of Media objects expiring soon.
@@ -371,14 +511,25 @@ class MediaRepository:
             DatabaseError: If query fails.
         """
         try:
-            cursor = self._db.execute(
-                f"""
-                SELECT * FROM media
-                WHERE valid_until_date IS NOT NULL
-                AND valid_until_date BETWEEN DATE('now') AND DATE('now', '+{days} days')
-                ORDER BY valid_until_date ASC
-                """
-            )
+            if include_deleted:
+                cursor = self._db.execute(
+                    f"""
+                    SELECT * FROM media
+                    WHERE valid_until_date IS NOT NULL
+                    AND valid_until_date BETWEEN DATE('now') AND DATE('now', '+{days} days')
+                    ORDER BY valid_until_date ASC
+                    """
+                )
+            else:
+                cursor = self._db.execute(
+                    f"""
+                    SELECT * FROM media
+                    WHERE valid_until_date IS NOT NULL
+                    AND valid_until_date BETWEEN DATE('now') AND DATE('now', '+{days} days')
+                    AND is_deleted = 0
+                    ORDER BY valid_until_date ASC
+                    """
+                )
             rows = cursor.fetchall()
             return [self._row_to_media(row) for row in rows]
         except DatabaseError as e:
@@ -431,6 +582,10 @@ class MediaRepository:
             position = row["position"]
         except (KeyError, IndexError):
             position = None
+        try:
+            is_deleted = row["is_deleted"]
+        except (KeyError, IndexError):
+            is_deleted = False
         
         return Media(
             id=row["id"],
@@ -447,6 +602,7 @@ class MediaRepository:
             location_id=row["location_id"],
             box=box,
             position=position,
+            is_deleted=bool(is_deleted),
             created_at=row["created_at"],
             updated_at=row["updated_at"],
         )

@@ -5,6 +5,7 @@ This module provides a dialog for exporting media and locations to CSV files.
 History:
 20260307  V1.0: Initial export dialog implementation
 20260307  V1.1: Added semicolon delimiter support for German/European locales
+20260309  V1.2: Updated date export to use format_date() for DD.MM.YYYY format
 """
 
 import logging
@@ -16,6 +17,7 @@ import csv
 
 from models.media import Media
 from models.location import StorageLocation
+from utils.date_utils import format_date
 
 logger = logging.getLogger(__name__)
 
@@ -269,8 +271,8 @@ class ExportDialog(tk.Toplevel):
                 media.type or "",
                 media.company or "",
                 media.license_code or "",
-                media.creation_date.isoformat() if media.creation_date else "",
-                media.valid_until_date.isoformat() if media.valid_until_date else "",
+                format_date(media.creation_date) if media.creation_date else "",
+                format_date(media.valid_until_date) if media.valid_until_date else "",
                 media.content_description or "",
                 media.remarks or "",
                 media.location_id or "",
