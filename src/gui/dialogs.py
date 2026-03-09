@@ -21,6 +21,7 @@ History:
 20260309  V1.14: Phase 9C - Added ColumnPreferencesDialog for column visibility
 20260309  V1.15: Phase 9E - Added date picker buttons to date fields
 20260309  V1.16: Enhanced date picker with auto-save and year/month selector
+20260309  V1.17: Fixed AddMediaDialog to auto-populate next available number on init
 """
 
 import logging

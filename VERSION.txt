@@ -1,0 +1,140 @@
+================================================================================
+Media Archive Manager
+Version 2.1.0
+Build date: 2026-03-09
+================================================================================
+
+PORTABLE DISTRIBUTION
+
+This is a portable, standalone version of Media Archive Manager.
+No installation required - just extract and run!
+
+QUICK START
+-----------
+1. Extract the MediaArchiveManager folder to your desired location
+2. Double-click MediaArchiveManager.exe or start.bat
+3. The application will start immediately
+
+IMPORTANT NOTES
+---------------
+
+DATABASE PROTECTION:
+- Your database file (data/media_archive.db) contains all your data
+- DO NOT delete or overwrite this file during updates
+- The database is created automatically on first run
+- Always backup your database before updating
+
+UPDATING TO A NEW VERSION:
+1. Backup your database: File > Backup Database
+2. Extract the new version to a different folder
+3. Copy data/media_archive.db from old folder to new folder
+4. Run the new version
+5. Verify your data is intact
+6. Delete the old version folder
+
+DIRECTORY STRUCTURE
+-------------------
+MediaArchiveManager/
+  ├── MediaArchiveManager.exe    - Main application executable
+  ├── start.bat                  - Startup script
+  ├── VERSION.txt                - This file
+  ├── icon.ico                   - Application icon
+  ├── _internal/                 - Application dependencies (auto-generated)
+  ├── data/                      - Database storage
+  │   └── media_archive.db       - Your data (created on first run)
+  ├── backups/                   - Database backups
+  ├── config/                    - Configuration files (future use)
+  └── logs/                      - Application logs
+      └── media_archive.log      - Debug log file
+
+FEATURES
+--------
+• Manage physical media inventory
+• Organize media by storage locations
+• Track expiration dates
+• Search and filter media
+• Import/Export from CSV and Microsoft Access
+• Database backup and restore
+• Multi-select batch operations
+• Soft delete with restore capability
+
+SYSTEM REQUIREMENTS
+-------------------
+• Windows 7 or later (32-bit or 64-bit)
+• 50 MB free disk space (for application)
+• Additional space for database (depends on data size)
+• No Python installation required
+• No administrator rights required
+
+TROUBLESHOOTING
+---------------
+
+Application won't start:
+- Check that all files were extracted correctly
+- Verify you have write permissions in the application folder
+- Check logs/media_archive.log for error messages
+- Try running start.bat instead of the .exe directly
+
+"Windows protected your PC" warning:
+- Click "More info" then "Run anyway"
+- This is a common warning for unsigned executables
+
+Antivirus blocks the application:
+- Add MediaArchiveManager.exe to your antivirus whitelist
+- This is a false positive - the application is safe
+
+Database errors:
+- Ensure data/ folder exists and is writable
+- Check available disk space
+- Try backing up and restoring the database
+
+SUPPORT & DOCUMENTATION
+------------------------
+For more information, see:
+- README.md - Project overview
+- docs/ folder - Detailed documentation
+- logs/media_archive.log - Application debug log
+
+TECHNICAL DETAILS
+-----------------
+• Built with: Python 3.x, Tkinter, SQLite
+• Packaged with: PyInstaller
+• Database: SQLite (local file)
+• No network access required
+• All data stored locally
+
+PRIVACY & SECURITY
+------------------
+• No data is sent to external servers
+• All data is stored locally on your computer
+• No telemetry or tracking
+• No account or login required
+• Database is a standard SQLite file
+
+LICENSE & ATTRIBUTION
+---------------------
+Media Archive Manager is a local desktop application for managing
+physical media inventory. It provides comprehensive tools for
+cataloging, searching, and organizing media collections.
+
+CHANGELOG
+---------
+Version 2.1.0 (2026-03-09)
+- Fixed auto-numbering to find first unused number (not highest)
+- Added is_deleted column to schema for soft delete support
+- Improved get_next_number() to include deleted media in calculation
+- Added comprehensive test suite for next available number feature
+- All 12 tests passing for auto-numbering functionality
+
+Version 2.0.0 (2026-03-09)
+- Initial portable distribution release
+- Compiled executable for Windows
+- Portable folder structure
+- No installation required
+- Database protection strategy
+
+For detailed changelog, see docs/
+
+================================================================================
+Thank you for using Media Archive Manager!
+================================================================================

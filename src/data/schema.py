@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS media (
     location_id INTEGER,
     box TEXT,
     position TEXT,
+    is_deleted INTEGER DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (location_id) REFERENCES storage_location(id) ON DELETE SET NULL
@@ -54,6 +55,7 @@ MEDIA_INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_media_location ON media(location_id);",
     "CREATE INDEX IF NOT EXISTS idx_media_valid_until ON media(valid_until_date);",
     "CREATE INDEX IF NOT EXISTS idx_media_creation_date ON media(creation_date);",
+    "CREATE INDEX IF NOT EXISTS idx_media_is_deleted ON media(is_deleted);",
 ]
 
 # Trigger to update updated_at timestamp for storage_location

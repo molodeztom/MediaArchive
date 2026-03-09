@@ -19,6 +19,7 @@ History:
 20260309  V1.12: Phase 9D - Added batch_update_media method for multi-select operations
 20260309  V1.13: Phase 9E - Added auto-set creation date support
 20260309  V1.14: Phase 9F - Added max_items limit (3000) for performance optimization
+20260309  V1.15: Fixed get_next_number to find first unused number, include deleted media
 """
 
 import logging
@@ -493,28 +494,29 @@ class MediaService:
     def get_next_number(self) -> str:
         """Get the next available media number for auto-numbering.
         
-        Queries the database for the highest numeric number and returns
-        the next sequential number. Handles edge cases like empty database
-        and non-numeric numbers.
+        Finds the first unused number in the sequence, not necessarily the highest.
+        For example, if numbers 1, 2, 4, 5 exist, returns 3.
+        If numbers 1, 2, 3 exist, returns 4.
         
         Returns:
-            Next available number as string (e.g., "1", "2", "100").
+            Next available number as string (e.g., "1", "2", "3").
             Returns "1" if database is empty or no numeric numbers exist.
         """
         try:
-            all_media = self._repo.get_all()
+            # Get all media including deleted ones (to avoid reusing deleted numbers)
+            all_media = self._repo.get_all(include_deleted=True)
             
             if not all_media:
                 logger.debug("Database is empty, returning next number: 1")
                 return "1"
             
             # Extract numeric numbers from all media
-            numeric_numbers = []
+            numeric_numbers = set()
             for media in all_media:
                 if media.number:
                     try:
                         num = int(media.number)
-                        numeric_numbers.append(num)
+                        numeric_numbers.add(num)
                     except ValueError:
                         # Skip non-numeric numbers
                         logger.debug(f"Skipping non-numeric number: {media.number}")
@@ -524,10 +526,12 @@ class MediaService:
                 logger.debug("No numeric numbers found, returning next number: 1")
                 return "1"
             
-            # Get the highest number and increment
-            max_number = max(numeric_numbers)
-            next_number = max_number + 1
-            logger.debug(f"Next available number: {next_number}")
+            # Find the first unused number starting from 1
+            next_number = 1
+            while next_number in numeric_numbers:
+                next_number += 1
+            
+            logger.debug(f"Next available number: {next_number} (used numbers: {sorted(numeric_numbers)})")
             return str(next_number)
             
         except Exception as e:

@@ -40,6 +40,7 @@ History:
 20260309  V1.34: Enhanced date picker with auto-save and year/month selector
 20260309  V1.35: Phase 9F - Added max_items limit (3000) for performance optimization
 20260309  V1.36: Changed show deleted from button to checkbox for better UX
+20260309  V1.37: Pass media_service to AddMediaDialog for auto-numbering
 """
 
 import logging
@@ -778,7 +779,7 @@ class MainWindow:
             categories = self.media_service.get_unique_categories()
             
             # Create and show dialog
-            dialog = AddMediaDialog(self.root, locations, categories, on_save=self._on_media_added)
+            dialog = AddMediaDialog(self.root, locations, categories, on_save=self._on_media_added, media_service=self.media_service)
             result = dialog.show()
             
             if result:

@@ -11,7 +11,14 @@ from pathlib import Path
 # ============================================================================
 
 # Base directory is the project root (parent of src/)
-BASE_DIR = Path(__file__).parent.parent.parent
+# For PyInstaller: use the directory where the executable is located
+import sys
+if getattr(sys, 'frozen', False):
+    # Running as compiled executable
+    BASE_DIR = Path(sys.executable).parent
+else:
+    # Running as Python script
+    BASE_DIR = Path(__file__).parent.parent.parent
 
 # Data directory for database files
 DATA_DIR = BASE_DIR / "data"
@@ -94,7 +101,7 @@ LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 APP_NAME = "Media Archive Manager"
 
 # Application version
-APP_VERSION = "1.0.0"
+APP_VERSION = "2.0.0"
 
 # Application description
 APP_DESCRIPTION = "Local desktop application for managing physical media inventory"
