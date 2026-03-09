@@ -23,6 +23,7 @@ History:
 20260309  V1.17: Added column sorting to locations tab with visual indicators
 20260309  V1.18: Added StatisticsDialog and AboutDialog for Phase 7
 20260309  V1.19: Updated date display to DD.MM.YYYY format using format_date()
+20260309  V1.20: Added soft delete support - toggle button and visual indicators
 """
 
 import logging
@@ -83,6 +84,9 @@ class MainWindow:
         
         self.location_sort_column = self.preferences_repo.get_preference("location_sort_column", "Box")
         self.location_sort_reverse = self.preferences_repo.get_preference("location_sort_reverse", "False") == "True"
+        
+        # Initialize soft delete flag
+        self.show_deleted = False
         
         # Build UI
         self._create_menu_bar()
@@ -206,6 +210,12 @@ class MainWindow:
         exp_btn = ttk.Button(toolbar, text="Expired", command=self._show_expired)
         exp_btn.pack(side=tk.LEFT, padx=2)
         self._create_tooltip(exp_btn, "Show expired media (Ctrl+X)")
+        
+        ttk.Separator(toolbar, orient=tk.VERTICAL).pack(side=tk.LEFT, fill=tk.Y, padx=5)
+        
+        self.deleted_btn = ttk.Button(toolbar, text="Show Deleted", command=self._toggle_deleted)
+        self.deleted_btn.pack(side=tk.LEFT, padx=2)
+        self._create_tooltip(self.deleted_btn, "Show/hide deleted media items")
         
         logger.debug("Toolbar created")
 
@@ -402,8 +412,8 @@ class MainWindow:
             for item in self.media_tree.get_children():
                 self.media_tree.delete(item)
             
-            # Load media
-            media_list = self.media_service.get_all_media()
+            # Load media with deleted filter
+            media_list = self.media_service.get_all_media(include_deleted=self.show_deleted)
             
             # Sort media by current sort column and direction
             media_list = self._sort_media_list(media_list, self.media_sort_column, self.media_sort_reverse)
@@ -411,6 +421,9 @@ class MainWindow:
             # Create location lookup for display
             locations = self.location_service.get_all_locations()
             location_map = {loc.id: loc for loc in locations}
+            
+            # Configure tags for deleted items
+            self.media_tree.tag_configure("deleted", foreground="gray", font=("TkDefaultFont", 9, "overstrike"))
             
             for media in media_list:
                 created = format_date(media.creation_date) if media.creation_date else "N/A"
@@ -427,10 +440,14 @@ class MainWindow:
                 else:
                     box = "N/A"
                 
+                # Add [DELETED] prefix if deleted
+                name = f"[DELETED] {media.name}" if media.is_deleted else media.name
+                
                 # Use media.id as the item ID in treeview for later retrieval
+                tags = ("deleted",) if media.is_deleted else ()
                 self.media_tree.insert("", tk.END, iid=str(media.id), values=(
                     number,
-                    media.name,
+                    name,
                     media.media_type,
                     category,
                     box,
@@ -439,9 +456,13 @@ class MainWindow:
                     license_code,
                     created,
                     expires
-                ))
+                ), tags=tags)
             
-            self.status_var.set(f"Loaded {len(media_list)} media items")
+            count_msg = f"Loaded {len(media_list)} media items"
+            if self.show_deleted:
+                deleted_count = sum(1 for m in media_list if m.is_deleted)
+                count_msg += f" ({deleted_count} deleted)"
+            self.status_var.set(count_msg)
             logger.debug(f"Refreshed media list: {len(media_list)} items")
         except Exception as e:
             logger.error(f"Failed to refresh media list: {e}")
@@ -1404,6 +1425,21 @@ For more information, see the documentation.
         """Start the application."""
         logger.info("Starting application")
         self.root.mainloop()
+
+    def _toggle_deleted(self) -> None:
+        """Toggle display of deleted media items."""
+        try:
+            self.show_deleted = not self.show_deleted
+            self.deleted_btn.config(
+                text="Hide Deleted" if self.show_deleted else "Show Deleted"
+            )
+            self._refresh_media_list()
+            status = "Showing deleted items" if self.show_deleted else "Hiding deleted items"
+            self.status_var.set(status)
+            logger.debug(f"Toggled deleted items display: {self.show_deleted}")
+        except Exception as e:
+            logger.error(f"Error toggling deleted items: {e}")
+            messagebox.showerror("Error", f"Failed to toggle deleted items: {e}")
 
     def close(self) -> None:
         """Close the application."""

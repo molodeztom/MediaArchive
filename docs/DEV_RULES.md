@@ -1361,6 +1361,29 @@ V1.5 → V1.6
 
 ---
 
+## Phase Completion Versioning
+
+After completing each phase of development:
+
+- Increase the **minor version by 0.1**
+- Update the version in the application's About dialog
+- Ensure the version is visible when running the application
+
+Example:
+
+```
+Phase 9A complete: V1.0 → V1.1
+Phase 9B complete: V1.1 → V1.2
+Phase 9C complete: V1.2 → V1.3
+```
+
+The version must be updated in:
+- Application About dialog
+- Main window title (if applicable)
+- Any version display in the UI
+
+---
+
 ## New Release
 
 When a **new release** is declared:
