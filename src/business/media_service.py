@@ -18,6 +18,7 @@ History:
 20260309  V1.11: Phase 9A complete - auto-numbering and date format support
 20260309  V1.12: Phase 9D - Added batch_update_media method for multi-select operations
 20260309  V1.13: Phase 9E - Added auto-set creation date support
+20260309  V1.14: Phase 9F - Added max_items limit (3000) for performance optimization
 """
 
 import logging

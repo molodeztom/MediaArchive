@@ -38,6 +38,8 @@ History:
 20260309  V1.32: Phase 9D - Status bar always shows selection count on any selection change
 20260309  V1.33: Phase 9D - Status bar shows: items | deleted | selected
 20260309  V1.34: Enhanced date picker with auto-save and year/month selector
+20260309  V1.35: Phase 9F - Added max_items limit (3000) for performance optimization
+20260309  V1.36: Changed show deleted from button to checkbox for better UX
 """
 
 import logging
@@ -53,7 +55,7 @@ from business.location_service import LocationService
 from business.media_service import MediaService
 from models.location import StorageLocation
 from models.enums import MediaType
-from utils.config import APP_NAME, APP_VERSION, DB_PATH, WINDOW_WIDTH, WINDOW_HEIGHT
+from utils.config import APP_NAME, APP_VERSION, DB_PATH, WINDOW_WIDTH, WINDOW_HEIGHT, MAX_ITEMS
 from utils.date_utils import format_date
 from gui.dialogs import (
     AddMediaDialog, EditMediaDialog, DeleteConfirmDialog,
@@ -108,6 +110,9 @@ class MainWindow:
         
         # Initialize soft delete flag
         self.show_deleted = False
+        
+        # Load max_items preference from database
+        self.max_items = int(self.preferences_repo.get_preference("max_items", str(MAX_ITEMS)))
         
         # Initialize logging with persistent preferences
         self._init_logging()
@@ -270,9 +275,15 @@ class MainWindow:
         
         ttk.Separator(toolbar, orient=tk.VERTICAL).pack(side=tk.LEFT, fill=tk.Y, padx=5)
         
-        self.deleted_btn = ttk.Button(toolbar, text="Show Deleted", command=self._toggle_deleted)
-        self.deleted_btn.pack(side=tk.LEFT, padx=2)
-        self._create_tooltip(self.deleted_btn, "Show/hide deleted media items")
+        self.show_deleted_var = tk.BooleanVar(value=False)
+        self.deleted_check = ttk.Checkbutton(
+            toolbar,
+            text="Show Deleted",
+            variable=self.show_deleted_var,
+            command=self._toggle_deleted
+        )
+        self.deleted_check.pack(side=tk.LEFT, padx=2)
+        self._create_tooltip(self.deleted_check, "Show/hide deleted media items")
         
         logger.debug("Toolbar created")
 
@@ -493,6 +504,11 @@ class MainWindow:
             
             # Load media with deleted filter
             media_list = self.media_service.get_all_media(include_deleted=self.show_deleted)
+            
+            # Apply max_items limit for performance
+            if len(media_list) > self.max_items:
+                logger.warning(f"Media list ({len(media_list)}) exceeds max_items limit ({self.max_items}). Truncating.")
+                media_list = media_list[:self.max_items]
             
             # Sort media by current sort column and direction
             media_list = self._sort_media_list(media_list, self.media_sort_column, self.media_sort_reverse)
@@ -1130,6 +1146,7 @@ class MainWindow:
             # Apply logging preferences
             logging_enabled = preferences.get("logging_enabled", True)
             log_level_str = preferences.get("log_level", "INFO")
+            max_items = preferences.get("max_items", MAX_ITEMS)
             
             # Convert log level string to logging module constant
             log_level_map = {
@@ -1145,7 +1162,14 @@ class MainWindow:
             set_logging_enabled(logging_enabled)
             set_logging_level(log_level)
             
-            logger.info(f"Preferences applied: logging_enabled={logging_enabled}, log_level={log_level_str}")
+            # Update max_items if changed
+            if max_items != self.max_items:
+                self.max_items = max_items
+                logger.info(f"Updated max_items to {self.max_items}")
+                # Refresh media list with new limit
+                self._refresh_media_list()
+            
+            logger.info(f"Preferences applied: logging_enabled={logging_enabled}, log_level={log_level_str}, max_items={max_items}")
         except Exception as e:
             logger.error(f"Error applying preferences: {e}")
 
@@ -1224,6 +1248,11 @@ For more information, see the documentation.
                 results = self.media_service.search_media_by_name(query, include_deleted=self.show_deleted)
             else:
                 results = self.media_service.get_all_media(include_deleted=self.show_deleted)
+            
+            # Apply max_items limit for performance
+            if len(results) > self.max_items:
+                logger.warning(f"Search results ({len(results)}) exceed max_items limit ({self.max_items}). Truncating.")
+                results = results[:self.max_items]
             
             # Filter out deleted items if not showing deleted
             if not self.show_deleted:
@@ -1621,10 +1650,7 @@ For more information, see the documentation.
     def _toggle_deleted(self) -> None:
         """Toggle display of deleted media items."""
         try:
-            self.show_deleted = not self.show_deleted
-            self.deleted_btn.config(
-                text="Hide Deleted" if self.show_deleted else "Show Deleted"
-            )
+            self.show_deleted = self.show_deleted_var.get()
             self._refresh_media_list()
             status = "Showing deleted items" if self.show_deleted else "Hiding deleted items"
             self.status_var.set(status)

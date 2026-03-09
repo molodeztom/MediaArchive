@@ -60,6 +60,9 @@ MAX_COMPANY_LENGTH = 100
 # License code maximum length
 MAX_LICENSE_CODE_LENGTH = 200
 
+# Maximum number of items to load/display (Phase 9F performance optimization)
+MAX_ITEMS = 3000
+
 # ============================================================================
 # UI Settings
 # ============================================================================

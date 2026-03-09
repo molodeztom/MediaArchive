@@ -6,6 +6,9 @@ including logging preferences.
 History:
 20260309  V1.0: Initial preferences dialog implementation
 20260309  V1.1: Fixed logging preferences persistence - save directly to DB
+20260309  V1.2: Phase 9F - Added maximum items limit setting (3000)
+20260309  V1.3: Increased dialog height to 480px for better button visibility
+20260309  V1.4: Load max_items from preferences on dialog init for persistence
 """
 
 import logging
@@ -98,6 +101,35 @@ class PreferencesDialog(tk.Toplevel):
         )
         info_label.pack(anchor=tk.W, pady=(15, 0))
         
+        # Performance section
+        perf_frame = ttk.LabelFrame(main_frame, text="Performance Settings", padding=15)
+        perf_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 20))
+        
+        # Maximum items setting
+        ttk.Label(perf_frame, text="Maximum Items to Load:").pack(anchor=tk.W, pady=(0, 8))
+        
+        self.max_items_var = tk.StringVar(value="3000")
+        if self.preferences_repo:
+            self.max_items_var.set(self.preferences_repo.get_preference("max_items", "3000"))
+        
+        max_items_spin = ttk.Spinbox(
+            perf_frame,
+            from_=100,
+            to=10000,
+            textvariable=self.max_items_var,
+            width=10
+        )
+        max_items_spin.pack(anchor=tk.W, pady=(0, 8))
+        
+        # Info label for max items
+        max_items_info = ttk.Label(
+            perf_frame,
+            text="Limits the number of items loaded to improve performance (100-10000).",
+            font=("TkDefaultFont", 9, "italic"),
+            foreground="gray"
+        )
+        max_items_info.pack(anchor=tk.W, pady=(0, 0))
+        
         # Buttons frame - positioned at bottom
         button_frame = ttk.Frame(self)
         button_frame.pack(fill=tk.X, padx=15, pady=15, side=tk.BOTTOM)
@@ -105,14 +137,25 @@ class PreferencesDialog(tk.Toplevel):
         ttk.Button(button_frame, text="Save", command=self._save).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="Cancel", command=self._cancel).pack(side=tk.LEFT, padx=5)
         
-        # Set size - increased height to accommodate all elements
-        self.geometry("450x320")
+        # Set size - increased height to accommodate all elements and buttons
+        self.geometry("450x480")
 
     def _save(self) -> None:
         """Save preferences and close dialog."""
         try:
             logging_enabled = self.logging_enabled_var.get()
             log_level = self.log_level_var.get()
+            max_items_str = self.max_items_var.get()
+            
+            # Validate max_items
+            try:
+                max_items = int(max_items_str)
+                if max_items < 100 or max_items > 10000:
+                    messagebox.showerror("Validation Error", "Maximum items must be between 100 and 10000")
+                    return
+            except ValueError:
+                messagebox.showerror("Validation Error", "Maximum items must be a valid number")
+                return
             
             if self.preferences_repo:
                 # Save logging preferences directly to database
@@ -130,11 +173,19 @@ class PreferencesDialog(tk.Toplevel):
                     logger.error(f"Failed to save logging_level: {e}")
                     raise
                 
-                logger.info(f"Preferences saved: logging_enabled={logging_enabled}, log_level={log_level}")
+                try:
+                    self.preferences_repo.set_preference("max_items", str(max_items))
+                    logger.debug(f"Saved max_items to DB: {max_items}")
+                except Exception as e:
+                    logger.error(f"Failed to save max_items: {e}")
+                    raise
+                
+                logger.info(f"Preferences saved: logging_enabled={logging_enabled}, log_level={log_level}, max_items={max_items}")
             
             self.result = {
                 "logging_enabled": logging_enabled,
                 "log_level": log_level,
+                "max_items": max_items,
             }
             
             if self.on_save:
