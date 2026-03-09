@@ -355,7 +355,8 @@ class MainWindow:
                 else:
                     box = "N/A"
                 
-                self.media_tree.insert("", tk.END, values=(
+                # Use media.id as the item ID in treeview for later retrieval
+                self.media_tree.insert("", tk.END, iid=str(media.id), values=(
                     number,
                     media.name,
                     media.media_type,
@@ -460,17 +461,9 @@ class MainWindow:
                 messagebox.showwarning("Selection Error", "Please select a media item to edit")
                 return
             
-            # Get media ID from second column (first is now Number)
+            # Get media ID from treeview item ID
             item = selection[0]
-            values = self.media_tree.item(item, "values")
-            # Need to find media by name since we don't have ID in first column anymore
-            media_name = values[1]
-            media_list = self.media_service.get_all_media()
-            media = next((m for m in media_list if m.name == media_name), None)
-            if not media:
-                messagebox.showerror("Error", "Could not find selected media")
-                return
-            media_id = media.id
+            media_id = int(item)
             
             # Get media details
             media = self.media_service.get_media(media_id)
@@ -521,17 +514,9 @@ class MainWindow:
                 messagebox.showwarning("Selection Error", "Please select a media item to delete")
                 return
             
-            # Get media ID from second column (first is now Number)
+            # Get media ID from treeview item ID
             item = selection[0]
-            values = self.media_tree.item(item, "values")
-            # Need to find media by name since we don't have ID in first column anymore
-            media_name = values[1]
-            media_list = self.media_service.get_all_media()
-            media = next((m for m in media_list if m.name == media_name), None)
-            if not media:
-                messagebox.showerror("Error", "Could not find selected media")
-                return
-            media_id = media.id
+            media_id = int(item)
             
             # Get media details
             media = self.media_service.get_media(media_id)
@@ -1105,16 +1090,9 @@ Location Statistics:
             if not selection:
                 return
             
-            # Get media ID from second column (first is now Number)
+            # Get media ID from treeview item ID
             item = selection[0]
-            values = self.media_tree.item(item, "values")
-            # Need to find media by name since we don't have ID in first column anymore
-            media_name = values[1]
-            media_list = self.media_service.get_all_media()
-            media = next((m for m in media_list if m.name == media_name), None)
-            if not media:
-                return
-            media_id = media.id
+            media_id = int(item)
             
             # Get media details
             media = self.media_service.get_media(media_id)

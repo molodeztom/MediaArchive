@@ -6,6 +6,7 @@ with validation and business rule enforcement.
 History:
 20260309  V1.0: Added assign_locations_by_box_place method for location assignment
 20260309  V1.1: Added place parameter to create_media and update_media methods
+20260309  V1.2: Fixed log message in assign_locations_by_box_place - use real_location_id
 """
 
 import logging
@@ -514,11 +515,12 @@ class MediaService:
                 if media.location_id in box_to_location_id:
                     # This is a temporary reference - resolve it to real location ID
                     real_location_id = box_to_location_id[media.location_id]
+                    old_location_id = media.location_id
                     media.location_id = real_location_id
                     self._repo.update(media)
                     stats["assigned"] += 1
                     stats["updated_media"].append(media.id)
-                    logger.info(f"Resolved media {media.id}: box {media.location_id} -> location_id {real_location_id}")
+                    logger.info(f"Resolved media {media.id}: box {old_location_id} -> location_id {real_location_id}")
                 else:
                     # Already has a real location ID or no match found
                     stats["already_assigned"] += 1

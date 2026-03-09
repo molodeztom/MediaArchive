@@ -7,6 +7,8 @@ History:
 20260307  V1.0: Initial implementation with media dialogs
 20260307  V1.1: Added location management dialogs
 20260309  V1.2: Added LocationAssignmentResultsDialog for import results
+20260309  V1.3: Increased DeleteConfirmDialog height to show buttons
+20260309  V1.4: Added position and box fields to media dialogs
 """
 
 import logging
@@ -122,8 +124,26 @@ class AddMediaDialog(BaseDialog):
         number_entry = ttk.Entry(main_frame, textvariable=self.number_var, width=40)
         number_entry.grid(row=1, column=1, sticky=tk.EW, pady=5)
         
+        # Box field (from storage_location table)
+        ttk.Label(main_frame, text="Box").grid(row=2, column=0, sticky=tk.W, pady=5)
+        self.box_var = tk.StringVar()
+        box_combo = ttk.Combobox(
+            main_frame,
+            textvariable=self.box_var,
+            values=[loc.box for loc in self.locations],
+            state="readonly",
+            width=37
+        )
+        box_combo.grid(row=2, column=1, sticky=tk.EW, pady=5)
+        
+        # Position field (number within box)
+        ttk.Label(main_frame, text="Position").grid(row=3, column=0, sticky=tk.W, pady=5)
+        self.position_var = tk.StringVar()
+        position_entry = ttk.Entry(main_frame, textvariable=self.position_var, width=40)
+        position_entry.grid(row=3, column=1, sticky=tk.EW, pady=5)
+        
         # Media Type field
-        ttk.Label(main_frame, text="Media Type").grid(row=2, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Media Type").grid(row=4, column=0, sticky=tk.W, pady=5)
         self.media_type_var = tk.StringVar()
         type_combo = ttk.Combobox(
             main_frame,
@@ -132,68 +152,68 @@ class AddMediaDialog(BaseDialog):
             state="readonly",
             width=37
         )
-        type_combo.grid(row=2, column=1, sticky=tk.EW, pady=5)
+        type_combo.grid(row=4, column=1, sticky=tk.EW, pady=5)
         
         # Category field
-        ttk.Label(main_frame, text="Category").grid(row=3, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Category").grid(row=5, column=0, sticky=tk.W, pady=5)
         self.category_var = tk.StringVar()
         category_entry = ttk.Entry(main_frame, textvariable=self.category_var, width=40)
-        category_entry.grid(row=3, column=1, sticky=tk.EW, pady=5)
+        category_entry.grid(row=5, column=1, sticky=tk.EW, pady=5)
         
         # Company field
-        ttk.Label(main_frame, text="Company").grid(row=4, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Company").grid(row=6, column=0, sticky=tk.W, pady=5)
         self.company_var = tk.StringVar()
         company_entry = ttk.Entry(main_frame, textvariable=self.company_var, width=40)
-        company_entry.grid(row=4, column=1, sticky=tk.EW, pady=5)
+        company_entry.grid(row=6, column=1, sticky=tk.EW, pady=5)
         
         # License Code field
-        ttk.Label(main_frame, text="License Code").grid(row=5, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="License Code").grid(row=7, column=0, sticky=tk.W, pady=5)
         self.license_var = tk.StringVar()
         license_entry = ttk.Entry(main_frame, textvariable=self.license_var, width=40)
-        license_entry.grid(row=5, column=1, sticky=tk.EW, pady=5)
+        license_entry.grid(row=7, column=1, sticky=tk.EW, pady=5)
         
         # Creation Date field
-        ttk.Label(main_frame, text="Creation Date").grid(row=6, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Creation Date").grid(row=8, column=0, sticky=tk.W, pady=5)
         self.creation_date_var = tk.StringVar()
         creation_date_entry = ttk.Entry(
             main_frame,
             textvariable=self.creation_date_var,
             width=40
         )
-        creation_date_entry.grid(row=6, column=1, sticky=tk.EW, pady=5)
+        creation_date_entry.grid(row=8, column=1, sticky=tk.EW, pady=5)
         ttk.Label(main_frame, text="(YYYY-MM-DD)", font=("TkDefaultFont", 8)).grid(
-            row=6, column=2, sticky=tk.W, padx=5
+            row=8, column=2, sticky=tk.W, padx=5
         )
         
         # Valid Until Date field
-        ttk.Label(main_frame, text="Valid Until Date").grid(row=7, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Valid Until Date").grid(row=9, column=0, sticky=tk.W, pady=5)
         self.valid_until_var = tk.StringVar()
         valid_until_entry = ttk.Entry(
             main_frame,
             textvariable=self.valid_until_var,
             width=40
         )
-        valid_until_entry.grid(row=7, column=1, sticky=tk.EW, pady=5)
+        valid_until_entry.grid(row=9, column=1, sticky=tk.EW, pady=5)
         ttk.Label(main_frame, text="(YYYY-MM-DD)", font=("TkDefaultFont", 8)).grid(
-            row=7, column=2, sticky=tk.W, padx=5
+            row=9, column=2, sticky=tk.W, padx=5
         )
         
         # Content Description field
-        ttk.Label(main_frame, text="Content Description").grid(row=8, column=0, sticky=tk.NW, pady=5)
+        ttk.Label(main_frame, text="Content Description").grid(row=10, column=0, sticky=tk.NW, pady=5)
         self.content_var = tk.StringVar()
         content_text = tk.Text(main_frame, height=4, width=40)
-        content_text.grid(row=8, column=1, sticky=tk.EW, pady=5)
+        content_text.grid(row=10, column=1, sticky=tk.EW, pady=5)
         self.content_text = content_text
         
         # Remarks field
-        ttk.Label(main_frame, text="Remarks").grid(row=9, column=0, sticky=tk.NW, pady=5)
+        ttk.Label(main_frame, text="Remarks").grid(row=11, column=0, sticky=tk.NW, pady=5)
         self.remarks_var = tk.StringVar()
         remarks_text = tk.Text(main_frame, height=4, width=40)
-        remarks_text.grid(row=9, column=1, sticky=tk.EW, pady=5)
+        remarks_text.grid(row=11, column=1, sticky=tk.EW, pady=5)
         self.remarks_text = remarks_text
         
         # Location field
-        ttk.Label(main_frame, text="Storage Location").grid(row=10, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Storage Location").grid(row=12, column=0, sticky=tk.W, pady=5)
         self.location_var = tk.StringVar()
         location_values = [f"{loc.id}: {loc}" for loc in self.locations]
         location_combo = ttk.Combobox(
@@ -203,7 +223,7 @@ class AddMediaDialog(BaseDialog):
             state="readonly",
             width=37
         )
-        location_combo.grid(row=10, column=1, sticky=tk.EW, pady=5)
+        location_combo.grid(row=12, column=1, sticky=tk.EW, pady=5)
         
         # Configure grid weights
         main_frame.columnconfigure(1, weight=1)
@@ -215,8 +235,8 @@ class AddMediaDialog(BaseDialog):
         ttk.Button(button_frame, text="Save", command=self._save).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="Cancel", command=self._cancel).pack(side=tk.LEFT, padx=5)
         
-        # Set minimum size
-        self.geometry("500x650")
+        # Set minimum size - increased for new fields
+        self.geometry("500x750")
 
     def _save(self) -> None:
         """Save media and close dialog."""
@@ -224,6 +244,8 @@ class AddMediaDialog(BaseDialog):
             # Get values
             name = self.name_var.get().strip()
             number = self.number_var.get().strip() or None
+            box = self.box_var.get().strip() or None
+            position = self.position_var.get().strip() or None
             media_type = self.media_type_var.get().strip()
             category_value = self.category_var.get().strip() or None
             company = self.company_var.get().strip() or None
@@ -281,6 +303,8 @@ class AddMediaDialog(BaseDialog):
                 content_description=content_desc,
                 remarks=remarks,
                 location_id=location_id,
+                box=box,
+                position=position,
             )
             
             self.result = media
@@ -354,8 +378,26 @@ class EditMediaDialog(BaseDialog):
         number_entry = ttk.Entry(main_frame, textvariable=self.number_var, width=40)
         number_entry.grid(row=1, column=1, sticky=tk.EW, pady=5)
         
+        # Box field (from storage_location table)
+        ttk.Label(main_frame, text="Box").grid(row=2, column=0, sticky=tk.W, pady=5)
+        self.box_var = tk.StringVar(value=self.media.box or "")
+        box_combo = ttk.Combobox(
+            main_frame,
+            textvariable=self.box_var,
+            values=[loc.box for loc in self.locations],
+            state="readonly",
+            width=37
+        )
+        box_combo.grid(row=2, column=1, sticky=tk.EW, pady=5)
+        
+        # Position field (number within box)
+        ttk.Label(main_frame, text="Position").grid(row=3, column=0, sticky=tk.W, pady=5)
+        self.position_var = tk.StringVar(value=self.media.position or "")
+        position_entry = ttk.Entry(main_frame, textvariable=self.position_var, width=40)
+        position_entry.grid(row=3, column=1, sticky=tk.EW, pady=5)
+        
         # Media Type field
-        ttk.Label(main_frame, text="Media Type").grid(row=2, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Media Type").grid(row=4, column=0, sticky=tk.W, pady=5)
         self.media_type_var = tk.StringVar(value=self.media.media_type)
         type_combo = ttk.Combobox(
             main_frame,
@@ -619,8 +661,8 @@ Expires: {self.media.valid_until_date or "N/A"}
         ttk.Button(button_frame, text="Delete", command=self._confirm).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="Cancel", command=self._cancel).pack(side=tk.LEFT, padx=5)
         
-        # Set size
-        self.geometry("400x300")
+        # Set size - increased height to ensure buttons are visible
+        self.geometry("400x380")
 
     def _confirm(self) -> None:
         """Confirm deletion and close dialog."""
