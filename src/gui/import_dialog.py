@@ -8,6 +8,7 @@ History:
 20260308  V1.2: Added encoding detection for Access CSV files
 20260308  V1.3: Fixed dialog layout for button visibility
 20260308  V1.4: Added Access CSV format support with mapper integration
+20260308  V1.5: Set Access format as default, semicolon as default delimiter, resizable dialog, 15-row preview
 """
 
 import logging
@@ -49,12 +50,12 @@ class ImportDialog(tk.Toplevel):
         """
         super().__init__(parent)
         self.title("Import Data")
-        self.resizable(False, False)
+        self.resizable(True, True)
         self.result = None
         self.on_import = on_import
         self.imported_data = []
         self.import_type = "media"
-        self.csv_format = "standard"  # standard or access
+        self.csv_format = "access"  # standard or access
         self.locations = locations or []  # For Access format mapping
         
         # Make dialog modal
@@ -116,7 +117,7 @@ class ImportDialog(tk.Toplevel):
         format_frame = ttk.LabelFrame(main_frame, text="CSV Format", padding=10)
         format_frame.pack(fill=tk.X, pady=(0, 5))
         
-        self.format_var = tk.StringVar(value="standard")
+        self.format_var = tk.StringVar(value="access")
         ttk.Radiobutton(
             format_frame,
             text="Standard Format",
@@ -138,7 +139,7 @@ class ImportDialog(tk.Toplevel):
         delimiter_frame = ttk.Frame(options_frame)
         delimiter_frame.pack(anchor=tk.W, pady=2)
         ttk.Label(delimiter_frame, text="Delimiter:").pack(side=tk.LEFT, padx=5)
-        self.delimiter_var = tk.StringVar(value=",")
+        self.delimiter_var = tk.StringVar(value=";")
         ttk.Radiobutton(
             delimiter_frame,
             text="Comma (,)",
@@ -179,7 +180,7 @@ class ImportDialog(tk.Toplevel):
         
         # Preview tree
         columns = ("Column1", "Column2", "Column3", "Column4", "Column5")
-        self.preview_tree = ttk.Treeview(preview_frame, columns=columns, height=8)
+        self.preview_tree = ttk.Treeview(preview_frame, columns=columns, height=15)
         self.preview_tree.column("#0", width=0, stretch=tk.NO)
         for col in columns:
             self.preview_tree.column(col, anchor=tk.W, width=80)
@@ -198,9 +199,9 @@ class ImportDialog(tk.Toplevel):
         self.status_var = tk.StringVar(value="Ready to import")
         ttk.Label(status_frame, textvariable=self.status_var).pack(anchor=tk.W)
         
-        # Set fixed dialog size
-        self.geometry("650x550")
-        self.minsize(650, 550)
+        # Set resizable dialog size
+        self.geometry("750x700")
+        self.minsize(750, 600)
 
     def _browse_file(self) -> None:
         """Browse for CSV file."""
@@ -457,9 +458,9 @@ class ImportDialog(tk.Toplevel):
                     errors.append(f"Row {i}: Box is required")
                     continue
                 
+                # Place is optional - set to empty string if not provided
                 if not place:
-                    errors.append(f"Row {i}: Place is required")
-                    continue
+                    place = ""
                 
                 # Create location object
                 location = StorageLocation(

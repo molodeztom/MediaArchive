@@ -7,6 +7,7 @@ History:
 20260307  V1.1: Added location management and search/filter functionality
 20260307  V1.2: Integrated SearchPanel and enhanced filter menu
 20260307  V1.3: Added import/export and backup functionality
+20260308  V1.4: Implement two-phase import for locations and media
 """
 
 import logging
@@ -393,8 +394,9 @@ class MainWindow:
             # Save media to database
             created = self.media_service.create_media(
                 name=media.name,
+                number=media.number,
                 media_type=media.media_type,
-                type=media.type,
+                category=media.category,
                 content_description=media.content_description,
                 remarks=media.remarks,
                 creation_date=media.creation_date,
@@ -446,8 +448,9 @@ class MainWindow:
             updated = self.media_service.update_media(
                 media_id=media.id,
                 name=media.name,
+                number=media.number,
                 media_type=media.media_type,
-                type=media.type,
+                category=media.category,
                 content_description=media.content_description,
                 remarks=media.remarks,
                 creation_date=media.creation_date,
@@ -855,16 +858,23 @@ Location Statistics:
             messagebox.showerror("Error", f"Failed to import data: {e}")
 
     def _process_import(self, imported_data: list, import_type: str) -> None:
-        """Process imported data."""
+        """Process imported data.
+        
+        For media imports, implements two-phase strategy:
+        1. First pass: Create media with temporary location references
+        2. Second pass: Update media with actual database location IDs
+        """
         try:
             if import_type == "media":
                 count = 0
+                # First pass: Create media items with temporary location references
                 for media in imported_data:
                     try:
                         self.media_service.create_media(
                             name=media.name,
+                            number=media.number,
                             media_type=media.media_type,
-                            type=media.type,
+                            category=media.category,
                             content_description=media.content_description,
                             remarks=media.remarks,
                             creation_date=media.creation_date,
@@ -883,19 +893,58 @@ Location Statistics:
             
             else:  # locations
                 count = 0
+                # Create locations and store mapping of temporary IDs to database IDs
+                location_id_map = {}
                 for location in imported_data:
                     try:
-                        self.location_service.create_location(
+                        # Check if location has a temporary ID (from Access import)
+                        temp_id = location.id
+                        
+                        # Create location in database
+                        created_location = self.location_service.create_location(
                             box=location.box,
                             place=location.place,
                             detail=location.detail,
                         )
+                        
+                        # Store mapping if temp ID exists
+                        if temp_id is not None:
+                            location_id_map[temp_id] = created_location.id
+                            logger.debug(f"Location ID mapping: {temp_id} -> {created_location.id}")
+                        
                         count += 1
                     except Exception as e:
                         logger.warning(f"Failed to import location: {e}")
                 
+                # If we have location ID mappings, update media with correct location IDs
+                if location_id_map:
+                    try:
+                        all_media = self.media_service.get_all_media()
+                        for media in all_media:
+                            # Check if media has a temporary location ID that needs updating
+                            if media.location_id in location_id_map:
+                                new_location_id = location_id_map[media.location_id]
+                                self.media_service.update_media(
+                                    media_id=media.id,
+                                    name=media.name,
+                                    number=media.number,
+                                    media_type=media.media_type,
+                                    category=media.category,
+                                    content_description=media.content_description,
+                                    remarks=media.remarks,
+                                    creation_date=media.creation_date,
+                                    valid_until_date=media.valid_until_date,
+                                    company=media.company,
+                                    license_code=media.license_code,
+                                    location_id=new_location_id,
+                                )
+                                logger.debug(f"Updated media {media.id} location: {media.location_id} -> {new_location_id}")
+                    except Exception as e:
+                        logger.warning(f"Failed to update media location IDs: {e}")
+                
                 messagebox.showinfo("Import Complete", f"Successfully imported {count} locations")
                 self._refresh_locations_list()
+                self._refresh_media_list()  # Refresh media to show updated locations
                 self.status_var.set(f"Imported {count} locations")
             
             logger.info(f"Import completed: {count} {import_type} items")

@@ -16,7 +16,7 @@ from io import StringIO
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from business.access_csv_mapper import (
-    AccessMediaTypeMapper,
+    AccessCategoryMapper,
     AccessDateConverter,
     AccessCSVMapper,
     AccessLocationMapper,
@@ -194,7 +194,7 @@ class TestRealCSVImport(unittest.TestCase):
         self.assertEqual(media_list[0].name, "Windows 10 Pro")
         self.assertEqual(media_list[0].company, "Microsoft")
         self.assertEqual(media_list[0].media_type, "Unknown")  # Default when not in CSV
-        self.assertEqual(media_list[0].type, "Program")  # Art field stored in type
+        self.assertEqual(media_list[0].category, "Program")  # Art field stored in category
         self.assertEqual(media_list[0].license_code, "XXXXX-XXXXX-XXXXX")
         self.assertEqual(media_list[0].creation_date, date(2020, 1, 1))
         self.assertEqual(media_list[0].valid_until_date, date(2025, 1, 1))
@@ -203,7 +203,7 @@ class TestRealCSVImport(unittest.TestCase):
         # Verify backup media
         self.assertEqual(media_list[2].name, "Backup Archive 2024")
         self.assertEqual(media_list[2].media_type, "Unknown")  # Default when not in CSV
-        self.assertEqual(media_list[2].type, "Backup")  # Art field stored in type
+        self.assertEqual(media_list[2].category, "Backup")  # Art field stored in category
         
         # Verify media without valid_until_date
         self.assertEqual(media_list[3].name, "Photo Collection 2023")
@@ -320,7 +320,8 @@ class TestRealCSVImport(unittest.TestCase):
         self.assertEqual(len(rows), 9)  # Header + 8 media
         self.assertEqual(rows[0][0], "Name")
         self.assertEqual(rows[1][0], "Windows 10 Pro")
-        self.assertEqual(rows[1][1], "DVD")
+        # Media type is "Unknown" (default when not in Access CSV)
+        self.assertEqual(rows[1][1], "Unknown")
         self.assertEqual(rows[1][2], "Microsoft")
 
     def test_round_trip_import_export(self):

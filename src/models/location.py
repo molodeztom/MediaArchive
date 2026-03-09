@@ -12,14 +12,14 @@ class StorageLocation:
     Attributes:
         id: Unique identifier (None for new records).
         box: Container name (e.g., "CD Register A").
-        place: Physical location (e.g., "office cabinet").
+        place: Physical location (optional, e.g., "office cabinet").
         detail: Additional detail (e.g., "slot 4").
         created_at: Timestamp when record was created.
         updated_at: Timestamp when record was last updated.
     """
 
     box: str
-    place: str
+    place: Optional[str] = None
     detail: Optional[str] = None
     id: Optional[int] = None
     created_at: Optional[datetime] = None

@@ -45,20 +45,21 @@ class MediaRepository:
             cursor = self._db.execute(
                 """
                 INSERT INTO media (
-                    name, content_description, remarks, creation_date,
-                    valid_until_date, media_type, type, company, license_code,
+                    name, number, content_description, remarks, creation_date,
+                    valid_until_date, media_type, category, company, license_code,
                     location_id
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     media.name,
+                    media.number,
                     media.content_description,
                     media.remarks,
                     media.creation_date,
                     media.valid_until_date,
                     media.media_type,
-                    media.type,
+                    media.category,
                     media.company,
                     media.license_code,
                     media.location_id,
@@ -143,19 +144,20 @@ class MediaRepository:
             cursor = self._db.execute(
                 """
                 UPDATE media
-                SET name = ?, content_description = ?, remarks = ?,
+                SET name = ?, number = ?, content_description = ?, remarks = ?,
                     creation_date = ?, valid_until_date = ?, media_type = ?,
-                    type = ?, company = ?, license_code = ?, location_id = ?
+                    category = ?, company = ?, license_code = ?, location_id = ?
                 WHERE id = ?
                 """,
                 (
                     media.name,
+                    media.number,
                     media.content_description,
                     media.remarks,
                     media.creation_date,
                     media.valid_until_date,
                     media.media_type,
-                    media.type,
+                    media.category,
                     media.company,
                     media.license_code,
                     media.location_id,
@@ -391,8 +393,9 @@ class MediaRepository:
         return Media(
             id=row["id"],
             name=row["name"],
+            number=row["number"],
             media_type=row["media_type"],
-            type=row["type"],
+            category=row["category"],
             content_description=row["content_description"],
             remarks=row["remarks"],
             creation_date=date.fromisoformat(row["creation_date"]) if row["creation_date"] else None,

@@ -42,7 +42,7 @@ class LocationService:
         
         Args:
             box: Container name (required).
-            place: Physical location (required).
+            place: Physical location (optional).
             detail: Additional detail (optional).
         
         Returns:
@@ -245,10 +245,8 @@ class LocationService:
         if len(box) > MAX_BOX_LENGTH:
             raise ValidationError(f"Box name exceeds {MAX_BOX_LENGTH} characters")
         
-        # Validate place
-        if not place or not place.strip():
-            raise ValidationError("Place is required")
-        if len(place) > MAX_PLACE_LENGTH:
+        # Validate place (optional)
+        if place and len(place) > MAX_PLACE_LENGTH:
             raise ValidationError(f"Place exceeds {MAX_PLACE_LENGTH} characters")
         
         # Validate detail

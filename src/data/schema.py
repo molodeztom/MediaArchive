@@ -9,7 +9,7 @@ STORAGE_LOCATION_TABLE = """
 CREATE TABLE IF NOT EXISTS storage_location (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     box TEXT NOT NULL,
-    place TEXT NOT NULL,
+    place TEXT,
     detail TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -21,12 +21,13 @@ MEDIA_TABLE = """
 CREATE TABLE IF NOT EXISTS media (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
+    number TEXT,
     content_description TEXT,
     remarks TEXT,
     creation_date DATE,
     valid_until_date DATE,
     media_type TEXT,
-    type TEXT,
+    category TEXT,
     company TEXT,
     license_code TEXT,
     location_id INTEGER,
@@ -45,8 +46,9 @@ STORAGE_LOCATION_INDEXES = [
 # Indexes for media table
 MEDIA_INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_media_name ON media(name);",
+    "CREATE INDEX IF NOT EXISTS idx_media_number ON media(number);",
     "CREATE INDEX IF NOT EXISTS idx_media_type ON media(media_type);",
-    "CREATE INDEX IF NOT EXISTS idx_media_content_type ON media(type);",
+    "CREATE INDEX IF NOT EXISTS idx_media_category ON media(category);",
     "CREATE INDEX IF NOT EXISTS idx_media_location ON media(location_id);",
     "CREATE INDEX IF NOT EXISTS idx_media_valid_until ON media(valid_until_date);",
     "CREATE INDEX IF NOT EXISTS idx_media_creation_date ON media(creation_date);",

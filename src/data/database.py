@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Optional
 
 from data.schema import get_schema_sql
+from data.migrations import DatabaseMigration
 from utils.exceptions import DatabaseError
 
 logger = logging.getLogger(__name__)
@@ -82,6 +83,7 @@ class Database:
         """Initialize database schema.
         
         Creates all tables, indexes, and triggers if they don't exist.
+        Applies any pending migrations.
         
         Raises:
             DatabaseError: If schema initialization fails.
@@ -89,6 +91,9 @@ class Database:
         try:
             conn = self.connect()
             cursor = conn.cursor()
+            
+            # Apply migrations first (in case database already exists)
+            DatabaseMigration.migrate_schema(conn)
             
             # Execute all schema SQL statements
             for sql in get_schema_sql():

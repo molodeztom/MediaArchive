@@ -13,7 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from business.access_csv_mapper import (
-    AccessMediaTypeMapper,
+    AccessCategoryMapper,
     AccessDateConverter,
     AccessCSVMapper,
     AccessLocationMapper,
@@ -23,53 +23,53 @@ from models.location import StorageLocation
 from utils.exceptions import ValidationError
 
 
-class TestAccessMediaTypeMapper(unittest.TestCase):
-    """Tests for media type mapping."""
+class TestAccessCategoryMapper(unittest.TestCase):
+    """Tests for category mapping."""
 
-    def test_map_archive_to_dvd(self):
-        """Test mapping Archive to DVD."""
-        result = AccessMediaTypeMapper.map_media_type("Archive")
-        self.assertEqual(result, "DVD")
+    def test_map_archive_to_archive(self):
+        """Test mapping Archive category."""
+        result = AccessCategoryMapper.map_category("Archive")
+        self.assertEqual(result, "Archive")
 
-    def test_map_image_to_dvd(self):
-        """Test mapping Image to DVD."""
-        result = AccessMediaTypeMapper.map_media_type("Image")
-        self.assertEqual(result, "DVD")
+    def test_map_image_to_image(self):
+        """Test mapping Image category."""
+        result = AccessCategoryMapper.map_category("Image")
+        self.assertEqual(result, "Image")
 
-    def test_map_lexica_to_dvd(self):
-        """Test mapping Lexica to DVD."""
-        result = AccessMediaTypeMapper.map_media_type("Lexica")
-        self.assertEqual(result, "DVD")
+    def test_map_lexica_to_lexica(self):
+        """Test mapping Lexica category."""
+        result = AccessCategoryMapper.map_category("Lexica")
+        self.assertEqual(result, "Lexica")
 
-    def test_map_program_to_dvd(self):
-        """Test mapping Program to DVD."""
-        result = AccessMediaTypeMapper.map_media_type("Program")
-        self.assertEqual(result, "DVD")
+    def test_map_program_to_program(self):
+        """Test mapping Program category."""
+        result = AccessCategoryMapper.map_category("Program")
+        self.assertEqual(result, "Program")
 
-    def test_map_backup_to_external_hdd(self):
-        """Test mapping Backup to External-HDD."""
-        result = AccessMediaTypeMapper.map_media_type("Backup")
-        self.assertEqual(result, "External-HDD")
+    def test_map_backup_to_backup(self):
+        """Test mapping Backup category."""
+        result = AccessCategoryMapper.map_category("Backup")
+        self.assertEqual(result, "Backup")
 
-    def test_map_game_to_dvd(self):
-        """Test mapping Game to DVD."""
-        result = AccessMediaTypeMapper.map_media_type("Game")
-        self.assertEqual(result, "DVD")
+    def test_map_game_to_game(self):
+        """Test mapping Game category."""
+        result = AccessCategoryMapper.map_category("Game")
+        self.assertEqual(result, "Game")
 
-    def test_map_unknown_to_other(self):
-        """Test mapping unknown type to Other."""
-        result = AccessMediaTypeMapper.map_media_type("Unknown")
-        self.assertEqual(result, "Other")
+    def test_map_unknown_to_unknown(self):
+        """Test mapping unknown category returns as-is."""
+        result = AccessCategoryMapper.map_category("Unknown")
+        self.assertEqual(result, "Unknown")
 
-    def test_map_empty_to_other(self):
-        """Test mapping empty string to Other."""
-        result = AccessMediaTypeMapper.map_media_type("")
-        self.assertEqual(result, "Other")
+    def test_map_empty_to_none(self):
+        """Test mapping empty string returns None."""
+        result = AccessCategoryMapper.map_category("")
+        self.assertIsNone(result)
 
-    def test_map_whitespace_to_other(self):
-        """Test mapping whitespace to Other."""
-        result = AccessMediaTypeMapper.map_media_type("   ")
-        self.assertEqual(result, "Other")
+    def test_map_whitespace_to_none(self):
+        """Test mapping whitespace returns None."""
+        result = AccessCategoryMapper.map_category("   ")
+        self.assertIsNone(result)
 
 
 class TestAccessDateConverter(unittest.TestCase):
@@ -156,7 +156,7 @@ class TestAccessCSVMapper(unittest.TestCase):
         self.assertEqual(media.name, "Windows 10 Pro")
         self.assertEqual(media.company, "Microsoft")
         self.assertEqual(media.media_type, "Unknown")  # Default when not in CSV
-        self.assertEqual(media.type, "Program")  # Art field stored in type
+        self.assertEqual(media.category, "Program")  # Art field stored in category
         self.assertEqual(media.license_code, "XXXXX-XXXXX-XXXXX")
         self.assertEqual(media.content_description, "Operating System")
         self.assertEqual(media.creation_date, date(2020, 1, 1))
@@ -206,7 +206,7 @@ class TestAccessCSVMapper(unittest.TestCase):
         self.assertIsNotNone(media)
         self.assertEqual(media.name, "Test Media")
         self.assertEqual(media.media_type, "Unknown")  # Default when not in CSV
-        self.assertIsNone(media.type)  # Art field is empty, so type is None
+        self.assertIsNone(media.category)  # Art field is empty, so category is None
         self.assertEqual(media.content_description, "Description")
 
     def test_parse_media_row_location_not_found(self):
@@ -308,24 +308,38 @@ class TestAccessLocationMapper(unittest.TestCase):
         self.assertIn("Box is required", error)
 
     def test_parse_location_row_missing_place(self):
-        """Test parsing location row with missing place."""
+        """Test parsing location row with missing place.
+        
+        Note: Place is optional in the new format, so this should succeed
+        with an empty place string.
+        """
         row = ["Box 1", "", "Detail"]
         
         location, error = AccessLocationMapper.parse_location_row(row)
         
-        self.assertIsNone(location)
-        self.assertIsNotNone(error)
-        self.assertIn("Place is required", error)
+        # Place is optional, so location should be created successfully
+        self.assertIsNone(error)
+        self.assertIsNotNone(location)
+        self.assertEqual(location.box, "Box 1")
+        self.assertEqual(location.place, "")  # Empty place is allowed
+        self.assertEqual(location.detail, "Detail")
 
     def test_parse_location_row_insufficient_columns(self):
-        """Test parsing location row with insufficient columns."""
-        row = ["Box 1"]  # Only 1 column
+        """Test parsing location row with insufficient columns.
+        
+        Note: Only box is required, so a single column is valid.
+        Place and detail are optional.
+        """
+        row = ["Box 1"]  # Only 1 column (box is required, place and detail are optional)
         
         location, error = AccessLocationMapper.parse_location_row(row)
         
-        self.assertIsNone(location)
-        self.assertIsNotNone(error)
-        self.assertIn("insufficient columns", error)
+        # Should succeed with only box provided
+        self.assertIsNone(error)
+        self.assertIsNotNone(location)
+        self.assertEqual(location.box, "Box 1")
+        self.assertEqual(location.place, "")  # Optional, defaults to empty string
+        self.assertIsNone(location.detail)  # Optional, defaults to None
 
     def test_parse_location_rows_with_header(self):
         """Test parsing multiple location rows with header."""

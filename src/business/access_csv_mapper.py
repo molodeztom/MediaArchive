@@ -9,6 +9,9 @@ History:
 20260308  V1.2: Removed media type requirement - empty types map to "Other"
 20260308  V1.3: Changed to store Art as Type in content_description, media_type defaults to DVD
 20260308  V1.4: Store Art value in separate type field instead of content_description
+20260308  V1.5: Allow locations with empty Ort/Typ - only Box ID is required
+20260308  V1.6: Rename AccessMediaTypeMapper to AccessContentTypeMapper for clarity
+20260308  V1.7: Rename AccessContentTypeMapper to AccessCategoryMapper, store ID as number
 """
 
 import logging
@@ -23,52 +26,55 @@ from utils.exceptions import ValidationError
 logger = logging.getLogger(__name__)
 
 
-class AccessMediaTypeMapper:
-    """Maps Access media types to Media Archive media types."""
+class AccessCategoryMapper:
+    """Maps Access content categories (Art field) to Media Archive content categories.
     
-    # Mapping from Access Art values to Media Archive MediaType values
-    MEDIA_TYPE_MAPPING = {
-        "Archive": "DVD",  # Archive -> DVD (default storage)
-        "Image": "DVD",    # Image -> DVD
-        "Lexica": "DVD",   # Lexica -> DVD
-        "Program": "DVD",  # Program -> DVD
-        "Backup": "External-HDD",  # Backup -> External-HDD
-        "Game": "DVD",     # Game -> DVD
+    Note: This maps the "Art" field from Access (Archive, Program, Backup, Game, etc.)
+    to content categories stored in the Media.category field. This is different from
+    media_type which represents the physical storage medium (DVD, CD, USB-Stick, etc.).
+    """
+    
+    # Mapping from Access Art values to content categories
+    # These are content categories, not storage media types
+    CATEGORY_MAPPING = {
+        "Archive": "Archive",      # Archive content
+        "Image": "Image",          # Image/photo content
+        "Lexica": "Lexica",        # Reference/lexicon content
+        "Program": "Program",      # Software/program content
+        "Backup": "Backup",        # Backup content
+        "Game": "Game",            # Game content
     }
     
-    # Valid media types in Media Archive
-    VALID_MEDIA_TYPES = [
+    # Valid content categories in Access
+    VALID_CATEGORIES = [
         "Archive", "Image", "Lexica", "Program", "Backup", "Game", "Other"
     ]
 
     @staticmethod
-    def map_media_type(access_type: str) -> str:
-        """Map Access media type to Media Archive media type.
+    def map_category(access_category: str) -> Optional[str]:
+        """Map Access content category (Art field) to Media Archive content category.
         
         Args:
-            access_type: Media type from Access (Archive, Image, Lexica, Program, Backup, Game, Other)
+            access_category: Content category from Access (Archive, Image, Lexica, Program, Backup, Game, Other)
         
         Returns:
-            Media Archive media type (DVD, Blu-ray, CD, USB-Stick, External-HDD, SD-Card, Other)
-        
-        Raises:
-            ValidationError: If media type cannot be mapped
+            Content category or None if empty
         """
-        if not access_type or not access_type.strip():
-            return "Other"
+        if not access_category or not access_category.strip():
+            return None
         
-        access_type = access_type.strip()
+        access_category = access_category.strip()
         
-        # Check if it's a valid Access type
-        if access_type not in AccessMediaTypeMapper.VALID_MEDIA_TYPES:
-            logger.warning(f"Unknown Access media type: {access_type}, using 'Other'")
-            return "Other"
+        # Check if it's a valid Access category
+        if access_category not in AccessCategoryMapper.VALID_CATEGORIES:
+            logger.warning(f"Unknown Access content category: {access_category}, using as-is")
+            return access_category
         
-        # Map to Media Archive type
-        mapped_type = AccessMediaTypeMapper.MEDIA_TYPE_MAPPING.get(access_type, "Other")
-        logger.debug(f"Mapped Access type '{access_type}' to '{mapped_type}'")
+        # Map to content category
+        mapped_category = AccessCategoryMapper.CATEGORY_MAPPING.get(access_category, access_category)
+        logger.debug(f"Mapped Access content category '{access_category}' to '{mapped_category}'")
         
-        return mapped_type
+        return mapped_category
 
 
 class AccessDateConverter:
@@ -129,7 +135,7 @@ class AccessCSVMapper:
         "box": 3,
         "place": 4,
         "license_code": 5,
-        "media_type": 6,
+        "category": 6,
         "content_description": 7,
         "creation_date": 8,
         "valid_until_date": 9,
@@ -163,7 +169,7 @@ class AccessCSVMapper:
             box = row[AccessCSVMapper.COLUMN_MAPPING["box"]].strip()
             place = row[AccessCSVMapper.COLUMN_MAPPING["place"]].strip()
             license_code = row[AccessCSVMapper.COLUMN_MAPPING["license_code"]].strip() or None
-            access_art = row[AccessCSVMapper.COLUMN_MAPPING["media_type"]].strip()  # "Art" field from Access
+            access_art = row[AccessCSVMapper.COLUMN_MAPPING["category"]].strip()  # "Art" field from Access
             bemerkung = row[AccessCSVMapper.COLUMN_MAPPING["content_description"]].strip() or None  # "Bemerkung" field
             creation_date_str = row[AccessCSVMapper.COLUMN_MAPPING["creation_date"]].strip()
             valid_until_str = row[AccessCSVMapper.COLUMN_MAPPING["valid_until_date"]].strip()
@@ -172,11 +178,14 @@ class AccessCSVMapper:
             if not name:
                 return None, "Name is required"
             
+            # Store Access "ID" column as number field
+            number = external_id_str if external_id_str else None
+            
             # Set media_type to "Unknown" as default (not in Access CSV)
             media_type = "Unknown"
             
-            # Store Access "Art" value in type field
-            type_value = access_art if access_art else None
+            # Store Access "Art" value in category field
+            category_value = access_art if access_art else None
             
             # Use "Bemerkung" as content_description
             content_description = bemerkung if bemerkung else None
@@ -206,8 +215,9 @@ class AccessCSVMapper:
             # Create media object
             media = Media(
                 name=name,
+                number=number,
                 media_type=media_type,
-                type=type_value,
+                category=category_value,
                 company=company,
                 license_code=license_code,
                 creation_date=creation_date,
@@ -283,6 +293,9 @@ class AccessLocationMapper:
     ) -> Tuple[Optional[StorageLocation], Optional[str]]:
         """Parse a single location row from Access CSV.
         
+        Accepts locations with only Box ID, even if Ort/Place and Typ/Detail are empty.
+        This allows importing all locations from the CSV, including those with minimal data.
+        
         Args:
             row: CSV row as list of strings
             internal_id: Optional internal ID for the location (not displayed to user)
@@ -291,15 +304,16 @@ class AccessLocationMapper:
             Tuple of (StorageLocation object or None, error message or None)
         """
         try:
-            # Ensure row has enough columns
-            if len(row) < 2:
-                return None, f"Row has insufficient columns: {len(row)} < 2"
+            # Ensure row has enough columns (only box is required)
+            if len(row) < 1:
+                return None, f"Row has insufficient columns: {len(row)} < 1"
             
             # Extract fields
             # Box column contains the visible box number (e.g., "1", "2", "Box 1")
+            # This is the only required field - it serves as the location ID reference
             box = row[AccessLocationMapper.COLUMN_MAPPING["box"]].strip()
-            # Place/Ort column contains the location (e.g., "Shelf A", "Regal 1")
-            place = row[AccessLocationMapper.COLUMN_MAPPING["place"]].strip()
+            # Place/Ort column contains the location (e.g., "Shelf A", "Regal 1") - optional
+            place = row[AccessLocationMapper.COLUMN_MAPPING["place"]].strip() if len(row) > 1 else ""
             # Detail/Typ column contains optional details
             detail = row[AccessLocationMapper.COLUMN_MAPPING["detail"]].strip() if len(row) > 2 else None
             
@@ -307,8 +321,9 @@ class AccessLocationMapper:
             if not box:
                 return None, "Box is required"
             
+            # Place is optional - set to empty string if not provided
             if not place:
-                return None, "Place is required"
+                place = ""
             
             # Create location object
             # The box field remains visible to the user for physical reference
