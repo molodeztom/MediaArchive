@@ -10,6 +10,7 @@ History:
 20260308  V1.4: Implement two-phase import for locations and media
 20260309  V1.5: Added location assignment after import and manual assignment tool
 20260309  V1.6: Fixed position display in media tab to show place from DB
+20260309  V1.7: Hide internal ID column, display media number as first column
 """
 
 import logging
@@ -194,10 +195,10 @@ class MainWindow:
         self.notebook.add(frame, text="Media")
         
         # Create treeview for media list
-        columns = ("ID", "Name", "Type", "Box", "Position", "Company", "License", "Created", "Expires")
+        columns = ("Number", "Name", "Type", "Box", "Position", "Company", "License", "Created", "Expires")
         self.media_tree = ttk.Treeview(frame, columns=columns, height=20)
         self.media_tree.column("#0", width=0, stretch=tk.NO)
-        self.media_tree.column("ID", anchor=tk.W, width=50)
+        self.media_tree.column("Number", anchor=tk.W, width=80)
         self.media_tree.column("Name", anchor=tk.W, width=150)
         self.media_tree.column("Type", anchor=tk.W, width=80)
         self.media_tree.column("Box", anchor=tk.W, width=60)
@@ -208,7 +209,7 @@ class MainWindow:
         self.media_tree.column("Expires", anchor=tk.W, width=100)
         
         self.media_tree.heading("#0", text="", anchor=tk.W)
-        self.media_tree.heading("ID", text="ID", anchor=tk.W)
+        self.media_tree.heading("Number", text="Number", anchor=tk.W)
         self.media_tree.heading("Name", text="Name", anchor=tk.W)
         self.media_tree.heading("Type", text="Type", anchor=tk.W)
         self.media_tree.heading("Box", text="Box", anchor=tk.W)
@@ -346,6 +347,7 @@ class MainWindow:
                 company = media.company if media.company else "N/A"
                 license_code = media.license_code if media.license_code else "N/A"
                 position = media.position if media.position else "N/A"
+                number = media.number if media.number else "N/A"
                 
                 # Get box from location table
                 if media.location_id and media.location_id in location_map:
@@ -354,7 +356,7 @@ class MainWindow:
                     box = "N/A"
                 
                 self.media_tree.insert("", tk.END, values=(
-                    media.id,
+                    number,
                     media.name,
                     media.media_type,
                     box,
@@ -458,10 +460,17 @@ class MainWindow:
                 messagebox.showwarning("Selection Error", "Please select a media item to edit")
                 return
             
-            # Get media ID from first column
+            # Get media ID from second column (first is now Number)
             item = selection[0]
             values = self.media_tree.item(item, "values")
-            media_id = int(values[0])
+            # Need to find media by name since we don't have ID in first column anymore
+            media_name = values[1]
+            media_list = self.media_service.get_all_media()
+            media = next((m for m in media_list if m.name == media_name), None)
+            if not media:
+                messagebox.showerror("Error", "Could not find selected media")
+                return
+            media_id = media.id
             
             # Get media details
             media = self.media_service.get_media(media_id)
@@ -512,10 +521,17 @@ class MainWindow:
                 messagebox.showwarning("Selection Error", "Please select a media item to delete")
                 return
             
-            # Get media ID from first column
+            # Get media ID from second column (first is now Number)
             item = selection[0]
             values = self.media_tree.item(item, "values")
-            media_id = int(values[0])
+            # Need to find media by name since we don't have ID in first column anymore
+            media_name = values[1]
+            media_list = self.media_service.get_all_media()
+            media = next((m for m in media_list if m.name == media_name), None)
+            if not media:
+                messagebox.showerror("Error", "Could not find selected media")
+                return
+            media_id = media.id
             
             # Get media details
             media = self.media_service.get_media(media_id)
@@ -1089,10 +1105,16 @@ Location Statistics:
             if not selection:
                 return
             
-            # Get media ID from first column
+            # Get media ID from second column (first is now Number)
             item = selection[0]
             values = self.media_tree.item(item, "values")
-            media_id = int(values[0])
+            # Need to find media by name since we don't have ID in first column anymore
+            media_name = values[1]
+            media_list = self.media_service.get_all_media()
+            media = next((m for m in media_list if m.name == media_name), None)
+            if not media:
+                return
+            media_id = media.id
             
             # Get media details
             media = self.media_service.get_media(media_id)
