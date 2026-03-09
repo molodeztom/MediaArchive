@@ -17,6 +17,8 @@ History:
 20260309  V1.10: Added auto-numbering and DD.MM.YYYY date format support
 20260309  V1.11: Updated date parsing to use parse_date() for DD.MM.YYYY format
 20260309  V1.12: Updated DeleteConfirmDialog to explain soft delete behavior
+20260309  V1.13: Phase 9A complete - auto-numbering and date format support
+20260309  V1.14: Phase 9C - Added ColumnPreferencesDialog for column visibility
 """
 
 import logging

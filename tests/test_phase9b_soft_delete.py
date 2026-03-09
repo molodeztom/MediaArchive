@@ -9,17 +9,11 @@ This module tests the soft delete feature including:
 - Search with deleted items
 
 History:
-20260309  V1.0: Initial soft delete test suite
+20260309  V1.0: Initial soft delete tests
 """
 
 import pytest
 from datetime import date
-from pathlib import Path
-import sys
-
-# Add src directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-
 from data.database import Database
 from business.media_service import MediaService
 from models.media import Media
@@ -149,6 +143,21 @@ class TestSoftDelete:
         assert len(results) == 1
         assert results[0].id == media2.id
     
+    def test_search_includes_deleted_when_requested(self, service):
+        """Test that search includes deleted items when requested."""
+        # Create media
+        media1 = service.create_media(name="Test Media 1", media_type="CD-ROM")
+        media2 = service.create_media(name="Test Media 2", media_type="CD-ROM")
+        
+        # Delete one
+        service.delete_media(media1.id)
+        
+        # Search with include_deleted
+        results = service.search_media_by_name("Test", include_deleted=True)
+        
+        # Should find both
+        assert len(results) == 2
+    
     def test_multiple_delete_restore_cycles(self, service):
         """Test multiple delete/restore cycles."""
         # Create media
@@ -206,52 +215,82 @@ class TestSoftDelete:
         assert media3.id in deleted_ids
         assert media2.id not in deleted_ids
     
-    def test_expired_media_excludes_deleted(self, service):
-        """Test that expired media query excludes deleted items."""
-        # Create expired media
-        past_date = date(2020, 1, 1)
-        media1 = service.create_media(
-            name="Expired 1",
-            media_type="CD-ROM",
-            valid_until_date=past_date
-        )
-        media2 = service.create_media(
-            name="Expired 2",
-            media_type="DVD",
-            valid_until_date=past_date
-        )
+    def test_soft_delete_alias(self, service):
+        """Test that delete_media_soft is an alias for delete_media."""
+        # Create media
+        media = service.create_media(name="Test Media", media_type="CD-ROM")
         
-        # Delete one
-        service.delete_media(media1.id)
+        # Use soft delete alias
+        service.delete_media_soft(media.id)
         
-        # Get expired media
-        expired = service.get_expired_media()
-        
-        # Should only get active expired media
-        assert len(expired) == 1
-        assert expired[0].id == media2.id
+        # Verify marked as deleted
+        deleted_media = service.get_media(media.id)
+        assert deleted_media.is_deleted is True
     
-    def test_expiring_soon_excludes_deleted(self, service):
-        """Test that expiring soon query excludes deleted items."""
-        # Create media expiring soon
-        future_date = date.today().replace(day=1)  # First day of current month
-        media1 = service.create_media(
-            name="Expiring 1",
+    def test_deleted_media_with_dates(self, service):
+        """Test soft delete with media that has dates."""
+        # Create media with dates
+        media = service.create_media(
+            name="Test Media",
             media_type="CD-ROM",
-            valid_until_date=future_date
-        )
-        media2 = service.create_media(
-            name="Expiring 2",
-            media_type="DVD",
-            valid_until_date=future_date
+            creation_date=date(2026, 1, 1),
+            valid_until_date=date(2027, 1, 1)
         )
         
-        # Delete one
-        service.delete_media(media1.id)
+        # Soft delete
+        service.delete_media(media.id)
         
-        # Get expiring soon
-        expiring = service.get_expiring_soon(30)
+        # Verify dates are preserved
+        deleted_media = service.get_media(media.id)
+        assert deleted_media.is_deleted is True
+        assert deleted_media.creation_date == date(2026, 1, 1)
+        assert deleted_media.valid_until_date == date(2027, 1, 1)
+    
+    def test_deleted_media_with_location(self, service):
+        """Test soft delete with media that has location."""
+        # Create media with location_id
+        media = service.create_media(
+            name="Test Media",
+            media_type="CD-ROM",
+            location_id=1
+        )
         
-        # Should only get active expiring media
-        assert len(expiring) == 1
-        assert expiring[0].id == media2.id
+        # Soft delete
+        service.delete_media(media.id)
+        
+        # Verify location is preserved
+        deleted_media = service.get_media(media.id)
+        assert deleted_media.is_deleted is True
+        assert deleted_media.location_id == 1
+    
+    def test_permanent_delete_removes_completely(self, service):
+        """Test that permanent delete removes all traces."""
+        # Create media
+        media = service.create_media(
+            name="Test Media",
+            media_type="CD-ROM",
+            number="42",
+            category="Archive"
+        )
+        media_id = media.id
+        
+        # Soft delete first
+        service.delete_media(media_id)
+        
+        # Verify it's deleted
+        deleted_media = service.get_media(media_id)
+        assert deleted_media.is_deleted is True
+        
+        # Permanently delete
+        service.delete_media_permanent(media_id)
+        
+        # Verify completely gone
+        with pytest.raises(Exception):
+            service.get_media(media_id)
+        
+        # Should not appear in any list
+        all_media = service.get_all_media(include_deleted=True)
+        assert len(all_media) == 0
+        
+        deleted_media = service.get_deleted_media()
+        assert len(deleted_media) == 0

@@ -10,6 +10,7 @@ History:
 20260308  V1.4: Added Access CSV format support with mapper integration
 20260308  V1.5: Set Access format as default, semicolon as default delimiter, resizable dialog, 15-row preview
 20260309  V1.6: Updated date parsing to use parse_date() for DD.MM.YYYY format
+20260309  V1.7: Phase 9A complete - auto-numbering and date format support
 """
 
 import logging

@@ -6,6 +6,7 @@ application's preferred format (DD.MM.YYYY).
 History:
 20260309  V1.0: Created date_utils module with format/parse functions
 20260309  V1.1: Fixed parse_date to use datetime.strptime instead of date.strptime
+20260309  V1.2: Added format_date_for_display and format_date_for_export aliases
 """
 
 from datetime import datetime, date

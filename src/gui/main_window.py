@@ -27,6 +27,12 @@ History:
 20260309  V1.21: Added context menu with restore/permanent delete for deleted items
 20260309  V1.22: Updated search to respect deleted filter - exclude deleted items by default
 20260309  V1.23: Search dialog now respects show_deleted flag for search results
+20260309  V1.24: Phase 9A complete - auto-numbering and date format support
+20260309  V1.25: Phase 9C - Added double-click navigation from search to media tab
+20260309  V1.26: Fixed tooltip parent window and error handling
+20260309  V1.27: Added -topmost attribute and update_idletasks for tooltip display
+20260309  V1.28: Fixed column visibility preferences - apply widths on save and init
+20260309  V1.29: Added stretch=NO for hidden columns to fully hide them
 """
 
 import logging
@@ -49,6 +55,7 @@ from gui.dialogs import (
     AddLocationDialog, EditLocationDialog, DeleteLocationConfirmDialog,
     LocationAssignmentResultsDialog
 )
+from gui.column_preferences_dialog import ColumnPreferencesDialog
 from gui.search_panel import SearchPanel
 from gui.import_dialog import ImportDialog
 from gui.export_dialog import ExportDialog
@@ -87,6 +94,10 @@ class MainWindow:
         
         self.location_sort_column = self.preferences_repo.get_preference("location_sort_column", "Box")
         self.location_sort_reverse = self.preferences_repo.get_preference("location_sort_reverse", "False") == "True"
+        
+        # Load column visibility preferences
+        default_columns = ("Number", "Name", "Type", "Category", "Box", "Position", "Company", "License", "Created", "Expires")
+        self.visible_columns = self.preferences_repo.get_all_column_visibility(list(default_columns))
         
         # Initialize soft delete flag
         self.show_deleted = False
@@ -131,6 +142,8 @@ class MainWindow:
         # Edit menu
         edit_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Edit", menu=edit_menu)
+        edit_menu.add_command(label="Column Preferences", command=self._show_column_preferences)
+        edit_menu.add_separator()
         edit_menu.add_command(label="Preferences", command=self._show_preferences)
         
         # View menu
@@ -248,28 +261,31 @@ class MainWindow:
         columns = ("Number", "Name", "Type", "Category", "Box", "Position", "Company", "License", "Created", "Expires")
         self.media_tree = ttk.Treeview(frame, columns=columns, height=20)
         self.media_tree.column("#0", width=0, stretch=tk.NO)
-        self.media_tree.column("Number", anchor=tk.W, width=80)
-        self.media_tree.column("Name", anchor=tk.W, width=150)
-        self.media_tree.column("Type", anchor=tk.W, width=80)
-        self.media_tree.column("Category", anchor=tk.W, width=80)
-        self.media_tree.column("Box", anchor=tk.W, width=60)
-        self.media_tree.column("Position", anchor=tk.W, width=80)
-        self.media_tree.column("Company", anchor=tk.W, width=100)
-        self.media_tree.column("License", anchor=tk.W, width=80)
-        self.media_tree.column("Created", anchor=tk.W, width=100)
-        self.media_tree.column("Expires", anchor=tk.W, width=100)
+        
+        # Set column widths and visibility based on preferences
+        column_widths = {
+            "Number": 80, "Name": 150, "Type": 80, "Category": 80,
+            "Box": 60, "Position": 80, "Company": 100, "License": 80,
+            "Created": 100, "Expires": 100
+        }
+        
+        for col in columns:
+            width = column_widths.get(col, 80)
+            # Hide column if not visible in preferences
+            if not self.visible_columns.get(col, True):
+                width = 0
+                stretch = tk.NO
+            else:
+                stretch = tk.YES
+            self.media_tree.column(col, anchor=tk.W, width=width, stretch=stretch)
         
         self.media_tree.heading("#0", text="", anchor=tk.W)
-        self.media_tree.heading("Number", text="Number", anchor=tk.W, command=lambda: self._sort_media_by_column("Number"))
-        self.media_tree.heading("Name", text="Name", anchor=tk.W, command=lambda: self._sort_media_by_column("Name"))
-        self.media_tree.heading("Type", text="Type", anchor=tk.W, command=lambda: self._sort_media_by_column("Type"))
-        self.media_tree.heading("Category", text="Category", anchor=tk.W, command=lambda: self._sort_media_by_column("Category"))
-        self.media_tree.heading("Box", text="Box", anchor=tk.W, command=lambda: self._sort_media_by_column("Box"))
-        self.media_tree.heading("Position", text="Position", anchor=tk.W, command=lambda: self._sort_media_by_column("Position"))
-        self.media_tree.heading("Company", text="Company", anchor=tk.W, command=lambda: self._sort_media_by_column("Company"))
-        self.media_tree.heading("License", text="License", anchor=tk.W, command=lambda: self._sort_media_by_column("License"))
-        self.media_tree.heading("Created", text="Created", anchor=tk.W, command=lambda: self._sort_media_by_column("Created"))
-        self.media_tree.heading("Expires", text="Expires", anchor=tk.W, command=lambda: self._sort_media_by_column("Expires"))
+        # Only set heading command if column is visible
+        for col in columns:
+            if self.visible_columns.get(col, True):
+                self.media_tree.heading(col, text=col, anchor=tk.W, command=lambda c=col: self._sort_media_by_column(c))
+            else:
+                self.media_tree.heading(col, text=col, anchor=tk.W)
         
         # Add scrollbar
         scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=self.media_tree.yview)
@@ -283,6 +299,9 @@ class MainWindow:
         
         # Bind right-click to show context menu
         self.media_tree.bind("<Button-3>", self._on_media_right_click)
+        
+        # Bind mouse motion to show content description tooltip
+        self.media_tree.bind("<Motion>", self._on_media_tree_motion)
         
         # Load media
         self._refresh_media_list()
@@ -345,7 +364,8 @@ class MainWindow:
             frame,
             locations=self.location_service.get_all_locations(),
             on_search=self._perform_search,
-            on_clear=self._clear_search
+            on_clear=self._clear_search,
+            on_double_click=self._on_search_result_double_click
         )
         self.search_panel.pack(fill=tk.X)
         
@@ -376,6 +396,9 @@ class MainWindow:
         
         self.search_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Bind double-click to navigate to media tab
+        self.search_tree.bind("<Double-1>", self._on_search_result_double_click)
         
         logger.debug("Search tab created")
 
@@ -963,6 +986,57 @@ class MainWindow:
         except Exception as e:
             logger.error(f"Error getting statistics: {e}")
             messagebox.showerror("Error", f"Failed to get statistics: {e}")
+
+    def _show_column_preferences(self) -> None:
+        """Show column preferences dialog."""
+        try:
+            dialog = ColumnPreferencesDialog(
+                self.root,
+                self.visible_columns,
+                on_save=self._on_column_preferences_saved
+            )
+            result = dialog.show()
+            
+            if result:
+                self.status_var.set("Column preferences updated")
+                logger.debug("Column preferences dialog closed")
+        except Exception as e:
+            logger.error(f"Error showing column preferences: {e}")
+            messagebox.showerror("Error", f"Failed to show column preferences: {e}")
+
+    def _on_column_preferences_saved(self, visible_columns: dict) -> None:
+        """Callback when column preferences are saved."""
+        try:
+            # Update visible columns
+            self.visible_columns = visible_columns
+            
+            # Save to database
+            self.preferences_repo.set_all_column_visibility(visible_columns)
+            
+            # Update column widths in media tree
+            column_widths = {
+                "Number": 80, "Name": 150, "Type": 80, "Category": 80,
+                "Box": 60, "Position": 80, "Company": 100, "License": 80,
+                "Created": 100, "Expires": 100
+            }
+            
+            for col in self.media_tree["columns"]:
+                width = column_widths.get(col, 80)
+                # Hide column if not visible in preferences
+                if not self.visible_columns.get(col, True):
+                    width = 0
+                    stretch = tk.NO
+                else:
+                    stretch = tk.YES
+                self.media_tree.column(col, width=width, stretch=stretch)
+            
+            # Refresh media list with new column visibility
+            self._refresh_media_list()
+            
+            logger.info(f"Column preferences saved: {visible_columns}")
+        except Exception as e:
+            logger.error(f"Error saving column preferences: {e}")
+            messagebox.showerror("Error", f"Failed to save column preferences: {e}")
 
     def _show_preferences(self) -> None:
         """Show preferences dialog."""
@@ -1581,6 +1655,120 @@ For more information, see the documentation.
         except Exception as e:
             logger.error(f"Error permanently deleting media: {e}")
             messagebox.showerror("Error", f"Failed to permanently delete media: {e}")
+
+    def _on_media_tree_motion(self, event) -> None:
+        """Handle mouse motion over media tree to show content description tooltip."""
+        try:
+            # Get the item under the cursor
+            item = self.media_tree.identify_row(event.y)
+            if not item:
+                # Hide tooltip if no item
+                if hasattr(self, '_media_tooltip') and self._media_tooltip:
+                    try:
+                        self._media_tooltip.destroy()
+                    except tk.TclError:
+                        pass
+                    self._media_tooltip = None
+                return
+            
+            # Get media ID from item
+            media_id = int(item)
+            media = self.media_service.get_media(media_id)
+            
+            # If media has content description, show tooltip
+            if media and media.content_description:
+                # Create or update tooltip
+                if not hasattr(self, '_media_tooltip'):
+                    self._media_tooltip = None
+                
+                # Destroy old tooltip if it exists
+                if self._media_tooltip:
+                    try:
+                        self._media_tooltip.destroy()
+                    except tk.TclError:
+                        pass
+                
+                # Create new tooltip with proper styling
+                tooltip = tk.Toplevel(self.root)
+                tooltip.wm_overrideredirect(True)
+                tooltip.wm_attributes('-topmost', True)  # Keep tooltip on top
+                
+                # Limit tooltip text to 500 characters and wrap at 50 chars per line
+                tooltip_text = media.content_description[:500]
+                if len(media.content_description) > 500:
+                    tooltip_text += "..."
+                
+                label = ttk.Label(
+                    tooltip,
+                    text=tooltip_text,
+                    background="lightyellow",
+                    relief=tk.SOLID,
+                    borderwidth=1,
+                    wraplength=300,
+                    justify=tk.LEFT
+                )
+                label.pack(padx=5, pady=5)
+                
+                # Position tooltip and update display
+                tooltip.wm_geometry(f"+{event.x_root+10}+{event.y_root+10}")
+                tooltip.update_idletasks()
+                
+                self._media_tooltip = tooltip
+            else:
+                # Hide tooltip if no content description
+                if hasattr(self, '_media_tooltip') and self._media_tooltip:
+                    try:
+                        self._media_tooltip.destroy()
+                    except tk.TclError:
+                        pass
+                    self._media_tooltip = None
+        except Exception as e:
+            logger.debug(f"Error showing media tooltip: {e}")
+
+    def _on_search_result_double_click(self, event) -> None:
+        """Handle double-click on search result to navigate to media tab and select item."""
+        try:
+            # Get the item that was double-clicked
+            item = self.search_tree.identify_row(event.y)
+            if not item:
+                return
+            
+            # Get the values from the search result
+            values = self.search_tree.item(item, 'values')
+            if not values:
+                return
+            
+            # Extract media name from the result (column 1 is Name)
+            media_name = values[1] if len(values) > 1 else None
+            if not media_name:
+                return
+            
+            # Find the media item in the media list by name
+            all_media = self.media_service.get_all_media(include_deleted=self.show_deleted)
+            media_id = None
+            for media in all_media:
+                if media.name == media_name:
+                    media_id = media.id
+                    break
+            
+            if media_id is None:
+                messagebox.showwarning("Not Found", f"Could not find media item: {media_name}")
+                return
+            
+            # Switch to media tab
+            self.notebook.select(0)
+            
+            # Select the media item in the tree
+            media_iid = str(media_id)
+            if media_iid in self.media_tree.get_children():
+                self.media_tree.selection_set(media_iid)
+                self.media_tree.see(media_iid)
+                self.status_var.set(f"Selected media: {media_name}")
+                logger.debug(f"Navigated to media {media_id} from search result")
+            else:
+                messagebox.showwarning("Not Found", f"Media item not found in media list")
+        except Exception as e:
+            logger.error(f"Error handling search result double-click: {e}")
 
     def close(self) -> None:
         """Close the application."""

@@ -15,6 +15,7 @@ History:
 20260309  V1.8: Added soft delete support (delete_media_soft, restore_media, delete_media_permanent)
 20260309  V1.9: Updated get_media_statistics to exclude deleted items and add deleted count
 20260309  V1.10: Added include_deleted parameter to search_media_by_name
+20260309  V1.11: Phase 9A complete - auto-numbering and date format support
 """
 
 import logging

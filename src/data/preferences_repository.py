@@ -4,6 +4,7 @@ This module provides data access operations for user preferences stored in the d
 
 History:
 20260309  V1.0: Initial preferences repository implementation
+20260309  V1.1: Added column visibility preferences support
 """
 
 import logging
@@ -123,3 +124,70 @@ class PreferencesRepository:
         except Exception as e:
             logger.error(f"Error getting all preferences: {e}")
             return {}
+
+    def set_column_visibility(self, column_name: str, visible: bool) -> None:
+        """Set column visibility preference.
+        
+        Args:
+            column_name: Name of the column.
+            visible: Whether the column should be visible.
+        """
+        try:
+            key = f"column_visible_{column_name}"
+            value = "True" if visible else "False"
+            self.set_preference(key, value)
+            logger.debug(f"Set column visibility: {column_name} = {visible}")
+        except Exception as e:
+            logger.error(f"Error setting column visibility: {e}")
+            raise
+
+    def get_column_visibility(self, column_name: str, default: bool = True) -> bool:
+        """Get column visibility preference.
+        
+        Args:
+            column_name: Name of the column.
+            default: Default visibility if preference not found.
+        
+        Returns:
+            Whether the column should be visible.
+        """
+        try:
+            key = f"column_visible_{column_name}"
+            value = self.get_preference(key, str(default))
+            return value == "True"
+        except Exception as e:
+            logger.error(f"Error getting column visibility: {e}")
+            return default
+
+    def get_all_column_visibility(self, default_columns: list) -> dict:
+        """Get all column visibility preferences.
+        
+        Args:
+            default_columns: List of default column names.
+        
+        Returns:
+            Dictionary of column names to visibility.
+        """
+        try:
+            visibility = {}
+            for column in default_columns:
+                visibility[column] = self.get_column_visibility(column, True)
+            logger.debug(f"Retrieved column visibility for {len(visibility)} columns")
+            return visibility
+        except Exception as e:
+            logger.error(f"Error getting all column visibility: {e}")
+            return {col: True for col in default_columns}
+
+    def set_all_column_visibility(self, visibility: dict) -> None:
+        """Set all column visibility preferences.
+        
+        Args:
+            visibility: Dictionary of column names to visibility.
+        """
+        try:
+            for column_name, visible in visibility.items():
+                self.set_column_visibility(column_name, visible)
+            logger.debug(f"Set visibility for {len(visibility)} columns")
+        except Exception as e:
+            logger.error(f"Error setting all column visibility: {e}")
+            raise

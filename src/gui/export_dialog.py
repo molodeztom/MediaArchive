@@ -6,6 +6,7 @@ History:
 20260307  V1.0: Initial export dialog implementation
 20260307  V1.1: Added semicolon delimiter support for German/European locales
 20260309  V1.2: Updated date export to use format_date() for DD.MM.YYYY format
+20260309  V1.3: Phase 9A complete - auto-numbering and date format support
 """
 
 import logging
