@@ -1120,3 +1120,376 @@ For every implementation step:
 - [DATA_MODEL.md](DATA_MODEL.md) - Database schema
 - [UI_WORKFLOW.md](UI_WORKFLOW.md) - User interface design
 - [TASKS.md](TASKS.md) - Implementation roadmap
+---
+
+# AI Assisted Development Rules
+
+This section defines additional rules specifically for AI-assisted development.
+
+Any AI coding agent must read and follow these rules before generating or modifying code.
+
+The goal of this project is a **simple, reliable, maintainable local desktop application**, not architectural complexity.
+
+---
+
+## AI Agent Behaviour
+
+
+Prefer **simple and stable implementations** over theoretically flexible designs.
+
+---
+
+## Incremental Development
+
+Development must happen in **small phases**.
+
+Never implement the entire application in one step.
+
+Typical implementation order:
+
+1. project structure
+2. configuration
+3. database schema
+4. repositories
+5. business logic
+6. GUI
+7. search and filters
+8. import/export
+9. additional features
+10. testing and refinement
+
+Each phase should produce **working, testable code**.
+
+---
+
+## Project Scope Constraints
+
+This project is intentionally limited in scope.
+
+### Project Type
+
+This application is:
+
+- a **local desktop application**
+- **single-user**
+- based on **SQLite**
+- designed for **low maintenance**
+
+### Out of Scope
+
+The following features must NOT be introduced unless explicitly requested:
+
+- web server
+- REST API
+- cloud-only architecture
+- user authentication systems
+- role-based permissions
+- microservice architecture
+- Docker-first deployment
+- mobile applications
+
+The project must remain **simple and locally executable**.
+
+---
+
+## Dependency Policy
+
+Dependencies must be kept minimal.
+
+Prefer the **Python standard library** whenever possible.
+
+Do not introduce heavy frameworks such as:
+
+- Django
+- FastAPI
+- SQLAlchemy
+- complex ORM frameworks
+
+Any new dependency must include a short explanation of:
+
+- why it is necessary
+- why the standard library cannot solve the problem
+
+---
+
+## SQLite Specific Rules
+
+Database implementation must follow these rules:
+
+- Use **direct SQL queries** instead of ORM frameworks.
+- Always use **parameterized queries**.
+- Use **INTEGER PRIMARY KEY** for primary keys.
+- Enforce **foreign key constraints**.
+- Store dates in **ISO format (`YYYY-MM-DD`)** where possible.
+- Allow nullable fields when real-world data may be incomplete.
+- Keep schema simple and easy to migrate.
+
+---
+
+## GUI Simplicity Rules
+
+The graphical user interface must remain simple.
+
+Rules:
+
+- Prefer **clear and functional layouts**.
+- Avoid overly complex UI frameworks.
+- Keep dialogs focused on a single task.
+- Keep UI code separate from business logic and database access.
+- Use clear labels and readable layouts.
+
+The GUI should prioritize **usability over visual complexity**.
+
+---
+
+## AI Test Quality Rules
+
+AI-generated tests must verify **correct behavior**, not just successful execution.
+
+### Test Philosophy
+
+Avoid trivial tests such as:
+
+
+- "Does the function run without errors?"
+- "Does the GUI display something?"
+
+Instead, focus on verifying:
+
+- Correct data transformations
+- Proper error handling
+- Business logic correctness
+- Database integrity
+- User interaction flows
+
+Each test should verify **one specific behavior**.
+
+---
+
+## Code Quality Rules
+
+Code must follow these quality standards:
+
+- Use **type hints** for all functions and methods
+- Keep functions **short and focused** (max 20 lines)
+- Write **docstrings** for all public functions
+- Use **meaningful variable names**
+- Avoid deep nesting (max 3 levels)
+- Keep imports organized and minimal
+- Write **unit tests** for all business logic
+- Follow **PEP 8** style guidelines
+
+The codebase should be **maintainable and understandable** to new developers.   
+---
+
+# File History and Versioning Rules
+
+Every Python source file in this project must contain a **History section in the module docstring**.
+
+This history documents important changes made to the file.
+
+Example:
+
+```python
+"""Main application window for Media Archive Manager.
+
+This module provides the main GUI window with menu bar, toolbar, and main content area.
+
+History:
+20260307  V1.0: Initial main window implementation
+20260307  V1.1: Added location management and search/filter functionality
+20260307  V1.2: Integrated SearchPanel and enhanced filter menu
+20260307  V1.3: Added import/export and backup functionality
+20260308  V1.4: Implement two-phase import for locations and media
+20260309  V1.5: Added location assignment after import and manual assignment tool
+"""
+```
+
+---
+
+## History Entry Format
+
+Each entry must follow this format:
+
+```
+YYYYMMDD  Vx.y: description of change
+```
+
+Example:
+
+```
+20260310  V1.6: Added validation for media type
+```
+
+Rules:
+
+- History must appear in the **module docstring**
+- The section must start with `History:`
+- New entries must be **appended at the bottom**
+- Date format must be `YYYYMMDD`
+- Description must be short and clear
+
+---
+
+# Program Versioning
+
+The application uses the version format:
+
+```
+V<major>.<minor>
+```
+
+Example:
+
+```
+V1.5
+```
+
+---
+
+## Normal Update
+
+For normal code updates:
+
+Increase the **minor version by 0.1**
+
+Example:
+
+```
+V1.5 → V1.6
+```
+
+---
+
+## New Release
+
+When a **new release** is declared:
+
+- Increase the **major version by 1**
+- Reset the minor version to **0**
+
+Example:
+
+```
+V1.9 → V2.0
+```
+
+---
+
+# Version Synchronization
+
+Whenever code is modified:
+
+1. Locate the `History:` section of the modified file
+2. Add a new entry
+3. Use the **current program version**
+4. Provide a short description of the change
+
+Example:
+
+```
+20260310  V1.6: Added CSV export functionality
+```
+
+---
+
+# AI Agent Requirements
+
+When modifying any Python file, the AI agent must:
+
+1. Locate the `History:` section in the module docstring
+2. Add a new entry with:
+   - current date
+   - incremented version
+   - short description
+3. Ensure the version matches the current program version
+4. Append the entry at the **end of the history list**
+
+The AI agent must **never remove existing history entries**.
+
+---
+
+# Change Size Limit Rule
+
+To maintain stability and readability of the codebase, AI agents must limit the size of modifications in a single step.
+
+## Change Size Policy
+
+AI agents must follow these limits unless explicitly instructed otherwise.
+
+### Maximum Change Scope
+
+In a single modification step the AI agent must not:
+
+- modify more than **3 files**
+- add more than **200 lines of code**
+- remove more than **50 lines of code**
+- restructure directories
+- rename multiple files
+
+If a requested change exceeds these limits, the AI agent must split the work into **multiple incremental steps**.
+
+---
+
+## Large Change Protocol
+
+If the requested feature requires larger changes, the AI agent must:
+
+1. Explain the planned change
+2. List the files that will be affected
+3. Implement the change in **small phases**
+
+Example workflow:
+
+Step 1  
+Create new module.
+
+Step 2  
+Integrate module into service layer.
+
+Step 3  
+Add GUI integration.
+
+Step 4  
+Add tests.
+
+---
+
+## File Rewrite Protection
+
+The AI agent must **not rewrite entire files** unless:
+
+- explicitly requested
+- refactoring is unavoidable
+- the user confirms the rewrite
+
+Instead the agent must:
+
+- modify specific functions
+- extend existing code
+- keep existing logic intact
+
+---
+
+## Safe Modification Principle
+
+The goal is to **preserve working code**.
+
+Preferred actions:
+
+✔ add small functions  
+✔ modify existing functions  
+✔ extend modules  
+✔ add tests  
+
+Avoid:
+
+✘ large rewrites  
+✘ architectural changes  
+✘ speculative refactoring  
+
+---
+
+## Emergency Rule
+
+If the AI agent detects that the change would require large modifications, it must stop and ask for confirmation before continuing.

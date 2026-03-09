@@ -31,6 +31,8 @@ CREATE TABLE IF NOT EXISTS media (
     company TEXT,
     license_code TEXT,
     location_id INTEGER,
+    box TEXT,
+    position TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (location_id) REFERENCES storage_location(id) ON DELETE SET NULL

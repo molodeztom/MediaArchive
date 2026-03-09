@@ -27,6 +27,12 @@ class DatabaseMigration:
         
         # Migration 2: Rename type column to category
         DatabaseMigration._rename_type_to_category(cursor, conn)
+        
+        # Migration 3: Add box and place columns to media table
+        DatabaseMigration._add_box_place_columns(cursor, conn)
+        
+        # Migration 4: Rename place column to position in media table
+        DatabaseMigration._rename_place_to_position(cursor, conn)
     
     @staticmethod
     def _add_number_column(cursor, conn) -> None:
@@ -203,4 +209,73 @@ class DatabaseMigration:
                 logger.info("Successfully dropped old type column")
         except Exception as e:
             logger.error(f"Error renaming type column to category: {e}")
+            raise
+    
+    @staticmethod
+    def _add_box_place_columns(cursor, conn) -> None:
+        """Add box and place columns to media table if they don't exist.
+        
+        Args:
+            cursor: Database cursor.
+            conn: Database connection.
+        """
+        try:
+            # Check if media table exists first
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='media'")
+            if not cursor.fetchone():
+                # Table doesn't exist yet, skip migration
+                logger.debug("Media table doesn't exist yet, skipping box/place columns migration")
+                return
+            
+            # Check if box and place columns exist
+            cursor.execute("PRAGMA table_info(media)")
+            columns = [row[1] for row in cursor.fetchall()]
+            
+            box_exists = "box" in columns
+            place_exists = "place" in columns
+            
+            if not box_exists or not place_exists:
+                logger.info("Migrating schema: Adding box and place columns to media table")
+                
+                if not box_exists:
+                    cursor.execute("ALTER TABLE media ADD COLUMN box TEXT")
+                    logger.info("Added box column to media table")
+                
+                if not place_exists:
+                    cursor.execute("ALTER TABLE media ADD COLUMN place TEXT")
+                    logger.info("Added place column to media table")
+                
+                conn.commit()
+                logger.info("Successfully added box and place columns to media table")
+        except Exception as e:
+            logger.error(f"Error adding box/place columns: {e}")
+            raise
+    
+    @staticmethod
+    def _rename_place_to_position(cursor, conn) -> None:
+        """Rename place column to position in media table if needed.
+        
+        Args:
+            cursor: Database cursor.
+            conn: Database connection.
+        """
+        try:
+            # Check if media table exists first
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='media'")
+            if not cursor.fetchone():
+                # Table doesn't exist yet, skip migration
+                logger.debug("Media table doesn't exist yet, skipping place to position migration")
+                return
+            
+            # Check if place column exists and position doesn't
+            cursor.execute("PRAGMA table_info(media)")
+            columns = [row[1] for row in cursor.fetchall()]
+            
+            if "place" in columns and "position" not in columns:
+                logger.info("Migrating schema: Renaming place column to position in media table")
+                cursor.execute("ALTER TABLE media RENAME COLUMN place TO position")
+                conn.commit()
+                logger.info("Successfully renamed place column to position")
+        except Exception as e:
+            logger.error(f"Error renaming place column to position: {e}")
             raise

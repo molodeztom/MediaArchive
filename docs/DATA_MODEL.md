@@ -22,15 +22,7 @@ erDiagram
     }
     
     MEDIA {
-        int id PK
-        string name
-        text content_description
-        text remarks
-        date creation_date
-        date valid_until_date
-        string media_type
-        string company
-        string license_code
+
         int location_id FK
         datetime created_at
         datetime updated_at

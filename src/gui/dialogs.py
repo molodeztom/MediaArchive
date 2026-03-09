@@ -6,6 +6,7 @@ with form validation and error handling.
 History:
 20260307  V1.0: Initial implementation with media dialogs
 20260307  V1.1: Added location management dialogs
+20260309  V1.2: Added LocationAssignmentResultsDialog for import results
 """
 
 import logging
@@ -884,6 +885,105 @@ class EditLocationDialog(BaseDialog):
     def _cancel(self) -> None:
         """Cancel and close dialog."""
         self.result = None
+        self.destroy()
+
+
+class LocationAssignmentResultsDialog(BaseDialog):
+    """Dialog showing location assignment results after import.
+    
+    Displays statistics about how many media items were assigned locations.
+    """
+
+    def __init__(
+        self,
+        parent: tk.Widget,
+        results: dict,
+    ) -> None:
+        """Initialize location assignment results dialog.
+        
+        Args:
+            parent: Parent window.
+            results: Assignment results dictionary with keys:
+                - total_media: Total media items checked
+                - assigned: Number newly assigned
+                - already_assigned: Number already had locations
+                - not_found: Number where location wasn't found
+                - updated_media: List of updated media IDs
+        """
+        super().__init__(parent, "Location Assignment Results")
+        self.results = results
+        self.result = None
+        
+        # Create content
+        self._create_content()
+        
+        logger.debug("LocationAssignmentResultsDialog initialized")
+
+    def _create_content(self) -> None:
+        """Create dialog content."""
+        # Main frame with padding
+        main_frame = ttk.Frame(self, padding=20)
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Title
+        title_label = ttk.Label(
+            main_frame,
+            text="Location Assignment Complete",
+            font=("TkDefaultFont", 12, "bold")
+        )
+        title_label.pack(pady=10)
+        
+        # Results frame
+        results_frame = ttk.LabelFrame(main_frame, text="Assignment Results", padding=10)
+        results_frame.pack(fill=tk.X, pady=10)
+        
+        # Format results
+        results_text = f"""
+Total media items checked: {self.results.get('total_media', 0)}
+Media newly assigned locations: {self.results.get('assigned', 0)}
+Media already had locations: {self.results.get('already_assigned', 0)}
+Media where location not found: {self.results.get('not_found', 0)}
+        """.strip()
+        
+        ttk.Label(results_frame, text=results_text, justify=tk.LEFT).pack(fill=tk.X)
+        
+        # Summary message
+        assigned = self.results.get('assigned', 0)
+        not_found = self.results.get('not_found', 0)
+        
+        if assigned > 0 and not_found == 0:
+            summary_text = f"✓ Successfully assigned {assigned} media items to locations!"
+            summary_color = "green"
+        elif assigned > 0:
+            summary_text = f"✓ Assigned {assigned} media items, but {not_found} could not be matched"
+            summary_color = "orange"
+        elif not_found > 0:
+            summary_text = f"⚠ No media items could be assigned. {not_found} items have no matching locations."
+            summary_color = "red"
+        else:
+            summary_text = "No media items needed location assignment"
+            summary_color = "blue"
+        
+        summary_label = ttk.Label(
+            main_frame,
+            text=summary_text,
+            foreground=summary_color,
+            font=("TkDefaultFont", 10)
+        )
+        summary_label.pack(pady=10)
+        
+        # Buttons frame
+        button_frame = ttk.Frame(self)
+        button_frame.pack(fill=tk.X, padx=10, pady=10)
+        
+        ttk.Button(button_frame, text="OK", command=self._ok).pack(side=tk.LEFT, padx=5)
+        
+        # Set size
+        self.geometry("400x250")
+
+    def _ok(self) -> None:
+        """Close dialog."""
+        self.result = self.results
         self.destroy()
 
 

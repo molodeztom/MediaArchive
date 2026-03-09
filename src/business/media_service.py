@@ -2,16 +2,21 @@
 
 This module provides high-level operations for managing media items
 with validation and business rule enforcement.
+
+History:
+20260309  V1.0: Added assign_locations_by_box_place method for location assignment
+20260309  V1.1: Added place parameter to create_media and update_media methods
 """
 
 import logging
 from datetime import date, timedelta
-from typing import Optional
+from typing import Optional, List
 
 from data.database import Database
 from data.media_repository import MediaRepository
 from models.enums import MediaType
 from models.media import Media
+from models.location import StorageLocation
 from utils.config import (
     MAX_NAME_LENGTH,
     MAX_DESCRIPTION_LENGTH,
@@ -53,6 +58,7 @@ class MediaService:
         company: Optional[str] = None,
         license_code: Optional[str] = None,
         location_id: Optional[int] = None,
+        position: Optional[str] = None,
     ) -> Media:
         """Create a new media item with validation.
         
@@ -66,8 +72,9 @@ class MediaService:
             creation_date: When media was created.
             valid_until_date: Expiration date.
             company: Company/publisher name.
-            license_code: License key or activation code.
+            license_code: Optional license key or activation code.
             location_id: Storage location ID.
+            position: Position within storage location.
         
         Returns:
             Created Media with id set.
@@ -100,6 +107,7 @@ class MediaService:
             company=company,
             license_code=license_code,
             location_id=location_id,
+            position=position,
         )
         
         # Save to database
@@ -448,3 +456,77 @@ class MediaService:
         
         if valid_until_date and valid_until_date < date.today():
             logger.warning("Media already expired at creation time")
+    
+    def assign_locations_by_box_place(self, locations: List[StorageLocation]) -> dict:
+        """Assign locations to media by resolving temporary box references to real location IDs.
+        
+        During media import, the box number from CSV is stored as a temporary location_id.
+        This method resolves those temporary references to actual database location IDs
+        by matching the temporary ID (box number) to location.box values.
+        
+        Args:
+            locations: List of available storage locations
+        
+        Returns:
+            Dictionary with assignment statistics:
+            - total_media: Total media items checked
+            - assigned: Number of media newly assigned locations
+            - already_assigned: Number that already had real location IDs
+            - not_found: Number where matching location wasn't found
+            - updated_media: List of updated media IDs
+        """
+        stats = {
+            "total_media": 0,
+            "assigned": 0,
+            "already_assigned": 0,
+            "not_found": 0,
+            "updated_media": []
+        }
+        
+        try:
+            # Get all media
+            all_media = self.get_all_media()
+            stats["total_media"] = len(all_media)
+            
+            # Create mapping: box_number (from CSV) -> location.id (database ID)
+            # This resolves temporary references to real location IDs
+            box_to_location_id = {}
+            for loc in locations:
+                try:
+                    # Convert location.box to integer for matching
+                    box_num = int(loc.box) if isinstance(loc.box, str) else loc.box
+                    box_to_location_id[box_num] = loc.id
+                    logger.debug(f"Location mapping: box {box_num} -> location_id {loc.id}")
+                except (ValueError, TypeError):
+                    logger.warning(f"Location box '{loc.box}' is not a valid integer")
+            
+            logger.debug(f"Created location map with {len(box_to_location_id)} entries")
+            
+            # Process each media item
+            for media in all_media:
+                # Check if media has a temporary location_id (box number reference)
+                if media.location_id is None:
+                    stats["not_found"] += 1
+                    continue
+                
+                # Check if this is a temporary reference (integer box number)
+                # vs a real location ID (would be > 0 and match a location)
+                if media.location_id in box_to_location_id:
+                    # This is a temporary reference - resolve it to real location ID
+                    real_location_id = box_to_location_id[media.location_id]
+                    media.location_id = real_location_id
+                    self._repo.update(media)
+                    stats["assigned"] += 1
+                    stats["updated_media"].append(media.id)
+                    logger.info(f"Resolved media {media.id}: box {media.location_id} -> location_id {real_location_id}")
+                else:
+                    # Already has a real location ID or no match found
+                    stats["already_assigned"] += 1
+                    logger.debug(f"Media {media.id} already has location_id {media.location_id}")
+            
+            logger.info(f"Location assignment complete: {stats['assigned']} assigned, {stats['not_found']} not found")
+            return stats
+            
+        except Exception as e:
+            logger.error(f"Error during location assignment: {e}")
+            raise

@@ -8,6 +8,8 @@ History:
 20260307  V1.2: Integrated SearchPanel and enhanced filter menu
 20260307  V1.3: Added import/export and backup functionality
 20260308  V1.4: Implement two-phase import for locations and media
+20260309  V1.5: Added location assignment after import and manual assignment tool
+20260309  V1.6: Fixed position display in media tab to show place from DB
 """
 
 import logging
@@ -25,7 +27,8 @@ from models.enums import MediaType
 from utils.config import APP_NAME, APP_VERSION, DB_PATH, WINDOW_WIDTH, WINDOW_HEIGHT
 from gui.dialogs import (
     AddMediaDialog, EditMediaDialog, DeleteConfirmDialog,
-    AddLocationDialog, EditLocationDialog, DeleteLocationConfirmDialog
+    AddLocationDialog, EditLocationDialog, DeleteLocationConfirmDialog,
+    LocationAssignmentResultsDialog
 )
 from gui.search_panel import SearchPanel
 from gui.import_dialog import ImportDialog
@@ -108,6 +111,11 @@ class MainWindow:
         view_menu.add_separator()
         view_menu.add_command(label="Statistics", command=self._show_statistics)
         
+        # Tools menu
+        tools_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Tools", menu=tools_menu)
+        tools_menu.add_command(label="Assign Locations to Media", command=self._assign_locations)
+        
         # Filter menu
         filter_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Filter", menu=filter_menu)
@@ -186,20 +194,28 @@ class MainWindow:
         self.notebook.add(frame, text="Media")
         
         # Create treeview for media list
-        columns = ("ID", "Name", "Type", "Location", "Expires")
+        columns = ("ID", "Name", "Type", "Box", "Position", "Company", "License", "Created", "Expires")
         self.media_tree = ttk.Treeview(frame, columns=columns, height=20)
         self.media_tree.column("#0", width=0, stretch=tk.NO)
         self.media_tree.column("ID", anchor=tk.W, width=50)
-        self.media_tree.column("Name", anchor=tk.W, width=200)
-        self.media_tree.column("Type", anchor=tk.W, width=100)
-        self.media_tree.column("Location", anchor=tk.W, width=150)
+        self.media_tree.column("Name", anchor=tk.W, width=150)
+        self.media_tree.column("Type", anchor=tk.W, width=80)
+        self.media_tree.column("Box", anchor=tk.W, width=60)
+        self.media_tree.column("Position", anchor=tk.W, width=80)
+        self.media_tree.column("Company", anchor=tk.W, width=100)
+        self.media_tree.column("License", anchor=tk.W, width=80)
+        self.media_tree.column("Created", anchor=tk.W, width=100)
         self.media_tree.column("Expires", anchor=tk.W, width=100)
         
         self.media_tree.heading("#0", text="", anchor=tk.W)
         self.media_tree.heading("ID", text="ID", anchor=tk.W)
         self.media_tree.heading("Name", text="Name", anchor=tk.W)
         self.media_tree.heading("Type", text="Type", anchor=tk.W)
-        self.media_tree.heading("Location", text="Location", anchor=tk.W)
+        self.media_tree.heading("Box", text="Box", anchor=tk.W)
+        self.media_tree.heading("Position", text="Position", anchor=tk.W)
+        self.media_tree.heading("Company", text="Company", anchor=tk.W)
+        self.media_tree.heading("License", text="License", anchor=tk.W)
+        self.media_tree.heading("Created", text="Created", anchor=tk.W)
         self.media_tree.heading("Expires", text="Expires", anchor=tk.W)
         
         # Add scrollbar
@@ -208,6 +224,9 @@ class MainWindow:
         
         self.media_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Bind double-click to jump to location
+        self.media_tree.bind("<Double-1>", self._on_media_double_click)
         
         # Load media
         self._refresh_media_list()
@@ -316,13 +335,33 @@ class MainWindow:
             
             # Load media
             media_list = self.media_service.get_all_media()
+            
+            # Create location lookup for display
+            locations = self.location_service.get_all_locations()
+            location_map = {loc.id: loc for loc in locations}
+            
             for media in media_list:
+                created = media.creation_date.isoformat() if media.creation_date else "N/A"
                 expires = media.valid_until_date.isoformat() if media.valid_until_date else "N/A"
+                company = media.company if media.company else "N/A"
+                license_code = media.license_code if media.license_code else "N/A"
+                position = media.position if media.position else "N/A"
+                
+                # Get box from location table
+                if media.location_id and media.location_id in location_map:
+                    box = location_map[media.location_id].box
+                else:
+                    box = "N/A"
+                
                 self.media_tree.insert("", tk.END, values=(
                     media.id,
                     media.name,
                     media.media_type,
-                    media.location_id or "N/A",
+                    box,
+                    position,
+                    company,
+                    license_code,
+                    created,
                     expires
                 ))
             
@@ -863,6 +902,8 @@ Location Statistics:
         For media imports, implements two-phase strategy:
         1. First pass: Create media with temporary location references
         2. Second pass: Update media with actual database location IDs
+        
+        After import, runs location assignment to match media to locations by Box+Place.
         """
         try:
             if import_type == "media":
@@ -882,10 +923,25 @@ Location Statistics:
                             company=media.company,
                             license_code=media.license_code,
                             location_id=media.location_id,
+                            position=media.position,
                         )
                         count += 1
                     except Exception as e:
                         logger.warning(f"Failed to import media: {e}")
+                
+                # Run location assignment after media import
+                try:
+                    locations = self.location_service.get_all_locations()
+                    if locations:
+                        assignment_results = self.media_service.assign_locations_by_box_place(locations)
+                        
+                        # Show assignment results dialog
+                        dialog = LocationAssignmentResultsDialog(self.root, assignment_results)
+                        dialog.show()
+                        
+                        logger.info(f"Location assignment: {assignment_results['assigned']} assigned, {assignment_results['not_found']} not found")
+                except Exception as e:
+                    logger.warning(f"Location assignment failed: {e}")
                 
                 messagebox.showinfo("Import Complete", f"Successfully imported {count} media items")
                 self._refresh_media_list()
@@ -942,6 +998,19 @@ Location Statistics:
                     except Exception as e:
                         logger.warning(f"Failed to update media location IDs: {e}")
                 
+                # Run location assignment after location import
+                try:
+                    all_locations = self.location_service.get_all_locations()
+                    assignment_results = self.media_service.assign_locations_by_box_place(all_locations)
+                    
+                    # Show assignment results dialog
+                    dialog = LocationAssignmentResultsDialog(self.root, assignment_results)
+                    dialog.show()
+                    
+                    logger.info(f"Location assignment: {assignment_results['assigned']} assigned, {assignment_results['not_found']} not found")
+                except Exception as e:
+                    logger.warning(f"Location assignment failed: {e}")
+                
                 messagebox.showinfo("Import Complete", f"Successfully imported {count} locations")
                 self._refresh_locations_list()
                 self._refresh_media_list()  # Refresh media to show updated locations
@@ -981,6 +1050,71 @@ Location Statistics:
     def _on_export_completed(self, file_path: str, export_type: str, options: dict) -> None:
         """Callback when export is completed."""
         pass
+
+    def _assign_locations(self) -> None:
+        """Manually assign locations to media based on Box+Place matching."""
+        try:
+            # Get all locations
+            locations = self.location_service.get_all_locations()
+            
+            if not locations:
+                messagebox.showwarning(
+                    "No Locations",
+                    "No storage locations found in database.\n\n"
+                    "Please import or create locations first."
+                )
+                return
+            
+            # Run location assignment
+            assignment_results = self.media_service.assign_locations_by_box_place(locations)
+            
+            # Show results dialog
+            dialog = LocationAssignmentResultsDialog(self.root, assignment_results)
+            dialog.show()
+            
+            # Refresh media list to show updated locations
+            self._refresh_media_list()
+            self.status_var.set(f"Location assignment complete: {assignment_results['assigned']} assigned")
+            
+            logger.info(f"Manual location assignment: {assignment_results['assigned']} assigned, {assignment_results['not_found']} not found")
+        except Exception as e:
+            logger.error(f"Error assigning locations: {e}")
+            messagebox.showerror("Error", f"Failed to assign locations: {e}")
+
+    def _on_media_double_click(self, event) -> None:
+        """Handle double-click on media item to jump to location."""
+        try:
+            # Get selected media
+            selection = self.media_tree.selection()
+            if not selection:
+                return
+            
+            # Get media ID from first column
+            item = selection[0]
+            values = self.media_tree.item(item, "values")
+            media_id = int(values[0])
+            
+            # Get media details
+            media = self.media_service.get_media(media_id)
+            
+            # If media has a location, jump to locations tab and select it
+            if media.location_id:
+                self.notebook.select(1)  # Switch to locations tab
+                
+                # Find and select the location in the tree
+                for tree_item in self.location_tree.get_children():
+                    tree_values = self.location_tree.item(tree_item, "values")
+                    if int(tree_values[0]) == media.location_id:
+                        self.location_tree.selection_set(tree_item)
+                        self.location_tree.see(tree_item)
+                        break
+                
+                self.status_var.set(f"Jumped to location for media {media.name}")
+                logger.debug(f"Jumped to location {media.location_id} for media {media_id}")
+            else:
+                messagebox.showinfo("No Location", f"Media '{media.name}' has no assigned location")
+        except Exception as e:
+            logger.error(f"Error handling media double-click: {e}")
 
     def _backup_database(self) -> None:
         """Backup database file."""

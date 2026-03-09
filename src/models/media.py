@@ -21,6 +21,8 @@ class Media:
         company: Company/publisher name.
         license_code: License key or activation code.
         location_id: Reference to storage location.
+        box: Storage box identifier (from Access import, for location matching).
+        position: Position/place within storage location (from Access import).
         id: Unique identifier (None for new records).
         created_at: ISO 8601 timestamp when record was created.
         updated_at: ISO 8601 timestamp when record was last updated.
@@ -37,6 +39,8 @@ class Media:
     company: Optional[str] = None
     license_code: Optional[str] = None
     location_id: Optional[int] = None
+    box: Optional[str] = None
+    position: Optional[str] = None
     id: Optional[int] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None

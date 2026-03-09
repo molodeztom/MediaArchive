@@ -47,9 +47,9 @@ class MediaRepository:
                 INSERT INTO media (
                     name, number, content_description, remarks, creation_date,
                     valid_until_date, media_type, category, company, license_code,
-                    location_id
+                    location_id, box, position
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     media.name,
@@ -63,6 +63,8 @@ class MediaRepository:
                     media.company,
                     media.license_code,
                     media.location_id,
+                    media.box,
+                    media.position,
                 ),
             )
             self._db.commit()
@@ -146,7 +148,8 @@ class MediaRepository:
                 UPDATE media
                 SET name = ?, number = ?, content_description = ?, remarks = ?,
                     creation_date = ?, valid_until_date = ?, media_type = ?,
-                    category = ?, company = ?, license_code = ?, location_id = ?
+                    category = ?, company = ?, license_code = ?, location_id = ?,
+                    box = ?, position = ?
                 WHERE id = ?
                 """,
                 (
@@ -161,6 +164,8 @@ class MediaRepository:
                     media.company,
                     media.license_code,
                     media.location_id,
+                    media.box,
+                    media.position,
                     media.id,
                 ),
             )
@@ -390,6 +395,17 @@ class MediaRepository:
         Returns:
             Media object.
         """
+        # Handle both dict and sqlite3.Row objects
+        # sqlite3.Row doesn't support .get(), so use try/except for optional fields
+        try:
+            box = row["box"]
+        except (KeyError, IndexError):
+            box = None
+        try:
+            position = row["position"]
+        except (KeyError, IndexError):
+            position = None
+        
         return Media(
             id=row["id"],
             name=row["name"],
@@ -403,6 +419,8 @@ class MediaRepository:
             company=row["company"],
             license_code=row["license_code"],
             location_id=row["location_id"],
+            box=box,
+            position=position,
             created_at=row["created_at"],
             updated_at=row["updated_at"],
         )

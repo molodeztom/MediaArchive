@@ -12,6 +12,7 @@ History:
 20260308  V1.5: Allow locations with empty Ort/Typ - only Box ID is required
 20260308  V1.6: Rename AccessMediaTypeMapper to AccessContentTypeMapper for clarity
 20260308  V1.7: Rename AccessContentTypeMapper to AccessCategoryMapper, store ID as number
+20260309  V1.8: Store box/place in media for location matching, handle empty place values
 """
 
 import logging
@@ -201,16 +202,17 @@ class AccessCSVMapper:
             except ValidationError as e:
                 return None, f"Invalid valid until date: {str(e)}"
             
-            # Find location by box and place
+             # Store box as temporary location_id reference
+            # The box field from media CSV is a reference to a location
+            # It will be resolved to actual location.id after locations are imported
             location_id = None
-            if box and place:
-                for loc in locations:
-                    if loc.box == box and loc.place == place:
-                        location_id = loc.id
-                        break
-                
-                if location_id is None:
-                    logger.warning(f"Location not found for Box='{box}', Place='{place}'")
+            if box:
+                try:
+                    # Try to convert box to integer - it's a location reference
+                    location_id = int(box)
+                    logger.debug(f"Stored box '{box}' as temporary location_id {location_id}")
+                except (ValueError, TypeError):
+                    logger.warning(f"Box value '{box}' is not a valid integer reference")
             
             # Create media object
             media = Media(
@@ -224,10 +226,12 @@ class AccessCSVMapper:
                 valid_until_date=valid_until_date,
                 content_description=content_description,
                 remarks=None,  # Not in Access CSV
-                location_id=location_id,
+                location_id=location_id,  # Temporary reference to location box number
+                box=None,  # Don't store box - it's a reference, not a field
+                position=place if place else None,  # Store position from CSV
             )
             
-            logger.debug(f"Parsed media: {name} (type={media_type}, location_id={location_id})")
+            logger.debug(f"Parsed media: {name} (type={media_type}, location_id={location_id}, position={place})")
             
             return media, None
             
