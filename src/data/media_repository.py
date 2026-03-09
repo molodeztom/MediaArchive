@@ -385,6 +385,32 @@ class MediaRepository:
             logger.error(f"Failed to get expiring media: {e}")
             raise
 
+    def get_unique_categories(self) -> list[str]:
+        """Get list of unique categories from all media.
+        
+        Returns:
+            Sorted list of unique category values (excluding None/empty).
+        
+        Raises:
+            DatabaseError: If query fails.
+        """
+        try:
+            cursor = self._db.execute(
+                """
+                SELECT DISTINCT category
+                FROM media
+                WHERE category IS NOT NULL AND category != ''
+                ORDER BY category
+                """
+            )
+            rows = cursor.fetchall()
+            categories = [row["category"] for row in rows]
+            logger.debug(f"Retrieved {len(categories)} unique categories")
+            return categories
+        except DatabaseError as e:
+            logger.error(f"Failed to get unique categories: {e}")
+            raise
+
     @staticmethod
     def _row_to_media(row: dict) -> Media:
         """Convert database row to Media object.

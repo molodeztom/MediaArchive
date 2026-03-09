@@ -12,6 +12,13 @@ History:
 20260309  V1.6: Fixed position display in media tab to show place from DB
 20260309  V1.7: Hide internal ID column, display media number as first column
 20260309  V1.8: Added Category column to media tab between Type and Box
+20260309  V1.9: Hide location tab ID column, store ID in treeview iid
+20260309  V1.10: Sort media tab by Number column (numeric first)
+20260309  V1.11: Added position parameter to media update callback
+20260309  V1.12: Pass categories to media dialogs for combobox
+20260309  V1.13: Updated search to use separate box and place filters
+20260309  V1.14: Removed Filter > By Location menu item
+20260309  V1.15: Search results show Number, Name, Type, Box, Position, Place
 """
 
 import logging
@@ -131,11 +138,6 @@ class MainWindow:
                 command=lambda mt=media_type: self._filter_by_type(mt)
             )
         
-        # Filter by location submenu
-        self.location_menu = tk.Menu(filter_menu, tearoff=0)
-        filter_menu.add_cascade(label="By Location", menu=self.location_menu)
-        self._update_location_menu()
-        
         filter_menu.add_separator()
         filter_menu.add_command(label="Clear Filters", command=self._clear_all_filters)
         
@@ -250,18 +252,16 @@ class MainWindow:
         ttk.Button(toolbar, text="Edit Location", command=self._edit_location).pack(side=tk.LEFT, padx=2)
         ttk.Button(toolbar, text="Delete Location", command=self._delete_location).pack(side=tk.LEFT, padx=2)
         
-        # Create treeview for locations
-        columns = ("ID", "Box", "Place", "Detail", "Media Count")
+        # Create treeview for locations (ID hidden, stored in iid)
+        columns = ("Box", "Place", "Detail", "Media Count")
         self.location_tree = ttk.Treeview(frame, columns=columns, height=20)
         self.location_tree.column("#0", width=0, stretch=tk.NO)
-        self.location_tree.column("ID", anchor=tk.W, width=50)
         self.location_tree.column("Box", anchor=tk.W, width=150)
         self.location_tree.column("Place", anchor=tk.W, width=150)
         self.location_tree.column("Detail", anchor=tk.W, width=150)
         self.location_tree.column("Media Count", anchor=tk.W, width=100)
         
         self.location_tree.heading("#0", text="", anchor=tk.W)
-        self.location_tree.heading("ID", text="ID", anchor=tk.W)
         self.location_tree.heading("Box", text="Box", anchor=tk.W)
         self.location_tree.heading("Place", text="Place", anchor=tk.W)
         self.location_tree.heading("Detail", text="Detail", anchor=tk.W)
@@ -297,21 +297,23 @@ class MainWindow:
         results_frame = ttk.LabelFrame(frame, text="Search Results", padding=10)
         results_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
-        columns = ("ID", "Name", "Type", "Location", "Expires")
+        columns = ("Number", "Name", "Type", "Box", "Position", "Place")
         self.search_tree = ttk.Treeview(results_frame, columns=columns, height=15)
         self.search_tree.column("#0", width=0, stretch=tk.NO)
-        self.search_tree.column("ID", anchor=tk.W, width=50)
-        self.search_tree.column("Name", anchor=tk.W, width=200)
-        self.search_tree.column("Type", anchor=tk.W, width=100)
-        self.search_tree.column("Location", anchor=tk.W, width=100)
-        self.search_tree.column("Expires", anchor=tk.W, width=100)
+        self.search_tree.column("Number", anchor=tk.W, width=80)
+        self.search_tree.column("Name", anchor=tk.W, width=150)
+        self.search_tree.column("Type", anchor=tk.W, width=80)
+        self.search_tree.column("Box", anchor=tk.W, width=80)
+        self.search_tree.column("Position", anchor=tk.W, width=80)
+        self.search_tree.column("Place", anchor=tk.W, width=150)
         
         self.search_tree.heading("#0", text="", anchor=tk.W)
-        self.search_tree.heading("ID", text="ID", anchor=tk.W)
+        self.search_tree.heading("Number", text="Number", anchor=tk.W)
         self.search_tree.heading("Name", text="Name", anchor=tk.W)
         self.search_tree.heading("Type", text="Type", anchor=tk.W)
-        self.search_tree.heading("Location", text="Location", anchor=tk.W)
-        self.search_tree.heading("Expires", text="Expires", anchor=tk.W)
+        self.search_tree.heading("Box", text="Box", anchor=tk.W)
+        self.search_tree.heading("Position", text="Position", anchor=tk.W)
+        self.search_tree.heading("Place", text="Place", anchor=tk.W)
         
         scrollbar = ttk.Scrollbar(results_frame, orient=tk.VERTICAL, command=self.search_tree.yview)
         self.search_tree.configure(yscroll=scrollbar.set)
@@ -339,6 +341,17 @@ class MainWindow:
             
             # Load media
             media_list = self.media_service.get_all_media()
+            
+            # Sort media by number (numeric first, then alphabetic)
+            def sort_key(media):
+                if media.number:
+                    try:
+                        return (0, int(media.number))  # Numeric numbers first
+                    except ValueError:
+                        return (1, media.number)  # Non-numeric alphabetically
+                return (2, "")  # No number last
+            
+            media_list.sort(key=sort_key)
             
             # Create location lookup for display
             locations = self.location_service.get_all_locations()
@@ -391,8 +404,8 @@ class MainWindow:
             for loc in locations:
                 # Count media in this location
                 media_count = len(self.media_service.get_media_by_location(loc.id))
-                self.location_tree.insert("", tk.END, values=(
-                    loc.id,
+                # Store location ID in iid, not in values
+                self.location_tree.insert("", tk.END, iid=str(loc.id), values=(
                     loc.box,
                     loc.place,
                     loc.detail or "",
@@ -405,9 +418,6 @@ class MainWindow:
             # Update search panel locations
             if hasattr(self, 'search_panel'):
                 self.search_panel.update_locations(locations)
-            
-            # Update location menu
-            self._update_location_menu()
         except Exception as e:
             logger.error(f"Failed to refresh locations list: {e}")
             messagebox.showerror("Error", f"Failed to load locations: {e}")
@@ -424,8 +434,11 @@ class MainWindow:
             # Get available locations
             locations = self.location_service.get_all_locations()
             
+            # Get existing categories
+            categories = self.media_service.get_unique_categories()
+            
             # Create and show dialog
-            dialog = AddMediaDialog(self.root, locations, on_save=self._on_media_added)
+            dialog = AddMediaDialog(self.root, locations, categories, on_save=self._on_media_added)
             result = dialog.show()
             
             if result:
@@ -476,8 +489,11 @@ class MainWindow:
             # Get available locations
             locations = self.location_service.get_all_locations()
             
+            # Get existing categories
+            categories = self.media_service.get_unique_categories()
+            
             # Create and show dialog
-            dialog = EditMediaDialog(self.root, media, locations, on_save=self._on_media_updated)
+            dialog = EditMediaDialog(self.root, media, locations, categories, on_save=self._on_media_updated)
             result = dialog.show()
             
             if result:
@@ -504,6 +520,7 @@ class MainWindow:
                 company=media.company,
                 license_code=media.license_code,
                 location_id=media.location_id,
+                position=media.position,
             )
             logger.info(f"Media updated: {updated.id}")
         except Exception as e:
@@ -584,10 +601,9 @@ class MainWindow:
                 messagebox.showwarning("Selection Error", "Please select a location to edit")
                 return
             
-            # Get location ID from first column
+            # Get location ID from iid
             item = selection[0]
-            values = self.location_tree.item(item, "values")
-            location_id = int(values[0])
+            location_id = int(item)
             
             # Get location details
             location = self.location_service.get_location(location_id)
@@ -627,10 +643,9 @@ class MainWindow:
                 messagebox.showwarning("Selection Error", "Please select a location to delete")
                 return
             
-            # Get location ID from first column
+            # Get location ID from iid
             item = selection[0]
-            values = self.location_tree.item(item, "values")
-            location_id = int(values[0])
+            location_id = int(item)
             
             # Get location details
             location = self.location_service.get_location(location_id)
@@ -724,29 +739,6 @@ Location Statistics:
             "Built with Python and tkinter"
         )
 
-    def _update_location_menu(self) -> None:
-        """Update location filter menu."""
-        try:
-            # Clear existing items
-            self.location_menu.delete(0, tk.END)
-            
-            # Add "All" option
-            self.location_menu.add_command(
-                label="All",
-                command=self._clear_all_filters
-            )
-            self.location_menu.add_separator()
-            
-            # Add each location
-            locations = self.location_service.get_all_locations()
-            for loc in locations:
-                self.location_menu.add_command(
-                    label=f"{loc.id}: {loc}",
-                    command=lambda l=loc: self._filter_by_location(l.id)
-                )
-        except Exception as e:
-            logger.error(f"Failed to update location menu: {e}")
-
     def _perform_search(self) -> None:
         """Perform search based on search criteria."""
         try:
@@ -758,7 +750,8 @@ Location Statistics:
             criteria = self.search_panel.get_search_criteria()
             query = criteria["query"]
             type_filter = criteria["type_filter"]
-            location_filter = criteria["location_filter"]
+            box_filter = criteria.get("box_filter", "All")
+            place_filter = criteria.get("place_filter", "")
             show_expired = criteria["show_expired"]
             date_from = criteria["date_from"]
             date_to = criteria["date_to"]
@@ -773,13 +766,19 @@ Location Statistics:
             if type_filter and type_filter != "All":
                 results = [m for m in results if m.media_type == type_filter]
             
-            # Apply location filter
-            if location_filter and location_filter != "All":
-                try:
-                    location_id = int(location_filter.split(":")[0])
-                    results = [m for m in results if m.location_id == location_id]
-                except (ValueError, IndexError):
-                    pass
+            # Apply box filter
+            if box_filter and box_filter != "All":
+                # Get locations with matching box
+                locations = self.location_service.get_all_locations()
+                location_ids = [loc.id for loc in locations if loc.box == box_filter]
+                results = [m for m in results if m.location_id in location_ids]
+            
+            # Apply place filter (text search)
+            if place_filter:
+                locations = self.location_service.get_all_locations()
+                # Find locations where place contains the search text (case-insensitive)
+                location_ids = [loc.id for loc in locations if place_filter.lower() in loc.place.lower()]
+                results = [m for m in results if m.location_id in location_ids]
             
             # Apply date range filter
             if date_from or date_to:
@@ -798,15 +797,30 @@ Location Statistics:
             if show_expired:
                 results = [m for m in results if m.valid_until_date and m.valid_until_date < date.today()]
             
+            # Create location lookup for display
+            locations = self.location_service.get_all_locations()
+            location_map = {loc.id: loc for loc in locations}
+            
             # Display results
             for media in results:
-                expires = media.valid_until_date.isoformat() if media.valid_until_date else "N/A"
+                number = media.number if media.number else "N/A"
+                position = media.position if media.position else "N/A"
+                
+                # Get box and place from location table
+                if media.location_id and media.location_id in location_map:
+                    box = location_map[media.location_id].box
+                    place = location_map[media.location_id].place
+                else:
+                    box = "N/A"
+                    place = "N/A"
+                
                 self.search_tree.insert("", tk.END, values=(
-                    media.id,
+                    number,
                     media.name,
                     media.media_type,
-                    media.location_id or "N/A",
-                    expires
+                    box,
+                    position,
+                    place
                 ))
             
             self.status_var.set(f"Found {len(results)} results")
@@ -838,25 +852,6 @@ Location Statistics:
         except Exception as e:
             logger.error(f"Error filtering by type: {e}")
             messagebox.showerror("Error", f"Failed to filter by type: {e}")
-
-    def _filter_by_location(self, location_id: int) -> None:
-        """Filter media by location."""
-        try:
-            self.notebook.select(2)  # Switch to search tab
-            self.search_panel.clear_filters()
-            
-            # Find location string
-            locations = self.location_service.get_all_locations()
-            for loc in locations:
-                if loc.id == location_id:
-                    self.search_panel.location_filter_var.set(f"{loc.id}: {loc}")
-                    break
-            
-            self._perform_search()
-            self.status_var.set(f"Filtered by location: {location_id}")
-        except Exception as e:
-            logger.error(f"Error filtering by location: {e}")
-            messagebox.showerror("Error", f"Failed to filter by location: {e}")
 
     def _clear_all_filters(self) -> None:
         """Clear all filters."""
@@ -1106,13 +1101,11 @@ Location Statistics:
             if media.location_id:
                 self.notebook.select(1)  # Switch to locations tab
                 
-                # Find and select the location in the tree
-                for tree_item in self.location_tree.get_children():
-                    tree_values = self.location_tree.item(tree_item, "values")
-                    if int(tree_values[0]) == media.location_id:
-                        self.location_tree.selection_set(tree_item)
-                        self.location_tree.see(tree_item)
-                        break
+                # Find and select the location in the tree (ID stored in iid)
+                location_iid = str(media.location_id)
+                if location_iid in self.location_tree.get_children():
+                    self.location_tree.selection_set(location_iid)
+                    self.location_tree.see(location_iid)
                 
                 self.status_var.set(f"Jumped to location for media {media.name}")
                 logger.debug(f"Jumped to location {media.location_id} for media {media_id}")

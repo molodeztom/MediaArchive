@@ -4,6 +4,7 @@ This module provides a reusable search panel widget with multiple filter options
 
 History:
 20260307  V1.0: Initial search panel implementation
+20260309  V1.1: Split location filter into separate Box and Place filters
 """
 
 import logging
@@ -75,48 +76,54 @@ class SearchPanel(ttk.Frame):
         type_combo.set("All")
         type_combo.grid(row=0, column=3, sticky=tk.EW, padx=5, pady=5)
         
-        # Row 2: Filter by location
-        ttk.Label(main_frame, text="Filter by location:").grid(row=1, column=0, sticky=tk.W, padx=5, pady=5)
-        self.location_filter_var = tk.StringVar()
-        self.location_filter_combo = ttk.Combobox(
+        # Row 2: Filter by box
+        ttk.Label(main_frame, text="Filter by box:").grid(row=1, column=0, sticky=tk.W, padx=5, pady=5)
+        self.box_filter_var = tk.StringVar()
+        self.box_filter_combo = ttk.Combobox(
             main_frame,
-            textvariable=self.location_filter_var,
+            textvariable=self.box_filter_var,
             state="readonly",
-            width=25
+            width=15
         )
-        self.location_filter_combo.grid(row=1, column=1, sticky=tk.EW, padx=5, pady=5)
-        self._update_location_filter()
+        self.box_filter_combo.grid(row=1, column=1, sticky=tk.W, padx=5, pady=5)
+        self._update_box_filter()
         
-        # Row 2: Show expired checkbox
+        # Row 2: Filter by place
+        ttk.Label(main_frame, text="Filter by place:").grid(row=1, column=2, sticky=tk.W, padx=5, pady=5)
+        self.place_filter_var = tk.StringVar()
+        place_entry = ttk.Entry(main_frame, textvariable=self.place_filter_var, width=20)
+        place_entry.grid(row=1, column=3, sticky=tk.EW, padx=5, pady=5)
+        
+        # Row 3: Show expired checkbox
         self.show_expired_var = tk.BooleanVar()
         ttk.Checkbutton(
             main_frame,
             text="Show only expired",
             variable=self.show_expired_var
-        ).grid(row=1, column=2, columnspan=2, sticky=tk.W, padx=5, pady=5)
+        ).grid(row=2, column=0, columnspan=2, sticky=tk.W, padx=5, pady=5)
         
-        # Row 3: Date range
-        ttk.Label(main_frame, text="Date range:").grid(row=2, column=0, sticky=tk.W, padx=5, pady=5)
+        # Row 4: Date range
+        ttk.Label(main_frame, text="Date range:").grid(row=3, column=0, sticky=tk.W, padx=5, pady=5)
         
-        ttk.Label(main_frame, text="From:").grid(row=2, column=1, sticky=tk.E, padx=5, pady=5)
+        ttk.Label(main_frame, text="From:").grid(row=3, column=1, sticky=tk.E, padx=5, pady=5)
         self.date_from_var = tk.StringVar()
         date_from_entry = ttk.Entry(main_frame, textvariable=self.date_from_var, width=12)
-        date_from_entry.grid(row=2, column=2, sticky=tk.W, padx=5, pady=5)
-        ttk.Label(main_frame, text="(YYYY-MM-DD)", font=("TkDefaultFont", 8)).grid(
-            row=2, column=3, sticky=tk.W, padx=2, pady=5
-        )
-        
-        ttk.Label(main_frame, text="To:").grid(row=3, column=1, sticky=tk.E, padx=5, pady=5)
-        self.date_to_var = tk.StringVar()
-        date_to_entry = ttk.Entry(main_frame, textvariable=self.date_to_var, width=12)
-        date_to_entry.grid(row=3, column=2, sticky=tk.W, padx=5, pady=5)
+        date_from_entry.grid(row=3, column=2, sticky=tk.W, padx=5, pady=5)
         ttk.Label(main_frame, text="(YYYY-MM-DD)", font=("TkDefaultFont", 8)).grid(
             row=3, column=3, sticky=tk.W, padx=2, pady=5
         )
         
-        # Row 4: Buttons
+        ttk.Label(main_frame, text="To:").grid(row=4, column=1, sticky=tk.E, padx=5, pady=5)
+        self.date_to_var = tk.StringVar()
+        date_to_entry = ttk.Entry(main_frame, textvariable=self.date_to_var, width=12)
+        date_to_entry.grid(row=4, column=2, sticky=tk.W, padx=5, pady=5)
+        ttk.Label(main_frame, text="(YYYY-MM-DD)", font=("TkDefaultFont", 8)).grid(
+            row=4, column=3, sticky=tk.W, padx=2, pady=5
+        )
+        
+        # Row 5: Buttons
         button_frame = ttk.Frame(main_frame)
-        button_frame.grid(row=4, column=0, columnspan=4, sticky=tk.W, padx=5, pady=10)
+        button_frame.grid(row=5, column=0, columnspan=4, sticky=tk.W, padx=5, pady=10)
         
         ttk.Button(button_frame, text="Search", command=self._on_search).pack(side=tk.LEFT, padx=5)
         ttk.Button(button_frame, text="Clear", command=self._on_clear).pack(side=tk.LEFT, padx=5)
@@ -125,11 +132,12 @@ class SearchPanel(ttk.Frame):
         main_frame.columnconfigure(1, weight=1)
         main_frame.columnconfigure(3, weight=1)
 
-    def _update_location_filter(self) -> None:
-        """Update location filter dropdown."""
-        location_values = ["All"] + [f"{loc.id}: {loc}" for loc in self.locations]
-        self.location_filter_combo.config(values=location_values)
-        self.location_filter_combo.set("All")
+    def _update_box_filter(self) -> None:
+        """Update box filter dropdown."""
+        # Get unique box values from locations
+        box_values = ["All"] + sorted(set(loc.box for loc in self.locations), key=lambda x: (int(x) if x.isdigit() else float('inf'), x))
+        self.box_filter_combo.config(values=box_values)
+        self.box_filter_combo.set("All")
 
     def update_locations(self, locations: List[StorageLocation]) -> None:
         """Update available locations.
@@ -138,7 +146,7 @@ class SearchPanel(ttk.Frame):
             locations: List of storage locations.
         """
         self.locations = locations
-        self._update_location_filter()
+        self._update_box_filter()
 
     def get_search_criteria(self) -> dict:
         """Get current search criteria.
@@ -149,7 +157,8 @@ class SearchPanel(ttk.Frame):
         return {
             "query": self.search_entry.get().strip(),
             "type_filter": self.type_filter_var.get(),
-            "location_filter": self.location_filter_var.get(),
+            "box_filter": self.box_filter_var.get(),
+            "place_filter": self.place_filter_var.get().strip(),
             "show_expired": self.show_expired_var.get(),
             "date_from": self.date_from_var.get().strip(),
             "date_to": self.date_to_var.get().strip(),
@@ -159,7 +168,8 @@ class SearchPanel(ttk.Frame):
         """Clear all search filters."""
         self.search_entry.delete(0, tk.END)
         self.type_filter_var.set("All")
-        self.location_filter_var.set("All")
+        self.box_filter_var.set("All")
+        self.place_filter_var.set("")
         self.show_expired_var.set(False)
         self.date_from_var.set("")
         self.date_to_var.set("")

@@ -12,6 +12,8 @@ History:
 20260309  V1.5: Fixed EditMediaDialog grid layout - box/position now in correct rows
 20260309  V1.6: Removed Storage Location dropdown - location determined by Box selection
 20260309  V1.7: Pre-populate box dropdown in EditMediaDialog from location table via location_id
+20260309  V1.8: Added read-only Place field to EditMediaDialog that updates with Box selection
+20260309  V1.9: Changed Category field to editable combobox with existing values
 """
 
 import logging
@@ -90,6 +92,7 @@ class AddMediaDialog(BaseDialog):
         self,
         parent: tk.Widget,
         locations: list[StorageLocation],
+        categories: list[str],
         on_save: Optional[Callable[[Media], None]] = None,
     ) -> None:
         """Initialize add media dialog.
@@ -97,10 +100,12 @@ class AddMediaDialog(BaseDialog):
         Args:
             parent: Parent window.
             locations: List of available storage locations.
+            categories: List of existing categories for dropdown.
             on_save: Optional callback when media is saved.
         """
         super().__init__(parent, "Add New Media")
         self.locations = locations
+        self.categories = categories
         self.on_save = on_save
         self.result = None
         
@@ -157,11 +162,17 @@ class AddMediaDialog(BaseDialog):
         )
         type_combo.grid(row=4, column=1, sticky=tk.EW, pady=5)
         
-        # Category field
+        # Category field (editable combobox)
         ttk.Label(main_frame, text="Category").grid(row=5, column=0, sticky=tk.W, pady=5)
         self.category_var = tk.StringVar()
-        category_entry = ttk.Entry(main_frame, textvariable=self.category_var, width=40)
-        category_entry.grid(row=5, column=1, sticky=tk.EW, pady=5)
+        category_combo = ttk.Combobox(
+            main_frame,
+            textvariable=self.category_var,
+            values=self.categories,
+            state="normal",  # Allows typing new values
+            width=37
+        )
+        category_combo.grid(row=5, column=1, sticky=tk.EW, pady=5)
         
         # Company field
         ttk.Label(main_frame, text="Company").grid(row=6, column=0, sticky=tk.W, pady=5)
@@ -328,6 +339,7 @@ class EditMediaDialog(BaseDialog):
         parent: tk.Widget,
         media: Media,
         locations: list[StorageLocation],
+        categories: list[str],
         on_save: Optional[Callable[[Media], None]] = None,
     ) -> None:
         """Initialize edit media dialog.
@@ -336,11 +348,13 @@ class EditMediaDialog(BaseDialog):
             parent: Parent window.
             media: Media object to edit.
             locations: List of available storage locations.
+            categories: List of existing categories for dropdown.
             on_save: Optional callback when media is saved.
         """
         super().__init__(parent, f"Edit Media: {media.name}")
         self.media = media
         self.locations = locations
+        self.categories = categories
         self.on_save = on_save
         self.result = None
         
@@ -371,11 +385,13 @@ class EditMediaDialog(BaseDialog):
         # Pre-populate with box value from location table via location_id
         ttk.Label(main_frame, text="Box").grid(row=2, column=0, sticky=tk.W, pady=5)
         current_box = ""
+        current_place = ""
         if self.media.location_id:
-            # Find the location with matching ID and get its box value
+            # Find the location with matching ID and get its box and place values
             for loc in self.locations:
                 if loc.id == self.media.location_id:
                     current_box = loc.box
+                    current_place = loc.place
                     break
         self.box_var = tk.StringVar(value=current_box)
         box_combo = ttk.Combobox(
@@ -386,15 +402,22 @@ class EditMediaDialog(BaseDialog):
             width=37
         )
         box_combo.grid(row=2, column=1, sticky=tk.EW, pady=5)
+        box_combo.bind("<<ComboboxSelected>>", self._on_box_changed)
+        
+        # Place field (read-only, shows place from location table)
+        ttk.Label(main_frame, text="Place").grid(row=3, column=0, sticky=tk.W, pady=5)
+        self.place_display_var = tk.StringVar(value=current_place)
+        place_entry = ttk.Entry(main_frame, textvariable=self.place_display_var, state="readonly", width=40)
+        place_entry.grid(row=3, column=1, sticky=tk.EW, pady=5)
         
         # Position field (number within box)
-        ttk.Label(main_frame, text="Position").grid(row=3, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Position").grid(row=4, column=0, sticky=tk.W, pady=5)
         self.position_var = tk.StringVar(value=self.media.position or "")
         position_entry = ttk.Entry(main_frame, textvariable=self.position_var, width=40)
-        position_entry.grid(row=3, column=1, sticky=tk.EW, pady=5)
+        position_entry.grid(row=4, column=1, sticky=tk.EW, pady=5)
         
         # Media Type field
-        ttk.Label(main_frame, text="Media Type").grid(row=4, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Media Type").grid(row=5, column=0, sticky=tk.W, pady=5)
         self.media_type_var = tk.StringVar(value=self.media.media_type)
         type_combo = ttk.Combobox(
             main_frame,
@@ -403,28 +426,34 @@ class EditMediaDialog(BaseDialog):
             state="readonly",
             width=37
         )
-        type_combo.grid(row=4, column=1, sticky=tk.EW, pady=5)
+        type_combo.grid(row=5, column=1, sticky=tk.EW, pady=5)
         
-        # Category field
-        ttk.Label(main_frame, text="Category").grid(row=5, column=0, sticky=tk.W, pady=5)
+        # Category field (editable combobox)
+        ttk.Label(main_frame, text="Category").grid(row=6, column=0, sticky=tk.W, pady=5)
         self.category_var = tk.StringVar(value=self.media.category or "")
-        category_entry = ttk.Entry(main_frame, textvariable=self.category_var, width=40)
-        category_entry.grid(row=5, column=1, sticky=tk.EW, pady=5)
+        category_combo = ttk.Combobox(
+            main_frame,
+            textvariable=self.category_var,
+            values=self.categories,
+            state="normal",  # Allows typing new values
+            width=37
+        )
+        category_combo.grid(row=6, column=1, sticky=tk.EW, pady=5)
         
         # Company field
-        ttk.Label(main_frame, text="Company").grid(row=6, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Company").grid(row=7, column=0, sticky=tk.W, pady=5)
         self.company_var = tk.StringVar(value=self.media.company or "")
         company_entry = ttk.Entry(main_frame, textvariable=self.company_var, width=40)
-        company_entry.grid(row=6, column=1, sticky=tk.EW, pady=5)
+        company_entry.grid(row=7, column=1, sticky=tk.EW, pady=5)
         
         # License Code field
-        ttk.Label(main_frame, text="License Code").grid(row=7, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="License Code").grid(row=8, column=0, sticky=tk.W, pady=5)
         self.license_var = tk.StringVar(value=self.media.license_code or "")
         license_entry = ttk.Entry(main_frame, textvariable=self.license_var, width=40)
-        license_entry.grid(row=7, column=1, sticky=tk.EW, pady=5)
+        license_entry.grid(row=8, column=1, sticky=tk.EW, pady=5)
         
         # Creation Date field
-        ttk.Label(main_frame, text="Creation Date").grid(row=8, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Creation Date").grid(row=9, column=0, sticky=tk.W, pady=5)
         creation_date_str = self.media.creation_date.isoformat() if self.media.creation_date else ""
         self.creation_date_var = tk.StringVar(value=creation_date_str)
         creation_date_entry = ttk.Entry(
@@ -432,13 +461,13 @@ class EditMediaDialog(BaseDialog):
             textvariable=self.creation_date_var,
             width=40
         )
-        creation_date_entry.grid(row=8, column=1, sticky=tk.EW, pady=5)
+        creation_date_entry.grid(row=9, column=1, sticky=tk.EW, pady=5)
         ttk.Label(main_frame, text="(YYYY-MM-DD)", font=("TkDefaultFont", 8)).grid(
-            row=8, column=2, sticky=tk.W, padx=5
+            row=9, column=2, sticky=tk.W, padx=5
         )
         
         # Valid Until Date field
-        ttk.Label(main_frame, text="Valid Until Date").grid(row=9, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Valid Until Date").grid(row=10, column=0, sticky=tk.W, pady=5)
         valid_until_str = self.media.valid_until_date.isoformat() if self.media.valid_until_date else ""
         self.valid_until_var = tk.StringVar(value=valid_until_str)
         valid_until_entry = ttk.Entry(
@@ -446,23 +475,23 @@ class EditMediaDialog(BaseDialog):
             textvariable=self.valid_until_var,
             width=40
         )
-        valid_until_entry.grid(row=9, column=1, sticky=tk.EW, pady=5)
+        valid_until_entry.grid(row=10, column=1, sticky=tk.EW, pady=5)
         ttk.Label(main_frame, text="(YYYY-MM-DD)", font=("TkDefaultFont", 8)).grid(
-            row=9, column=2, sticky=tk.W, padx=5
+            row=10, column=2, sticky=tk.W, padx=5
         )
         
         # Content Description field
-        ttk.Label(main_frame, text="Content Description").grid(row=10, column=0, sticky=tk.NW, pady=5)
+        ttk.Label(main_frame, text="Content Description").grid(row=11, column=0, sticky=tk.NW, pady=5)
         content_text = tk.Text(main_frame, height=4, width=40)
         content_text.insert("1.0", self.media.content_description or "")
-        content_text.grid(row=10, column=1, sticky=tk.EW, pady=5)
+        content_text.grid(row=11, column=1, sticky=tk.EW, pady=5)
         self.content_text = content_text
         
         # Remarks field
-        ttk.Label(main_frame, text="Remarks").grid(row=11, column=0, sticky=tk.NW, pady=5)
+        ttk.Label(main_frame, text="Remarks").grid(row=12, column=0, sticky=tk.NW, pady=5)
         remarks_text = tk.Text(main_frame, height=4, width=40)
         remarks_text.insert("1.0", self.media.remarks or "")
-        remarks_text.grid(row=11, column=1, sticky=tk.EW, pady=5)
+        remarks_text.grid(row=12, column=1, sticky=tk.EW, pady=5)
         self.remarks_text = remarks_text
         
         # Configure grid weights
@@ -476,7 +505,21 @@ class EditMediaDialog(BaseDialog):
         ttk.Button(button_frame, text="Cancel", command=self._cancel).pack(side=tk.LEFT, padx=5)
         
         # Set minimum size - adjusted for fields
-        self.geometry("500x700")
+        self.geometry("500x750")
+
+    def _on_box_changed(self, event=None) -> None:
+        """Update Place field when Box selection changes."""
+        try:
+            selected_box = self.box_var.get()
+            # Find the location with matching box and update place display
+            for loc in self.locations:
+                if loc.box == selected_box:
+                    self.place_display_var.set(loc.place)
+                    return
+            # If no match found, clear place
+            self.place_display_var.set("")
+        except Exception as e:
+            logger.error(f"Error updating place display: {e}")
 
     def _save(self) -> None:
         """Save media changes and close dialog."""

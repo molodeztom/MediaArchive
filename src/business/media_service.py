@@ -7,6 +7,10 @@ History:
 20260309  V1.0: Added assign_locations_by_box_place method for location assignment
 20260309  V1.1: Added place parameter to create_media and update_media methods
 20260309  V1.2: Fixed log message in assign_locations_by_box_place - use real_location_id
+20260309  V1.3: Fixed location assignment to avoid duplicate assignments
+20260309  V1.4: Fixed location assignment to correctly resolve box references
+20260309  V1.5: Added position parameter to update_media method
+20260309  V1.6: Added get_unique_categories method for category dropdown
 """
 
 import logging
@@ -160,6 +164,7 @@ class MediaService:
         company: Optional[str] = None,
         license_code: Optional[str] = None,
         location_id: Optional[int] = None,
+        position: Optional[str] = None,
     ) -> Media:
         """Update an existing media item.
         
@@ -176,6 +181,7 @@ class MediaService:
             company: New company (optional).
             license_code: New license code (optional).
             location_id: New location ID (optional).
+            position: New position within location (optional).
         
         Returns:
             Updated Media.
@@ -210,6 +216,8 @@ class MediaService:
             media.license_code = license_code
         if location_id is not None:
             media.location_id = location_id
+        if position is not None:
+            media.position = position
         
         # Validate updated media
         self._validate_media_input(
@@ -394,6 +402,16 @@ class MediaService:
         logger.debug(f"Media statistics: {stats}")
         return stats
 
+    def get_unique_categories(self) -> list[str]:
+        """Get list of unique categories from all media.
+        
+        Returns:
+            Sorted list of unique category values.
+        """
+        categories = self._repo.get_unique_categories()
+        logger.debug(f"Retrieved {len(categories)} unique categories")
+        return categories
+
     @staticmethod
     def _validate_media_input(
         name: str,
@@ -459,11 +477,14 @@ class MediaService:
             logger.warning("Media already expired at creation time")
     
     def assign_locations_by_box_place(self, locations: List[StorageLocation]) -> dict:
-        """Assign locations to media by resolving temporary box references to real location IDs.
+        """Assign locations to media by resolving box number references to location IDs.
         
-        During media import, the box number from CSV is stored as a temporary location_id.
-        This method resolves those temporary references to actual database location IDs
-        by matching the temporary ID (box number) to location.box values.
+        During media import, the box number from CSV is stored as location_id.
+        This method finds the correct location by matching box numbers and updates
+        the media to point to the correct location ID.
+        
+        Strategy: For each media, if there exists a location where location.box equals
+        the media.location_id value, then update media to point to that location's ID.
         
         Args:
             locations: List of available storage locations
@@ -471,8 +492,8 @@ class MediaService:
         Returns:
             Dictionary with assignment statistics:
             - total_media: Total media items checked
-            - assigned: Number of media newly assigned locations
-            - already_assigned: Number that already had real location IDs
+            - assigned: Number of media assigned/updated
+            - already_assigned: Number that were already correct
             - not_found: Number where matching location wasn't found
             - updated_media: List of updated media IDs
         """
@@ -489,12 +510,10 @@ class MediaService:
             all_media = self.get_all_media()
             stats["total_media"] = len(all_media)
             
-            # Create mapping: box_number (from CSV) -> location.id (database ID)
-            # This resolves temporary references to real location IDs
+            # Create mapping: box_number -> location.id
             box_to_location_id = {}
             for loc in locations:
                 try:
-                    # Convert location.box to integer for matching
                     box_num = int(loc.box) if isinstance(loc.box, str) else loc.box
                     box_to_location_id[box_num] = loc.id
                     logger.debug(f"Location mapping: box {box_num} -> location_id {loc.id}")
@@ -505,26 +524,31 @@ class MediaService:
             
             # Process each media item
             for media in all_media:
-                # Check if media has a temporary location_id (box number reference)
                 if media.location_id is None:
                     stats["not_found"] += 1
                     continue
                 
-                # Check if this is a temporary reference (integer box number)
-                # vs a real location ID (would be > 0 and match a location)
+                # Check if there's a location with box number == media.location_id
+                # If yes, update media to point to that location's ID
                 if media.location_id in box_to_location_id:
-                    # This is a temporary reference - resolve it to real location ID
-                    real_location_id = box_to_location_id[media.location_id]
-                    old_location_id = media.location_id
-                    media.location_id = real_location_id
-                    self._repo.update(media)
-                    stats["assigned"] += 1
-                    stats["updated_media"].append(media.id)
-                    logger.info(f"Resolved media {media.id}: box {old_location_id} -> location_id {real_location_id}")
+                    correct_location_id = box_to_location_id[media.location_id]
+                    
+                    # Only update if it's different
+                    if media.location_id != correct_location_id:
+                        old_location_id = media.location_id
+                        media.location_id = correct_location_id
+                        self._repo.update(media)
+                        stats["assigned"] += 1
+                        stats["updated_media"].append(media.id)
+                        logger.info(f"Assigned media {media.id}: box {old_location_id} -> location_id {correct_location_id}")
+                    else:
+                        # Already pointing to correct location
+                        stats["already_assigned"] += 1
+                        logger.debug(f"Media {media.id} already correctly assigned to location_id {media.location_id}")
                 else:
-                    # Already has a real location ID or no match found
-                    stats["already_assigned"] += 1
-                    logger.debug(f"Media {media.id} already has location_id {media.location_id}")
+                    # No location found with this box number
+                    stats["not_found"] += 1
+                    logger.debug(f"Media {media.id} has location_id {media.location_id} but no location with that box number")
             
             logger.info(f"Location assignment complete: {stats['assigned']} assigned, {stats['not_found']} not found")
             return stats
