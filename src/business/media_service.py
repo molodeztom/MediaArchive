@@ -16,6 +16,7 @@ History:
 20260309  V1.9: Updated get_media_statistics to exclude deleted items and add deleted count
 20260309  V1.10: Added include_deleted parameter to search_media_by_name
 20260309  V1.11: Phase 9A complete - auto-numbering and date format support
+20260309  V1.12: Phase 9D - Added batch_update_media method for multi-select operations
 """
 
 import logging
@@ -524,7 +525,92 @@ class MediaService:
             logger.error(f"Error getting next number: {e}")
             # Return "1" as fallback
             return "1"
-
+    
+    def batch_update_media(self, media_ids: List[int], updates: dict) -> int:
+        """Update multiple media items with the same values.
+        
+        Args:
+            media_ids: List of media IDs to update.
+            updates: Dictionary with fields to update (media_type, category, valid_until_date).
+        
+        Returns:
+            Number of media items updated.
+        
+        Raises:
+            ValidationError: If validation fails.
+        """
+        if not media_ids:
+            raise ValidationError("No media items selected")
+        
+        if not updates:
+            raise ValidationError("No fields to update")
+        
+        updated_count = 0
+        for media_id in media_ids:
+            try:
+                # Get existing media
+                media = self._repo.get_by_id(media_id)
+                
+                # Update fields from updates dict
+                if "media_type" in updates:
+                    media.media_type = updates["media_type"]
+                if "category" in updates:
+                    media.category = updates["category"]
+                if "valid_until_date" in updates:
+                    media.valid_until_date = updates["valid_until_date"]
+                
+                # Validate updated media
+                self._validate_media_input(
+                    media.name,
+                    media.media_type,
+                    media.content_description,
+                    media.remarks,
+                    media.creation_date,
+                    media.valid_until_date,
+                    media.company,
+                    media.license_code,
+                )
+                
+                # Save changes
+                self._repo.update(media)
+                updated_count += 1
+                logger.debug(f"Batch updated media {media_id}: {updates}")
+            except Exception as e:
+                logger.warning(f"Failed to batch update media {media_id}: {e}")
+                continue
+        
+        logger.info(f"Batch updated {updated_count} media items")
+        return updated_count
+    
+    def batch_delete_media(self, media_ids: List[int]) -> int:
+        """Soft delete multiple media items.
+        
+        Args:
+            media_ids: List of media IDs to delete.
+        
+        Returns:
+            Number of media items deleted.
+        """
+        if not media_ids:
+            raise ValidationError("No media items selected")
+        
+        deleted_count = 0
+        for media_id in media_ids:
+            try:
+                # Check if media exists
+                self._repo.get_by_id(media_id)
+                
+                # Soft delete media
+                self._repo.delete(media_id)
+                deleted_count += 1
+                logger.debug(f"Batch deleted media {media_id}")
+            except Exception as e:
+                logger.warning(f"Failed to batch delete media {media_id}: {e}")
+                continue
+        
+        logger.info(f"Batch deleted {deleted_count} media items")
+        return deleted_count
+    
     @staticmethod
     def _validate_media_input(
         name: str,

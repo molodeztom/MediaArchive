@@ -33,6 +33,10 @@ History:
 20260309  V1.27: Added -topmost attribute and update_idletasks for tooltip display
 20260309  V1.28: Fixed column visibility preferences - apply widths on save and init
 20260309  V1.29: Added stretch=NO for hidden columns to fully hide them
+20260309  V1.30: Phase 9D - Enabled multi-select in Media table (Ctrl+Click, Shift+Click)
+20260309  V1.31: Phase 9D - Made Edit/Delete buttons context-aware for batch operations
+20260309  V1.32: Phase 9D - Status bar always shows selection count on any selection change
+20260309  V1.33: Phase 9D - Status bar shows: items | deleted | selected
 """
 
 import logging
@@ -55,6 +59,7 @@ from gui.dialogs import (
     AddLocationDialog, EditLocationDialog, DeleteLocationConfirmDialog,
     LocationAssignmentResultsDialog
 )
+from gui.batch_edit_dialog import BatchEditDialog
 from gui.column_preferences_dialog import ColumnPreferencesDialog
 from gui.search_panel import SearchPanel
 from gui.import_dialog import ImportDialog
@@ -211,11 +216,11 @@ class MainWindow:
         
         edit_btn = ttk.Button(toolbar, text="Edit Media", command=self._edit_media)
         edit_btn.pack(side=tk.LEFT, padx=2)
-        self._create_tooltip(edit_btn, "Edit selected media (Ctrl+E)")
+        self._create_tooltip(edit_btn, "Edit selected media (Ctrl+E) or batch edit multiple")
         
         delete_btn = ttk.Button(toolbar, text="Delete Media", command=self._delete_media)
         delete_btn.pack(side=tk.LEFT, padx=2)
-        self._create_tooltip(delete_btn, "Delete selected media (Delete)")
+        self._create_tooltip(delete_btn, "Delete selected media (Delete) or batch delete multiple")
         
         ttk.Separator(toolbar, orient=tk.VERTICAL).pack(side=tk.LEFT, fill=tk.Y, padx=5)
         
@@ -294,6 +299,9 @@ class MainWindow:
         self.media_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
+        # Enable multi-select
+        self.media_tree.configure(selectmode='extended')
+        
         # Bind double-click to jump to location
         self.media_tree.bind("<Double-1>", self._on_media_double_click)
         
@@ -302,6 +310,12 @@ class MainWindow:
         
         # Bind mouse motion to show content description tooltip
         self.media_tree.bind("<Motion>", self._on_media_tree_motion)
+        
+        # Bind selection change to update status bar
+        self.media_tree.bind("<<Change>>", lambda e: self._update_status_bar())
+        self.media_tree.bind("<Button-1>", lambda e: self.root.after(10, self._update_status_bar))
+        self.media_tree.bind("<Control-Button-1>", lambda e: self.root.after(10, self._update_status_bar))
+        self.media_tree.bind("<Shift-Button-1>", lambda e: self.root.after(10, self._update_status_bar))
         
         # Load media
         self._refresh_media_list()
@@ -487,11 +501,9 @@ class MainWindow:
                     expires
                 ), tags=tags)
             
-            count_msg = f"Loaded {len(media_list)} media items"
-            if self.show_deleted:
-                deleted_count = sum(1 for m in media_list if m.is_deleted)
-                count_msg += f" ({deleted_count} deleted)"
-            self.status_var.set(count_msg)
+            # Update status bar with media count and selection count
+            self._update_status_bar()
+            
             logger.debug(f"Refreshed media list: {len(media_list)} items")
         except Exception as e:
             logger.error(f"Failed to refresh media list: {e}")
@@ -747,7 +759,11 @@ class MainWindow:
             messagebox.showerror("Error", f"Failed to save media: {e}")
 
     def _edit_media(self) -> None:
-        """Edit selected media item."""
+        """Edit selected media item(s).
+        
+        If 1 item selected: Show single edit dialog
+        If 2+ items selected: Show batch edit dialog
+        """
         try:
             # Get selected media
             selection = self.media_tree.selection()
@@ -755,7 +771,12 @@ class MainWindow:
                 messagebox.showwarning("Selection Error", "Please select a media item to edit")
                 return
             
-            # Get media ID from treeview item ID
+            # Check if batch edit (2+ items)
+            if len(selection) >= 2:
+                self._batch_edit_media()
+                return
+            
+            # Single item edit
             item = selection[0]
             media_id = int(item)
             
@@ -804,7 +825,11 @@ class MainWindow:
             messagebox.showerror("Error", f"Failed to update media: {e}")
 
     def _delete_media(self) -> None:
-        """Delete selected media item."""
+        """Delete selected media item(s).
+        
+        If 1 item selected: Show single delete confirmation
+        If 2+ items selected: Show batch delete confirmation
+        """
         try:
             # Get selected media
             selection = self.media_tree.selection()
@@ -812,7 +837,12 @@ class MainWindow:
                 messagebox.showwarning("Selection Error", "Please select a media item to delete")
                 return
             
-            # Get media ID from treeview item ID
+            # Check if batch delete (2+ items)
+            if len(selection) >= 2:
+                self._batch_delete_media()
+                return
+            
+            # Single item delete
             item = selection[0]
             media_id = int(item)
             
@@ -1725,6 +1755,36 @@ For more information, see the documentation.
         except Exception as e:
             logger.debug(f"Error showing media tooltip: {e}")
 
+    def _update_status_bar(self) -> None:
+        """Update status bar with media count, deleted count, and selection count.
+        
+        Format: "X items | Y deleted | Z selected"
+        """
+        try:
+            # Get all media (including deleted)
+            all_media = self.media_service.get_all_media(include_deleted=True)
+            
+            # Count items excluding deleted
+            active_count = sum(1 for m in all_media if not m.is_deleted)
+            
+            # Count deleted items
+            deleted_count = sum(1 for m in all_media if m.is_deleted)
+            
+            # Build status message
+            count_msg = f"{active_count} items"
+            
+            # Always show deleted count
+            count_msg += f" | {deleted_count} deleted"
+            
+            # Add selection count
+            selection = self.media_tree.selection()
+            if selection:
+                count_msg += f" | {len(selection)} selected"
+            
+            self.status_var.set(count_msg)
+        except Exception as e:
+            logger.debug(f"Error updating status bar: {e}")
+
     def _on_search_result_double_click(self, event) -> None:
         """Handle double-click on search result to navigate to media tab and select item."""
         try:
@@ -1769,6 +1829,81 @@ For more information, see the documentation.
                 messagebox.showwarning("Not Found", f"Media item not found in media list")
         except Exception as e:
             logger.error(f"Error handling search result double-click: {e}")
+
+    def _batch_edit_media(self) -> None:
+        """Batch edit selected media items (2+)."""
+        try:
+            # Get selected media
+            selection = self.media_tree.selection()
+            if not selection or len(selection) < 2:
+                messagebox.showwarning("Selection Error", "Please select at least 2 media items to batch edit")
+                return
+            
+            # Get media details for selected items
+            selected_media = []
+            for item in selection:
+                media_id = int(item)
+                media = self.media_service.get_media(media_id)
+                selected_media.append(media)
+            
+            # Get existing categories
+            categories = self.media_service.get_unique_categories()
+            
+            # Create and show batch edit dialog
+            dialog = BatchEditDialog(self.root, selected_media, categories, on_save=self._on_batch_edit_saved)
+            result = dialog.show()
+            
+            if result:
+                self.status_var.set("Batch edit applied successfully")
+                self._refresh_media_list()
+        except Exception as e:
+            logger.error(f"Error batch editing media: {e}")
+            messagebox.showerror("Error", f"Failed to batch edit media: {e}")
+
+    def _on_batch_edit_saved(self, updates: dict) -> None:
+        """Callback when batch edit is saved."""
+        try:
+            # Get selected media IDs
+            selection = self.media_tree.selection()
+            media_ids = [int(item) for item in selection]
+            
+            # Apply batch update
+            updated_count = self.media_service.batch_update_media(media_ids, updates)
+            
+            logger.info(f"Batch updated {updated_count} media items")
+        except Exception as e:
+            logger.error(f"Error applying batch edit: {e}")
+            messagebox.showerror("Error", f"Failed to apply batch edit: {e}")
+
+    def _batch_delete_media(self) -> None:
+        """Batch delete selected media items (2+)."""
+        try:
+            # Get selected media
+            selection = self.media_tree.selection()
+            if not selection or len(selection) < 2:
+                messagebox.showwarning("Selection Error", "Please select at least 2 media items to delete")
+                return
+            
+            # Show confirmation dialog
+            result = messagebox.askyesno(
+                "Confirm Batch Delete",
+                f"Delete {len(selection)} media items?\n\n"
+                f"These items will be soft-deleted and can be restored later."
+            )
+            
+            if result:
+                # Get selected media IDs
+                media_ids = [int(item) for item in selection]
+                
+                # Apply batch delete
+                deleted_count = self.media_service.batch_delete_media(media_ids)
+                
+                self.status_var.set(f"Batch deleted {deleted_count} media items")
+                self._refresh_media_list()
+                logger.info(f"Batch deleted {deleted_count} media items")
+        except Exception as e:
+            logger.error(f"Error batch deleting media: {e}")
+            messagebox.showerror("Error", f"Failed to batch delete media: {e}")
 
     def close(self) -> None:
         """Close the application."""
